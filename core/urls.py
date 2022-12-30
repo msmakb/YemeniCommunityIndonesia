@@ -7,8 +7,8 @@ from main.constants import ADMIN_SITE
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('main.urls', namespace='main')),
-    path('', include('member.urls', namespace='member')),
+    path('', include('main.urls')),
+    path('', include('member.urls')),
 ]
 
 # Static and Media URL Patterns

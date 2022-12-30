@@ -2,11 +2,20 @@ from django.urls import path
 from . import views
 from .constants import PAGES
 
-app_name = 'main'
 urlpatterns = [
     path(
         '',
         views.index,
         name=PAGES.INDEX_PAGE
+    ),
+    path(
+        'Error/',
+        views.unauthorized,
+        name=PAGES.UNAUTHORIZED_PAGE
+    ),
+    path(
+        'About/',
+        views.about,
+        name=PAGES.ABOUT_PAGE
     ),
 ]

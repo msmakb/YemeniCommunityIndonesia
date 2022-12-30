@@ -4,6 +4,8 @@ from django.utils import timezone
 import os
 import sys
 
+from main.constants import PAGES
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -33,6 +35,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    # System Middleware
+    'main.middleware.AllowedClientMiddleware',
+    'main.middleware.LoginRequiredMiddleware',
+    'main.middleware.AllowedUserMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -100,6 +107,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+REQUIRED_AUTHENTICATION_PAGES = []
 
 # Logs
 LOGS_PATH = BASE_DIR.parent / 'logs'
