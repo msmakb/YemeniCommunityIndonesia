@@ -1,22 +1,5 @@
-<style>
-  .hellomessage,
-  .logout {
-    color: #fff;
-    text-align: left;
-    font-size: 18px;
-    margin-right: 20px;
-    text-decoration: none;
-  }
-
-  .logout:hover {
-    color: orange;
-    background-color: transparent;
-  }
-</style>
-
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <a class="navbar-brand">الجالية اليمنية في إندونيسيا</a>
-  <span style="margin-right: 10px;"> | </span>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
     aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
@@ -24,7 +7,11 @@
   <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
     <div class="navbar-nav">
       <a class="nav-item nav-link" href="{% url 'Index' %}">الصفحة الرئيسية</a>
-      <a class="nav-item nav-link active" href="{% url 'About' %}">حول</a>
+      <a class="nav-item nav-link" href="{% url 'About' %}">حول</a>
     </div>
   </div>
+  {% if request.user.is_authenticated %}
+  <span class="text-white">مرحبًا, {{ request.user }}</span>
+  <span><a class="text-white nav-item nav-link" href="{% url 'Logout' %}">تسجيل الخروج</a></span>
+  {% endif %}
 </nav>

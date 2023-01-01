@@ -18,4 +18,9 @@ urlpatterns = [
         views.about,
         name=PAGES.ABOUT_PAGE
     ),
+    path(
+        'Logout/',
+        views.logoutUser,
+        name=PAGES.LOGOUT
+    ),
 ]

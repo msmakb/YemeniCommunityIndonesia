@@ -310,14 +310,9 @@ class AllowedUserMiddleware:
                 return None
             elif request.user.groups.exists():
                 group: str = getUserGroupe(request).replace(' ', '')
-                conditions = (
-                    not str(request.path_info).startswith(f'/{group}/'),
-                    # not str(request.path_info).startswith(
-                    #     f'{settings.MEDIA_URL}'),
-                    not request.path.startswith(reverse('admin:index')),
-                )
-                if all(conditions):
-                    return redirect(constants.PAGES.UNAUTHORIZED_PAGE)
+                if str(request.path_info)[1:].split('/')[0] in [g for g in constants.GROUPS]:
+                    if str(request.path_info)[1:].split('/')[0] != group:
+                        return redirect(constants.PAGES.UNAUTHORIZED_PAGE)
             else:
                 MSG.SOMETHING_WRONG(request)
                 logger.warning(f"The user [{request.user}] has no groups!!")

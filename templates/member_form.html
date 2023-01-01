@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load main_tags %}
+{% load static %}
+{% block content %}
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="col-lg-8 col-xl-8 p-3 mx-auto">
+        <h2>البيانات الشخصية</h2>
+        {% for field in person_form.visible_fields %}
+        <div class="form-group">
+            <label class="mt-3 lead" for="{{ field.auto_id }}">{{ field.label }}</label>
+            <div>{{ field }}</div>
+            {% getFieldErrors person_form field.name as errors %}
+            {% if errors %}<span class="text-danger">{{ errors }}</span>{% endif %}
+        </div>
+        {% endfor %}
+        <h2 class="mt-5 mb-0">البيانات الأكاديمية</h2>
+        {% for field in academic_form %}
+        <div class="form-group">
+            <label class="mt-3 lead" for="{{ field.auto_id }}">{{ field.label }}</label>
+            <div>{{ field }}</div>
+            {% getFieldErrors academic_form field.name as errors %}
+            {% if errors %}<span class="text-danger">{{ errors }}</span>{% endif %}
+        </div>
+        {% endfor %}
+        <h2 class="mt-5 mb-0">مكان الإقامة الحالية</h2>
+        {% for field in address_form %}
+        <div class="form-group">
+            <label class="mt-3 lead" for="{{ field.auto_id }}">{{ field.label }}</label>
+            <div>{{ field }}</div>
+            {% getFieldErrors address_form field.name as errors %}
+            {% if errors %}<span class="text-danger">{{ errors }}</span>{% endif %}
+        </div>
+        {% endfor %}
+        <h2 class="mt-5 mb-0">المعلومات العائلية</h2>
+        {% for field in family_members_form %}
+        <div class="form-group">
+            <label class="mt-3 lead" for="{{ field.auto_id }}">{{ field.label }}</label>
+            <div>{{ field }}</div>
+            {% getFieldErrors family_members_form field.name as errors %}
+            {% if errors %}<span class="text-danger">{{ errors }}</span>{% endif %}
+        </div>
+        {% endfor %}
+        <h6 class="mt-3 mb-0 lead">معلومات أفراد العائلة المتواجدين في إندونيسيا (إختياري)</h6>
+
+        <li class="mt-3 mb-0 lead">الزوج / الزوجة / الزوجات (إختياري)</li>
+        {% for i in 4|rng %}
+        <div id="partner{{i}}" class="" {% if i != 0 %} style="display: none;" {% endif %}>
+            <div class="row p-1">
+                <div class="col-md-2">
+                    <span class="lead">{% if i == 0 %}الزوج / الزوجة {% else %} الزوجة {{i|add:1}}
+                        {% endif %}</span>
+                </div>
+                <div class="col-md-8 col-sm-9">
+                    <input name="partner_name{{i}}" type="text" class="form-control" placeholder='الأسم بالعربي'>
+                </div>
+                <div class="col-md-2 col-sm-3">
+                    <input name="partner_age{{i}}" type="number" class="form-control" placeholder='العمر'>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        <div class="container">
+            <div class="row p-3">
+                <a id="add-prt-btn" style="width: 35px; height: 35px;" class="btn btn-outline-success"
+                    onclick="addPrt()">+</a>
+                <a id="remove-prt-btn" style="margin-right:10px; width: 35px; height: 35px;"
+                    class=" btn btn-outline-danger" onclick="removePrt()">-</a>
+            </div>
+        </div>
+
+        <li class="mt-3 mb-0 lead">الأبناء (إختياري)</li>
+        {% for i in 10|rng %}
+        <div id="child{{i}}" {% if i != 0 %} style="display: none;" {% endif %}>
+            <div class="row p-1">
+                <div class="col-md-2">
+                    <span class="lead">الإبن / الإبنة {{i|add:1}}</span>
+                </div>
+                <div class="col-md-8 col-sm-9">
+                    <input name="child_name{{i}}" type="text" class="form-control" placeholder='الأسم بالعربي'>
+                </div>
+                <div class="col-md-2 col-sm-3">
+                    <input name="child_age{{i}}" type="number" class="form-control" placeholder='العمر'>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        <div class="container">
+            <div class="row p-3">
+                <a id="add-chd-btn" style="width: 35px; height: 35px;" class="btn btn-outline-success"
+                    onclick="addChd()">+</a>
+                <a id="remove-chd-btn" style="margin-right:10px; width: 35px; height: 35px;"
+                    class=" btn btn-outline-danger" onclick="removeChd()">-</a>
+            </div>
+        </div>
+
+        <label for="membership" class="mt-3 lead">هل ترغب بالحصول على عضوية في الجالية اليمنية؟</label>
+        <select id="membership" name="membership" class="form-select mt-1 mb-3 w-25" onchange="isAgree()">
+            <option value="0">لا</option>
+            <option value="1">نعم</option>
+        </select>
+        <h6>إذا كنت ترغب بالحصول على العضوية لابد أن توافق على جميع شروط العضوية</h6>
+        <h6 class="lead mt-3">شروط العضوية</h6>
+        <ol type="1" class="">
+            <li>ان يكون يمني يقيم في جمهورية إ ندونيسيا إقامة نظامية.</li>
+            <li> ألا يقل عمره عن 18 سنة.</li>
+            <li>أن يقوم بتسجيل كافة بياناته في الفورم.</li>
+            <li>أن يكون انتسابه للجالية بناء على رغبته الذاتية. </li>
+            <li>أن يلتزم بكل أنظمة ولوائح الجالية. </li>
+            <li>أن يدفع رسوم الانتساب عند التسجيل، وكذلك رسوم الاشتراكات الشهرية (50.000) روبية.</li>
+        </ol>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" value="agreed" id="agree" name="agree" disabled>
+            <label class="form-check-label h5 mt-md-3 mt-sm-3" for="agree">أوافق على جميع شروط
+                العضوية المذكورة أعلاه </label>
+        </div>
+        <p class="lead">
+            ملاحظة: جميع العضويات الممنوحة من خارج الموقع الرسمي سيتم إلغاؤها.
+            إذا كانت لديك عضوية سابقة الرجاء طلب
+            عضوية جديدة. الدفعات السابقة سيتم إحتسابها مع العضوية الجديدة.
+        </p>
+        <div>
+            <button type="submit" class="btn btn-lg btn-info mt-4 mb-5">إرسال</button>
+        </div>
+    </div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script src={% static 'js/member_form.js' %}></script>
+{% endblock scripts %}

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<a class="btn btn-lg {% if waiting > 0 %} btn-success {% else %} btn-secondary {% endif %} mx-3 my-3" ref="#">
+    اعتماد السجلات الجديدة</a>
+
+<div class="container-fluid">
+
+    <table class="table text-center">
+        <thead>
+            <tr>
+                <th scope="col">رقم</th>
+                <th scope="col">الأسم</th>
+                <th scope="col">المدينة</th>
+                <th scope="col">الوظيفة</th>
+                <th scope="col">رقم الواتس</th>
+                <th scope="col">التفاصيل</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for person in page_obj %}
+            <tr>
+                <td>{{ page_obj.start_index|add:forloop.counter0 }}</td>
+                <td>{{ person.name_ar }}</td>
+                <td>{{ person.address.city }}</td>
+                <td>{{ person.job_title }}</td>
+                <td>{{ person.whatsapp_number }}</td>
+                <td><a class="btn btn-outline-info" href="{% url 'DetailMemberPage' person.id %}">عرض</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock content %}
