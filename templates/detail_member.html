@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="text-center mt-5 mb-3">البيانات الشخصية</h1>
+{% if person.photograph %}
+<div class="card m-auto" style="width: 20rem; height: 25rem;">
+    <img class="card-img-top object-fit-cover" style="width: 20rem; height: 25rem;" src="{{ person.photograph.url }}"
+        alt="Card image cap">
+</div>
+{% endif %}
+<h2 class="text-center mt-2 mb-3">{{ person.name_ar }}</h2>
+<table class="table table-striped text-left container m-auto mt-3">
+    <tbody>
+        <tr>
+            <td class="col-1">الاسم بالعربي</td>
+            <td class="col-1">{{ person.name_ar }}</td>
+        </tr>
+        <tr>
+            <td class="col-1">الاسم بالإنجليزي</td>
+            <td class="col-1">{{ person.name_en }}</td>
+        </tr>
+        <tr>
+            <td class="col-1">الجنس</td>
+            <td class="col-1">{{ person.getGender }}</td>
+        </tr>
+        <tr>
+            <td class="col-1">مكان الميلاد</td>
+            <td class="col-1">{{ person.place_of_birth }}</td>
+        </tr>
+        <tr>
+            <td class="col-1">تاريخ الميلاد</td>
+            <td class="col-1">{{ person.date_of_birth }}</td>
+        </tr>
+        <tr>
+            <td class="col-1">رقم الهاتف (اتصال)</td>
+            <td class="col-1">{{ person.call_number }}</td>
+        </tr>
+        <tr>
+            <td class="col-1">رقم الواتساب</td>
+            <td class="col-1">{{ person.whatsapp_number }}</td>
+        </tr>
+        <tr>
+            <td class="col-1">البريد الإلكتروني</td>
+            <td class="col-1">{{ person.email }}</td>
+        </tr>
+        <tr>
+            <td class="col-1">الوظيفة</td>
+            <td class="col-1">{{ person.job_title }}</td>
+        </tr>
+        <tr>
+            <td class="col-1">فترة الإقامة في إندونيسيا</td>
+            <td class="col-1">{{ person.periodOfResidence }}</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2 class="text-center mt-5">البيانات الأكاديمية</h2>
+<table class="table table-striped text-left container m-auto mt-3">
+    <tbody>
+        <tr>
+            <td class="col-1">المؤهل العلمي</td>
+            <td class="col-1">{{ person.academic.getAcademicQualification }}</td>
+        </tr>
+        <tr>
+            <td class="col-1">أسم الجامعة / المعهد / المدرسة</td>
+            <td class="col-1">{{ person.academic.school|default_if_none:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-1">التخصص الدراسي </td>
+            <td class="col-1">{{ person.academic.major|default_if_none:"" }}</td>
+        </tr>
+        <tr>
+            <td class="col-1">الفصل الدراسي</td>
+            <td class="col-1">{{ person.academic.semester|default_if_none:"" }}</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2 class="text-center mt-5">مكان الإقامة الحالية</h2>
+<table class="table table-striped text-left container m-auto mt-3">
+    <tbody>
+        <tr>
+            <td class="col-1">عنوان الشارع</td>
+            <td class="col-1">{{ person.address.street_address }}</td>
+        </tr>
+        <tr>
+            <td class="col-1">المنطقة</td>
+            <td class="col-1">{{ person.address.district }}</td>
+        </tr>
+        <tr>
+            <td class="col-1">المدينة</td>
+            <td class="col-1">{{ person.address.city }}</td>
+        </tr>
+        <tr>
+            <td class="col-1">الولاية</td>
+            <td class="col-1">{{ person.address.province }}</td>
+        </tr>
+        <tr>
+            <td class="col-1">الرمز البريدي</td>
+            <td class="col-1">{{ person.address.postal_code|default_if_none:"" }}</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2 class="text-center mt-5">المعلومات العائلية</h2>
+<table class="table table-striped text-left container m-auto mt-3">
+    <tbody>
+        <tr>
+            <td class="col-1">الأسم العائلي</td>
+            <td class="col-1">{{ person.family_members.family_name }}</td>
+        </tr>
+        <tr>
+            <td class="col-1">عدد أفراد الأسرة التي يعولها في إندونيسيا</td>
+            <td class="col-1">{{ person.family_members.member_count|default_if_none:"" }}</td>
+        </tr>
+    </tbody>
+</table>
+
+{% if partners %}
+<h5 class="text-center mt-5">الزوج / الزوجة / الزوجات</h5>
+<table class="table table-striped text-left container m-auto mt-3">
+    <thead>
+        <tr>
+            <td class="col-1">الأسم</td>
+            <td class="col-1">العمر</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for prt in partners %}
+        <tr>
+            <td class="col-1">{{ prt.name|default_if_none:"" }}</td>
+            <td class="col-1">{{ prt.age|default_if_none:"" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if children %}
+<h5 class="text-center mt-5">الأبناء</h5>
+<table class="table table-striped text-left container m-auto mt-3">
+    <thead>
+        <tr>
+            <td class="col-1">الأسم</td>
+            <td class="col-1">العمر</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for prt in children %}
+        <tr>
+            <td class="col-1">{{ prt.name|default_if_none:"" }}</td>
+            <td class="col-1">{{ prt.age|default_if_none:"" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+<h2 class="text-center mt-5">الجواز والإقامة</h2>
+<div class="card m-auto mt-5" style="width: 45rem; height: 30rem">
+    <img class="card-img-top object-fit-cover" style="width: 45rem; height: 30rem;"
+        src="{{ person.passport_photo.url }}" alt="Card image cap">
+</div>
+<div class="card m-auto mt-5" style="width: 45rem; height: 60rem">
+    <img class="card-img-top object-fit-cover" style="width: 45rem; height: 60rem;"
+        src="{{ person.residency_photo.url }}" alt="Card image cap">
+</div>
+{% endblock %}
