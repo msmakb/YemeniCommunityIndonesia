@@ -11,7 +11,8 @@
     </div>
   </div>
   {% if request.user.is_authenticated %}
-  <span class="text-white">مرحبًا, {{ request.user }}</span>
+  <span class="text-white">مرحبًا,
+    {% if request.user.get_full_name %}{{ request.user.get_full_name }}{% else %}{{ request.user }}{% endif %}</span>
   <span><a class="text-white nav-item nav-link" href="{% url 'Logout' %}">تسجيل الخروج</a></span>
   {% endif %}
 </nav>

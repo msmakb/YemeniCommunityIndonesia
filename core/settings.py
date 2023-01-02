@@ -181,3 +181,5 @@ LOGGING = {
         },
     },
 }
+
+SP = "CSS59XPUZ8"

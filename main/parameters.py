@@ -85,6 +85,34 @@ def _getDefaultParam() -> list[_DefaultParameter]:
     )
     default_parameters.append(
         _DefaultParameter(
+            name="MEMBERSHIP_EXPIRE_PERIOD",
+            value="2",
+            description="The expired period of the membership in years.",
+            access_type=ACCESS_TYPE.ADMIN_ACCESS,
+            parameter_type=DATA_TYPE.INTEGER
+        )
+    )
+    default_parameters.append(
+        _DefaultParameter(
+            name="THREE_CHARACTER_PREFIX_FOR_MEMBERSHIP",
+            value="YEM",
+            description="The first 3 characters membership number starts with. It must not be more than 3"
+            + " characters. It can be less than 3 characters and it can be empty so the membership number will have digits only",
+            access_type=ACCESS_TYPE.ADMIN_ACCESS,
+            parameter_type=DATA_TYPE.STRING
+        )
+    )
+    default_parameters.append(
+        _DefaultParameter(
+            name="MEMBER_FORM_POST_LIMIT",
+            value="1",
+            description="The member form post limit per device within the Allowed logged in attempts reset period.",
+            access_type=ACCESS_TYPE.ADMIN_ACCESS,
+            parameter_type=DATA_TYPE.INTEGER
+        )
+    )
+    default_parameters.append(
+        _DefaultParameter(
             name="TEST",
             value="TEST_PARAMETER",
             description="Just for testing propose.",

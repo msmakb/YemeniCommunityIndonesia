@@ -28,6 +28,7 @@ ACTION = _NT('str', [
     'NORMAL_POST',
     'SUSPICIOUS_POST',
     'ATTACK_ATTEMPT',
+    'MEMBER_FORM_POST',
 ])(
     '0',
     '1',
@@ -36,6 +37,7 @@ ACTION = _NT('str', [
     '4',
     '5',
     '6',
+    '7',
 )
 BLOCK_TYPES = _NT('str', [
     'UNBLOCKED',
@@ -194,6 +196,7 @@ CHOICES = _NT('tuple', [
 PAGES = _NT('str', [
     'INDEX_PAGE',
     'ABOUT_PAGE',
+    'LOGIN_PAGE',
     'LOGOUT',
     'UNAUTHORIZED_PAGE',
     'DASHBOARD',
@@ -203,6 +206,7 @@ PAGES = _NT('str', [
 ])(
     'Index',
     'About',
+    'Login',
     'Logout',
     'Unauthorized',
     'Dashboard',
@@ -215,6 +219,7 @@ TEMPLATES = _NT('str', [
     'INDEX_TEMPLATE',
     'UNAUTHORIZED_TEMPLATE',
     'ABOUT_TEMPLATE',
+    'LOGIN_TEMPLATE',
     'DASHBOARD_TEMPLATE',
     'MEMBER_PAGE_TEMPLATE',
     'MEMBER_FORM_TEMPLATE',
@@ -224,6 +229,7 @@ TEMPLATES = _NT('str', [
     f'{_main_app__templates_folder}/index.html',
     f'{_main_app__templates_folder}/unauthorized.html',
     f'{_main_app__templates_folder}/about.html',
+    f'{_main_app__templates_folder}/login.html',
     f'{_main_app__templates_folder}/dashboard.html',
     f'{_main_app__templates_folder}/member_page.html',
     f'{_main_app__templates_folder}/member_form.html',
@@ -237,6 +243,9 @@ PARAMETERS = _NT('str', [
     "TIME_OUT_PERIOD",
     "BETWEEN_POST_REQUESTS_TIME",
     "MAGIC_NUMBER",
+    "MEMBERSHIP_EXPIRE_PERIOD",
+    "THREE_CHARACTER_PREFIX_FOR_MEMBERSHIP",
+    "MEMBER_FORM_POST_LIMIT",
 ])(
     "ALLOWED_LOGGED_IN_ATTEMPTS",
     "ALLOWED_LOGGED_IN_ATTEMPTS_RESET",
@@ -245,4 +254,19 @@ PARAMETERS = _NT('str', [
     "TIME_OUT_PERIOD",
     "BETWEEN_POST_REQUESTS_TIME",
     "MAGIC_NUMBER",
+    "MEMBERSHIP_EXPIRE_PERIOD",
+    "THREE_CHARACTER_PREFIX_FOR_MEMBERSHIP",
+    "MEMBER_FORM_POST_LIMIT",
 )
+PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {
+    GROUPS.MANAGER: (
+        PAGES.DASHBOARD,
+        PAGES.DETAIL_MEMBER_PAGE,
+    ),
+    GROUPS.MEMBER: (
+        PAGES.MEMBER_PAGE,
+    )
+}
+RESTRICTED_PAGES: Final[list[str]] = [
+    page for pages in PERMISSIONS.values() for page in pages
+]

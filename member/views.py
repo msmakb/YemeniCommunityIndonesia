@@ -1,23 +1,38 @@
 from typing import Any
 
+from django.contrib.auth.models import Group, User
 from django.db.models.query import QuerySet
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, Http404
 from django.shortcuts import render, redirect
+from django.utils import timezone
 
 from main import constants
 from main import messages as MSG
-from main.utils import Pagination
+from main.models import AuditEntry
+from main.parameters import getParameterValue
+from main.utils import Pagination, getClientIp, getUserAgent
 
-from .models import Academic, Address, Membership, FamilyMembers, Person, FamilyMembersChild, FamilyMembersWife
-from .forms import AddPersonForm, AcademicForm, AddressForm, FamilyMembersForm
+from .models import (Academic, Address, Membership,
+                     FamilyMembers, FamilyMembersChild,
+                     FamilyMembersWife, Person)
+from .forms import (AddPersonForm, AcademicForm,
+                    AddressForm, FamilyMembersForm)
 
 
-def dashboard(request: HttpRequest) -> HttpResponse:
+def dashboard(request: HttpRequest, currentPage: str) -> HttpResponse:
     waiting: int = Person.countFiltered(is_validated=False)
+    is_validated: bool | None = None
+    match currentPage.lower():
+        case "list":
+            is_validated = True
+        case "approve":
+            is_validated = False
+        case _:
+            raise Http404
 
     page: str = request.GET.get('page')
     pagination = Pagination(Person.filter(
-        is_validated=False), int(page) if page is not None else 1)
+        is_validated=is_validated), int(page) if page is not None else 1)
     page_obj: QuerySet[Person] = pagination.getPageObject()
     is_paginated: bool = pagination.isPaginated
 
@@ -25,12 +40,18 @@ def dashboard(request: HttpRequest) -> HttpResponse:
         'waiting': waiting,
         'page_obj': page_obj,
         'is_paginated': is_paginated,
+        'currentPage': currentPage,
     }
     return render(request, constants.TEMPLATES.DASHBOARD_TEMPLATE, context)
 
 
 def memberPage(request: HttpRequest, pk: str) -> HttpResponse:
-    return render(request, constants.TEMPLATES.MEMBER_PAGE_TEMPLATE)
+    person: Person = Person.get(account=int(pk))
+
+    context: dict[str, Any] = {
+        'person': person
+    }
+    return render(request, constants.TEMPLATES.MEMBER_PAGE_TEMPLATE, context)
 
 
 def memberFormPage(request: HttpRequest) -> HttpResponse:
@@ -118,6 +139,11 @@ def memberFormPage(request: HttpRequest) -> HttpResponse:
                     age=age
                 )
 
+            AuditEntry.create(ip=getClientIp(request),
+                              user_agent=getUserAgent(request),
+                              action=constants.ACTION.MEMBER_FORM_POST,
+                              username=request.user)
+
             return redirect(constants.PAGES.INDEX_PAGE)
 
     context: dict[str, Any] = {
@@ -135,6 +161,68 @@ def detailMember(request: HttpRequest, pk: str) -> HttpResponse:
         family_members=person.family_members)
     children: FamilyMembersChild = FamilyMembersChild.filter(
         family_members=person.family_members)
+
+    if request.method == constants.POST_METHOD:
+        if person.is_validated:
+            MSG.SOMETHING_WRONG(request)
+            return redirect(constants.PAGES.LOGOUT)
+        passport_number: str = request.POST.get("passportNumber")
+        if "approve" in request.POST:
+            if passport_number != None:
+                if request.POST.get('membership') == "1":
+                    membership_type: int = None
+                    try:
+                        membership_type = int(
+                            request.POST.get('membership_type'))
+                        constants.MEMBERSHIP_TYPE_AR[membership_type]
+                    except IndexError:
+                        MSG.SOMETHING_WRONG(request)
+                        return redirect(constants.PAGES.DASHBOARD, "Approve")
+                    except ValueError:
+                        MSG.SOMETHING_WRONG(request)
+                        return redirect(constants.PAGES.DASHBOARD, "Approve")
+                    idNum: str = str(person.id)
+                    person.membership = Membership.create(
+                        card_number=getParameterValue(constants.PARAMETERS.THREE_CHARACTER_PREFIX_FOR_MEMBERSHIP
+                                                      ) + ('0' * (7 - len(idNum))) + idNum,
+                        membership_type=membership_type,
+                        expire_date=timezone.now().replace(
+                            year=timezone.now().year + getParameterValue(constants.PARAMETERS.MEMBERSHIP_EXPIRE_PERIOD))
+                    )
+                person.passport_number = passport_number
+                person.is_validated = True
+                person.account = User.objects.create_user(
+                    username=passport_number,
+                    password=str(person.date_of_birth).replace('-', ''),
+                    first_name=person.name_ar.split(' ')[0],
+                    last_name=person.name_ar.split(' ')[-1])
+                person.save()
+                Group.objects.get(name=constants.GROUPS.MEMBER).user_set.add(
+                    person.account)
+
+                return redirect(constants.PAGES.DASHBOARD, "Approve")
+            else:
+                MSG.PASSPORT_NUMBER_ERROR(request)
+        elif "decline" in request.POST:
+            try:
+                if int(passport_number) == person.id:
+                    # Clean up (Danger Zone)
+                    for temp in FamilyMembersWife.filter(family_members=person.family_members):
+                        temp.delete()
+                    for temp in FamilyMembersChild.filter(family_members=person.family_members):
+                        temp.delete()
+                    temp = person.address
+                    temp.delete()
+                    temp = person.academic
+                    temp.delete()
+                    temp = person.family_members
+                    temp.delete()
+                    person.delete()
+                    return redirect(constants.PAGES.DASHBOARD, "Approve")
+                else:
+                    MSG.PASSPORT_NUMBER_ERROR(request)
+            except ValueError:
+                MSG.PASSPORT_NUMBER_ERROR(request)
 
     context: dict[str, Any] = {
         'person': person,

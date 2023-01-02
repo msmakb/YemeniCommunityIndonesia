@@ -9,6 +9,11 @@ urlpatterns = [
         name=PAGES.INDEX_PAGE
     ),
     path(
+        'Login/',
+        views.loginPage,
+        name=PAGES.LOGIN_PAGE
+    ),
+    path(
         'Error/',
         views.unauthorized,
         name=PAGES.UNAUTHORIZED_PAGE
