@@ -16,6 +16,11 @@ logger: Logger = logging.getLogger(constants.LOGGERS.MAIN)
 
 @isAuthenticatedUser
 def index(request: HttpRequest) -> HttpResponse:
+    return render(request, constants.TEMPLATES.INDEX_TEMPLATE)
+
+
+@isAuthenticatedUser
+def loginPage(request: HttpRequest) -> HttpResponse:
     if request.method == constants.POST_METHOD:
         UserName: str = request.POST.get('user_name')
         Password: str = request.POST.get('password')
@@ -28,7 +33,7 @@ def index(request: HttpRequest) -> HttpResponse:
         else:
             MSG.INCORRECT_INFO(request)
 
-    return render(request, constants.TEMPLATES.INDEX_TEMPLATE)
+    return render(request, constants.TEMPLATES.LOGIN_TEMPLATE)
 
 
 def about(request: HttpRequest) -> HttpResponse:

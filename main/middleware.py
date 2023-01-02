@@ -85,6 +85,18 @@ class AllowedClientMiddleware(object):
             time: datetime = timezone.now() - timedelta(
                 milliseconds=getParameterValue(
                     constants.PARAMETERS.BETWEEN_POST_REQUESTS_TIME))
+
+            membership_form_posts_count: int = self.last_audit_entry.filter(
+                ip=self.requester_ip,
+                action=constants.ACTION.MEMBER_FORM_POST).count()
+
+            membership_post_limit: int = getParameterValue(
+                constants.PARAMETERS.MEMBER_FORM_POST_LIMIT)
+            if resolve(request.path_info).url_name == constants.PAGES.MEMBER_FORM_PAGE:
+                if membership_form_posts_count >= membership_post_limit:
+                    MSG.MEMBERSHIP_FORM_POST_LIMIT(request)
+                    return redirect(current_path)
+
             last_posts_count: int = self.last_audit_entry.filter(
                 ip=self.requester_ip,
                 action=constants.ACTION.NORMAL_POST,
@@ -276,8 +288,8 @@ class LoginRequiredMiddleware:
                                + f' IP: {getClientIp(request)}')
                 raise Http404
             path: str = resolve(request.path_info).url_name
-            if path in settings.REQUIRED_AUTHENTICATION_PAGES:
-                return redirect(constants.PAGES.INDEX_PAGE)
+            if path in constants.RESTRICTED_PAGES:
+                return redirect(constants.PAGES.UNAUTHORIZED_PAGE)
             else:
                 return None
         elif request.user.last_login < timezone.now() - timedelta(minutes=time_out):
@@ -309,10 +321,9 @@ class AllowedUserMiddleware:
             elif path_name == constants.PAGES.UNAUTHORIZED_PAGE:
                 return None
             elif request.user.groups.exists():
-                group: str = getUserGroupe(request).replace(' ', '')
-                if str(request.path_info)[1:].split('/')[0] in [g for g in constants.GROUPS]:
-                    if str(request.path_info)[1:].split('/')[0] != group:
-                        return redirect(constants.PAGES.UNAUTHORIZED_PAGE)
+                group: str = getUserGroupe(request)
+                if path_name in constants.RESTRICTED_PAGES and path_name not in constants.PERMISSIONS[group]:
+                    return redirect(constants.PAGES.UNAUTHORIZED_PAGE)
             else:
                 MSG.SOMETHING_WRONG(request)
                 logger.warning(f"The user [{request.user}] has no groups!!")

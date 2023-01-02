@@ -22,6 +22,12 @@
             <td class="col-1">الجنس</td>
             <td class="col-1">{{ person.getGender }}</td>
         </tr>
+        {% if person.passport_number %}
+        <tr>
+            <td class="col-1">رقم الجواز</td>
+            <td class="col-1">{{ person.passport_number }}</td>
+        </tr>
+        {% endif %}
         <tr>
             <td class="col-1">مكان الميلاد</td>
             <td class="col-1">{{ person.place_of_birth }}</td>
@@ -154,6 +160,31 @@
     </tbody>
 </table>
 {% endif %}
+
+{% if person.membership %}
+<h2 class="text-center mt-5">بيانات العضوية</h2>
+<table class="table table-striped text-left container m-auto mt-3">
+    <tbody>
+        <tr>
+            <td class="col-1">رقم البطاقة</td>
+            <td class="col-1">{{ person.membership.card_number }}</td>
+        </tr>
+        <tr>
+            <td class="col-1">نوع العضوية</td>
+            <td class="col-1">{{ person.membership.membership_type }}</td>
+        </tr>
+        <tr>
+            <td class="col-1">تاريخ الإصدار</td>
+            <td class="col-1">{{ person.membership.issue_date }}</td>
+        </tr>
+        <tr>
+            <td class="col-1">تاريخ الانتهاء</td>
+            <td class="col-1">{{ person.membership.expire_date }}</td>
+        </tr>
+    </tbody>
+</table>
+{% endif %}
+
 <h2 class="text-center mt-5">الجواز والإقامة</h2>
 <div class="card m-auto mt-5" style="width: 45rem; height: 30rem">
     <img class="card-img-top object-fit-cover" style="width: 45rem; height: 30rem;"
@@ -163,4 +194,55 @@
     <img class="card-img-top object-fit-cover" style="width: 45rem; height: 60rem;"
         src="{{ person.residency_photo.url }}" alt="Card image cap">
 </div>
+<a class="col-2 btn btn-lg btn-info my-3" style="margin-right: 50px;" href="{% url 'Dashboard' 'List' %}">
+    الرجوع إلى القائمة</a>
+{% if not person.is_validated %}
+<hr>
+<form method="POST">
+    {% csrf_token %}
+    {% if person.is_request_membership %}
+    <div class="container">
+        <label for="membership" class="mt-3 lead">لقد طلب صاحب السجل هذا عضوية جديدة، فهل توافق على منحة
+            العضوية؟</label>
+        <select id="membership" name="membership" class="form-select mt-1 mb-3 w-25"
+            onchange="enableMembershipTypeOption()">
+            <option value="1">نعم</option>
+            <option value="0">لا</option>
+        </select>
+        <label for="membership_type" class="mt-3 lead">نوع العضوية</label>
+        <select id="membership_type" name="membership_type" class="form-select mt-1 mb-3 w-25" onchange="isAgree()">
+            <option value="0">طالب</option>
+            <option value="1">مستثمر</option>
+            <option value="2">موضف</option>
+        </select>
+    </div>
+    {% endif %}
+    <div class="container center">
+        <div class="form-group w-50">
+            <label class="mt-3 lead" for="passportNumber">أدخل رقم جواز السفر الصحيح لتأكيد السجل أو معرف السجل
+                ({{ person.id }}) للرفض </label>
+            <input id="passportNumber" name="passportNumber" type="text" required class="form-control"
+                placeholder="رقم الجواز">
+        </div>
+        <button class="btn btn-lg btn-success mt-4 mb-5" type="submit" name="approve">إعتماد</button>
+        <button class="btn btn-lg btn-danger mt-4 mb-5" type="submit" name="decline"
+            onclick="return confirm(' هل أنت متأكد من رفض هذا السجل وحذفه تمامًا؟')">
+            رفض وحذف
+        </button>
+    </div>
+</form>
+{% endif %}
 {% endblock %}
+{% block scripts %}
+<script>
+    function enableMembershipTypeOption() {
+        var selectVal = document.getElementById("membership").value;
+        if (selectVal == "0") {
+            document.getElementById("membership_type").disabled = true;
+        }
+        if (selectVal == "1") {
+            document.getElementById("membership_type").disabled = false;
+        }
+    }
+</script>
+{% endblock scripts %}

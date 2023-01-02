@@ -34,9 +34,11 @@ def isAuthenticatedUser(view_func: Callable) -> Callable:
                 group: str = getUserGroupe(request)
                 match group:
                     case constants.GROUPS.MANAGER:
-                        return redirect(constants.PAGES.DASHBOARD)
-                    case constants.GROUPS.MANAGER:
-                        redirect(constants.PAGES.MEMBER_PAGE, request.user.id)
+                        return redirect(constants.PAGES.DASHBOARD, "list")
+                    case constants.GROUPS.MEMBER:
+                        return redirect(constants.PAGES.MEMBER_PAGE, request.user.id)
+                    case _:
+                        return redirect(constants.PAGES.LOGOUT)
             else:
                 logger.warning("The user has no groups!!")
                 MSG.SOMETHING_WRONG(request)

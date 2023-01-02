@@ -4,7 +4,7 @@ from main.constants import PAGES
 
 urlpatterns = [
     path(
-        'Manager/Dashboard/',
+        'Manager/Dashboard/<str:currentPage>/',
         views.dashboard,
         name=PAGES.DASHBOARD
     ),

@@ -101,6 +101,8 @@ class Person(BaseModel):
         FamilyMembers, on_delete=models.SET_NULL, null=True, blank=True)
     account: User = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True)
+    passport_number: str = models.CharField(
+        max_length=15, null=True, blank=True)
     is_validated: bool = models.BooleanField(default=False)
     is_request_membership: bool = models.BooleanField(default=False)
 
@@ -111,15 +113,3 @@ class Person(BaseModel):
     @property
     def periodOfResidence(self) -> str:
         return constants.PERIOD_OF_RESIDENCE_AR[int(self.period_of_residence)]
-
-
-# Garbage to be deleted
-class UploadToPathAndRename(object):
-    def __init__(self, path): pass
-    def __call__(self, instance, filename): pass
-
-
-# Garbage to be deleted
-PHOTOGRAPHS_DIR = lambda a: a
-PASSPORTS_DIR = lambda a: a
-RESIDENCY_IMAGES_DIR = lambda a: a
