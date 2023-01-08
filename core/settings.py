@@ -94,10 +94,18 @@ TIME_ZONE = 'Asia/Jakarta'
 USE_I18N = True
 USE_TZ = False
 
+# Version
+PROJECT_VERSION = '1.0.0'
+
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'static/static_collection'
 STATICFILES_DIRS = [
-    BASE_DIR / 'static'
+    BASE_DIR / 'static',
+]
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 ]
 
 # Media files
