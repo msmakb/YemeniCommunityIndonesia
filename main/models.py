@@ -1,9 +1,9 @@
+from __future__ import annotations
 import logging
-from typing import Union, Optional, Self
+from typing import Optional
 
 from django.db import models
 from django.db.models.query import QuerySet
-from django.http import HttpRequest
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
@@ -30,29 +30,29 @@ class BaseModel(models.Model):
         self.save()
 
     @classmethod
-    def create(cls, *args, **kwargs) -> Self:
+    def create(cls, *args, **kwargs) -> BaseModel:
         return cls.objects.create(*args, **kwargs)
 
     @classmethod
-    def get(cls, *args, **kwargs) -> Self | None:
+    def get(cls, *args, **kwargs) -> BaseModel | None:
         """
         This will return None if there are multiple objects returned.
         """
         try:
-            obj: Self = cls.objects.get(*args, **kwargs)
+            obj: BaseModel = cls.objects.get(*args, **kwargs)
             return obj
         except cls.MultipleObjectsReturned:
             return None
 
     @classmethod
-    def getAll(cls) -> QuerySet[Self]:
+    def getAll(cls) -> QuerySet[BaseModel]:
         """
         Get all objects stored in the database.
         """
         return cls.objects.all()
 
     @classmethod
-    def getAllOrdered(cls, order_by: str, reverse: Optional[bool] = False) -> QuerySet[Self]:
+    def getAllOrdered(cls, order_by: str, reverse: Optional[bool] = False) -> QuerySet[BaseModel]:
         """
         Get all objects and order them.
         """
@@ -61,11 +61,11 @@ class BaseModel(models.Model):
         return cls.objects.all().order_by(order_by)
 
     @classmethod
-    def getLastInsertedObject(cls, queryset: Optional[QuerySet[Self]] = None) -> Self | None:
+    def getLastInsertedObject(cls, queryset: Optional[QuerySet[BaseModel]] = None) -> BaseModel | None:
         """
         Get the last object from the model or queryset if it was declared.
         """
-        query: QuerySet[Self] = queryset
+        query: QuerySet[BaseModel] = queryset
         if queryset is not None:
             if not isinstance(queryset, QuerySet) or not isinstance(queryset.first(), cls):
                 raise NotImplementedError
@@ -77,7 +77,7 @@ class BaseModel(models.Model):
             return None
 
     @classmethod
-    def filter(cls, *args, **kwargs) -> QuerySet[Self]:
+    def filter(cls, *args, **kwargs) -> QuerySet[BaseModel]:
         return cls.objects.filter(*args, **kwargs)
 
     @classmethod
@@ -95,7 +95,7 @@ class BaseModel(models.Model):
         return cls.objects.filter(*arg, **kwarg).count()
 
     @classmethod
-    def orderFiltered(cls, order_by: str, *args, reverse=False, **kwargs) -> QuerySet[Self]:
+    def orderFiltered(cls, order_by: str, *args, reverse=False, **kwargs) -> QuerySet[BaseModel]:
         """
         Order the filtered queryset.
         """
