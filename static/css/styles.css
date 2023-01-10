@@ -10,3 +10,9 @@
     margin-top: 20px;
     margin-bottom: 20px;
 }
+.blur {
+    filter: blur(4px); 
+}
+.posting {
+    pointer-events: none;
+}

@@ -1,18 +1,32 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <a class="navbar-brand">الجالية اليمنية في إندونيسيا</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
-    aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-    <div class="navbar-nav">
-      <a class="nav-item nav-link" href="{% url 'Index' %}">الصفحة الرئيسية</a>
-      <a class="nav-item nav-link" href="{% url 'About' %}">حول</a>
-    </div>
+  <a class="navbar-brand" href="{% url 'Index' %}">الجالية اليمنية في إندونيسيا</a>
+  <div style="float: left;">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText"
+      aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  </div>
+  <div class="collapse navbar-collapse" id="navbarText">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item">
+        {% url 'Index' as index %}
+        <a class="nav-link {% if request.path == index %}active{% endif %}" href="{% url 'Index' %}">الصفحة
+          الرئيسية</a>
+      </li>
+      <li class="nav-item">
+        {% url 'MembershipTerms' as membershipTerms %}
+        <a class="nav-link {% if request.path == membershipTerms %}active{% endif %}"
+          href="{% url 'MembershipTerms' %}">شروط العضوية</a>
+      </li>
+      <li class="nav-item">
+        {% url 'About' as about %}
+        <a class="nav-link {% if request.path == about %}active{% endif %}" href="{% url 'About' %}">حول</a>
+      </li>
+    </ul>
   </div>
   {% if request.user.is_authenticated %}
-  <span class="text-white">مرحبًا,
+  <span class="navbar-text text-white">مرحبًا,
     {% if request.user.get_full_name %}{{ request.user.get_full_name }}{% else %}{{ request.user }}{% endif %}</span>
-  <span><a class="text-white nav-item nav-link" href="{% url 'Logout' %}">تسجيل الخروج</a></span>
+  <span><a class="text-warning nav-item nav-link" href="{% url 'Logout' %}">تسجيل الخروج</a></span>
   {% endif %}
 </nav>

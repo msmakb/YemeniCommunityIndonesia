@@ -1,10 +1,12 @@
 from typing import Final
+from .cities import cities as _cities
 
 # ------------------------------------ private ------------------------------------ #
 from collections import namedtuple as _NT
 _main_app__templates_folder: Final[str] = '.'
 
 # ---------------------------------- public --------------------------------------- #
+CITIES = dict(sorted(_cities.items()))
 BASE_MODEL_FIELDS: Final[tuple[str, ...]] = ('created', 'updated')
 HTML_TAGS_PATTERN: Final[str] = '<.*?>((.|\n)*)<\/.*?>'
 GET_METHOD: Final[str] = 'GET'
@@ -131,6 +133,26 @@ ACADEMIC_QUALIFICATION_AR: Final[tuple[str, ...]] = (
     'أساسي',
     'لايوجد',
 )
+JOB_TITLE = _NT('str', [
+    'STUDENT',
+    'EMPLOYER',
+    'INVESTOR',
+    'OTHER',
+    'NONE'
+])(
+    '0',
+    '1',
+    '2',
+    '3',
+    '4'
+)
+JOB_TITLE_AR: Final[tuple[str, ...]] = (
+    'طالب',
+    'موظف',
+    'مستثمر أو رجل أعمال',
+    'غير ذلك',
+    'لا يوجد'
+)
 MEMBERSHIP_TYPE = _NT('str', [
     'STUDENT',
     'INVESTOR',
@@ -176,8 +198,10 @@ CHOICES = _NT('tuple', [
     'ACCESS_TYPE',
     'ACTION',
     'BLOCK_TYPE',
+    'CITIES',
     'DATA_TYPE',
     'GENDER',
+    'JOB_TITLE',
     'MEMBERSHIP_TYPE',
     'PERIOD_OF_RESIDENCE',
 ])(
@@ -186,8 +210,10 @@ CHOICES = _NT('tuple', [
     [(access_type, access_type) for access_type in ACCESS_TYPE],
     [(action, action) for action in ACTION],
     [(block_type, block_type) for block_type in BLOCK_TYPES],
+    [(k, k) for k in CITIES.keys()],
     [(data_type, data_type) for data_type in DATA_TYPE],
     [(gender, GENDER_AR[i]) for i, gender in enumerate(GENDER)],
+    [(job_title, JOB_TITLE_AR[i]) for i, job_title in enumerate(JOB_TITLE)],
     [(membership_type, MEMBERSHIP_TYPE_AR[i])
      for i, membership_type in enumerate(MEMBERSHIP_TYPE)],
     [(period, PERIOD_OF_RESIDENCE_AR[i])
@@ -195,6 +221,7 @@ CHOICES = _NT('tuple', [
 )
 PAGES = _NT('str', [
     'INDEX_PAGE',
+    'MEMBERSHIP_TERMS_PAGE',
     'ABOUT_PAGE',
     'LOGIN_PAGE',
     'LOGOUT',
@@ -203,8 +230,10 @@ PAGES = _NT('str', [
     'MEMBER_PAGE',
     'MEMBER_FORM_PAGE',
     'DETAIL_MEMBER_PAGE',
+    'THANK_YOU_PAGE',
 ])(
     'Index',
+    'MembershipTerms',
     'About',
     'Login',
     'Logout',
@@ -213,27 +242,32 @@ PAGES = _NT('str', [
     'Member',
     'MemberFormPage',
     'DetailMemberPage',
+    'ThankYouPage',
 )
 TEMPLATES = _NT('str', [
     # Main templates
     'INDEX_TEMPLATE',
     'UNAUTHORIZED_TEMPLATE',
+    'MEMBERSHIP_TERMS_TEMPLATE',
     'ABOUT_TEMPLATE',
     'LOGIN_TEMPLATE',
     'DASHBOARD_TEMPLATE',
     'MEMBER_PAGE_TEMPLATE',
     'MEMBER_FORM_TEMPLATE',
     'DETAIL_MEMBER_TEMPLATE',
+    'THANK_YOU_TEMPLATE',
 ])(
     # Main templates
     f'{_main_app__templates_folder}/index.html',
     f'{_main_app__templates_folder}/unauthorized.html',
+    f'{_main_app__templates_folder}/membership_terms.html',
     f'{_main_app__templates_folder}/about.html',
     f'{_main_app__templates_folder}/login.html',
     f'{_main_app__templates_folder}/dashboard.html',
     f'{_main_app__templates_folder}/member_page.html',
     f'{_main_app__templates_folder}/member_form.html',
     f'{_main_app__templates_folder}/detail_member.html',
+    f'{_main_app__templates_folder}/thank_you.html',
 )
 PARAMETERS = _NT('str', [
     "ALLOWED_LOGGED_IN_ATTEMPTS",

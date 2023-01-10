@@ -3,7 +3,7 @@ from typing import Any
 from django.contrib.auth.models import Group, User
 from django.db.models.query import QuerySet
 from django.http import HttpRequest, HttpResponse, Http404
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 
 from main import constants
@@ -144,7 +144,7 @@ def memberFormPage(request: HttpRequest) -> HttpResponse:
                               action=constants.ACTION.MEMBER_FORM_POST,
                               username=request.user)
 
-            return redirect(constants.PAGES.INDEX_PAGE)
+            return redirect(constants.PAGES.THANK_YOU_PAGE)
 
     context: dict[str, Any] = {
         'person_form': person_form,
@@ -156,7 +156,7 @@ def memberFormPage(request: HttpRequest) -> HttpResponse:
 
 
 def detailMember(request: HttpRequest, pk: str) -> HttpResponse:
-    person: Person = Person.get(id=pk)
+    person: Person = get_object_or_404(Person, id=pk)
     partners: FamilyMembersWife = FamilyMembersWife.filter(
         family_members=person.family_members)
     children: FamilyMembersChild = FamilyMembersChild.filter(
@@ -206,17 +206,6 @@ def detailMember(request: HttpRequest, pk: str) -> HttpResponse:
         elif "decline" in request.POST:
             try:
                 if int(passport_number) == person.id:
-                    # Clean up (Danger Zone)
-                    for temp in FamilyMembersWife.filter(family_members=person.family_members):
-                        temp.delete()
-                    for temp in FamilyMembersChild.filter(family_members=person.family_members):
-                        temp.delete()
-                    temp = person.address
-                    temp.delete()
-                    temp = person.academic
-                    temp.delete()
-                    temp = person.family_members
-                    temp.delete()
                     person.delete()
                     return redirect(constants.PAGES.DASHBOARD, "Approve")
                 else:
@@ -230,3 +219,16 @@ def detailMember(request: HttpRequest, pk: str) -> HttpResponse:
         'children': children
     }
     return render(request, constants.TEMPLATES.DETAIL_MEMBER_TEMPLATE, context)
+
+
+def thankYou(request: HttpRequest) -> HttpResponse:
+    try:
+        AuditEntry.get(
+            ip=getClientIp(request),
+            action=constants.ACTION.MEMBER_FORM_POST,
+            created__range=(timezone.now() - timezone.timedelta(minutes=5),
+                            timezone.now())
+        )
+    except AuditEntry.DoesNotExist:
+        return redirect(constants.PAGES.INDEX_PAGE)
+    return render(request, constants.TEMPLATES.THANK_YOU_TEMPLATE,)

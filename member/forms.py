@@ -71,7 +71,7 @@ class AddressForm(ModelForm):
                     'placeholder': 'ex. ABC',
                 }
             ),
-            'city': forms.TextInput(
+            'city': forms.Select(
                 attrs={
                     'required': True,
                     'class': form_classes,
@@ -173,14 +173,14 @@ class AddPersonForm(ModelForm):
                 attrs={
                     'required': True,
                     'class': form_classes,
-                    'placeholder': 'الأسم بالعربي',
+                    'placeholder': 'الاسم بالعربي',
                 }
             ),
             'name_en': forms.TextInput(
                 attrs={
                     'required': True,
                     'class': form_classes,
-                    'placeholder': 'الأسم بالإنجليزي',
+                    'placeholder': 'الاسم بالإنجليزي',
                 }
             ),
             'gender': forms.Select(
@@ -228,11 +228,10 @@ class AddPersonForm(ModelForm):
                     'placeholder': 'ex. yemeni@indonesia.com',
                 }
             ),
-            'job_title': forms.TextInput(
+            'job_title': forms.Select(
                 attrs={
                     'required': True,
                     'class': form_classes,
-                    'placeholder': 'طالب، موظف، رجل أعمال أو مستثمر ...  ',
                 }
             ),
             'period_of_residence': forms.Select(

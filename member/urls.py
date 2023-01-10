@@ -23,4 +23,9 @@ urlpatterns = [
         views.memberFormPage,
         name=PAGES.MEMBER_FORM_PAGE
     ),
+    path(
+        'Thank-You/',
+        views.thankYou,
+        name=PAGES.THANK_YOU_PAGE
+    ),
 ]

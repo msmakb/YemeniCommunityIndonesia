@@ -19,6 +19,11 @@ urlpatterns = [
         name=PAGES.UNAUTHORIZED_PAGE
     ),
     path(
+        'MembershipTerms/',
+        views.membershipTerms,
+        name=PAGES.MEMBERSHIP_TERMS_PAGE
+    ),
+    path(
         'About/',
         views.about,
         name=PAGES.ABOUT_PAGE

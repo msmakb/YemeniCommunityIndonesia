@@ -39,10 +39,15 @@ class Academic(BaseModel):
 
 class Address(BaseModel):
     street_address: str = models.CharField(max_length=50)
-    district: str = models.CharField(max_length=15)
-    city: str = models.CharField(max_length=15)
-    province: str = models.CharField(max_length=15)
+    district: str = models.CharField(max_length=20)
+    city: str = models.CharField(
+        max_length=20, choices=constants.CHOICES.CITIES)
+    province: str = models.CharField(max_length=20)
     postal_code: str = models.CharField(max_length=10, null=True, blank=True)
+
+    @property
+    def getCityAr(self):
+        return constants.CITIES.get(self.city)
 
 
 class Membership(BaseModel):
@@ -51,6 +56,10 @@ class Membership(BaseModel):
         max_length=1, choices=constants.CHOICES.MEMBERSHIP_TYPE)
     issue_date: datetime = models.DateField(auto_now_add=True)
     expire_date: datetime = models.DateField()
+
+    @property
+    def getMembershipType(self):
+        return constants.MEMBERSHIP_TYPE_AR[int(self.membership_type)]
 
 
 class FamilyMembers(BaseModel):
@@ -82,7 +91,8 @@ class Person(BaseModel):
     call_number: str = models.CharField(max_length=20)
     whatsapp_number: str = models.CharField(max_length=20)
     email: str = models.EmailField(max_length=254)
-    job_title: str = models.CharField(max_length=20)
+    job_title: str = models.CharField(
+        max_length=20, choices=constants.CHOICES.JOB_TITLE)
     period_of_residence: str = models.CharField(
         max_length=1, choices=constants.CHOICES.PERIOD_OF_RESIDENCE)
     photograph: Image = models.ImageField(
@@ -109,6 +119,10 @@ class Person(BaseModel):
     @property
     def getGender(self) -> str:
         return constants.GENDER_AR[int(self.gender)]
+
+    @property
+    def getJobTitle(self):
+        return constants.JOB_TITLE_AR[int(self.job_title)]
 
     @property
     def periodOfResidence(self) -> str:
