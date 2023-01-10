@@ -7,7 +7,7 @@ BLOCK_WARNING: Final[Callable[[HttpRequest], None]] = lambda request: messages.w
     request, "تحذير!! لقد قمت بإرسال العديد من الرسائل "
     + "العشوائية إلى النظام ، فكن حذرًا وإلا فسيتم حظرك في المرة القادمة.")
 INCORRECT_INFO: Final[Callable[[HttpRequest], None]] = lambda request: messages.error(
-    request, "اسم المستخدم أو كلمة المرور غير صحيحة")
+    request, "اسم المستخدم أو كلمة المرور غير صحيحة، أو أن عضويتك قيد المعالجة من قِبَل الإدارة")
 SOMETHING_WRONG: Final[Callable[[HttpRequest], None]] = lambda request: messages.warning(
     request, "عفوًا!! هناك خطأ ما...")
 TIME_OUT: Final[Callable[[HttpRequest], None]] = lambda request: messages.info(

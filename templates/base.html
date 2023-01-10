@@ -23,12 +23,10 @@
     </body>
 
     <!-- Scripts -->
-    <script src="{% static 'js/bootstrap/jquery-3.2.1.slim.min.js' %}?{% cache_bust %}">
-    </script>
-    <script src="{% static 'js/bootstrap/popper.min.js' %}?{% cache_bust %}">
-    </script>
-    <script src="{% static 'js/bootstrap/bootstrap.min.js' %}?{% cache_bust %}">
-    </script>
+    <script src="{% static 'js/bootstrap/jquery-3.2.1.slim.min.js' %}?{% cache_bust %}"></script>
+    <script src="{% static 'js/bootstrap/popper.min.js' %}?{% cache_bust %}"></script>
+    <script src="{% static 'js/bootstrap/bootstrap.min.js' %}?{% cache_bust %}"></script>
+    <script src="{% static 'js/base.js' %}?{% cache_bust %}"></script>
     {% block scripts %}{% endblock scripts %}
 
 </html>

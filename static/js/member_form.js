@@ -8,8 +8,6 @@ var addPartnerButton = document.getElementById("add-prt-btn");
 var removePartnerButton = document.getElementById("remove-prt-btn");
 
 
-
-
 function updateFormSize() {
     var width = window.innerWidth ||
         document.documentElement.clientWidth ||
@@ -122,6 +120,15 @@ function removePrt() {
         removePartnerButton.style.display = "none";
     }
 }
+
+$(function () {
+    $('form').on('submit', function (e) {
+        var member_form = document.getElementById("member-form");
+        var loading_screen = document.getElementById("loading-screen");
+        member_form.classList.add("blur");
+        loading_screen.style.display = "block";
+    });
+})
 
 updateFormSize();
 window.addEventListener("resize", updateFormSize);

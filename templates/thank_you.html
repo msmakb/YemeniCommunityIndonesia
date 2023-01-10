@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card text-center">
+    <div class="card-header">
+        <h3 class="card-title">شكراً على المساهمة</h3>
+    </div>
+    <div class="card-body blockquote">
+        <p class="card-text">شكراً على المساهمة معنا في حصر أفراد الجالية في اندونيسيا، نرجو منكم الانتظار ليتم
+            مراجعة سجلكم وسيتم التواصل معكم في حالة أي خطأ في الإدخال.</p>
+        <p class="card-text">
+            يمكنك تسجيل الدخول <b>برقم الجواز</b> الذي تم رفعه في النموذج المسجل بعد أن يتم قَبُول العضوية من قبل
+            الإدارة،
+            وستجد بطاقتك بعد تسجيل الدخول.
+        </p>
+        <p class="card-text">
+            كلمة المرور لحسابك الخاصة هي yyyymmdd ، حيث:
+        </p>
+        <p class="card-text">
+            dd: رقمان من يوم ميلادك.
+        </p>
+        <p class="card-text">
+            mm: رقمان من شهر ميلادك.
+        </p>
+        <p class="card-text">
+            yyyy: الأرقام الأربعة لسنة ميلادك.
+        </p>
+        <p class="card-text">
+            مثال على كلمة المرور: إذا كان تاريخ ميلادك هو 8 أغسطس 1992، فإن كلمة المرور الخاصة بك هي 19920808
+        </p>
+        <p class="card-text">
+            نتمنى منكم نشر رابط موقع الجالية لأكبر عدد من الأفراد اليمينين المقيمين في اندونيسيا لكي يتم حصرهم جميعاً.
+        </p>
+    </div>
+    <div class="card-footer text-muted">
+        <a href="{% url 'Index' %}" class="btn btn-outline-info">الصفحة الرئيسية</a>
+    </div>
+</div>
+{% endblock content %}

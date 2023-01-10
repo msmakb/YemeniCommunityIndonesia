@@ -1,7 +1,6 @@
 import logging
 from logging import Logger
 from typing import Any
-
 from django.contrib import auth
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpRequest
@@ -36,6 +35,10 @@ def loginPage(request: HttpRequest) -> HttpResponse:
     return render(request, constants.TEMPLATES.LOGIN_TEMPLATE)
 
 
+def membershipTerms(request: HttpRequest) -> HttpResponse:
+    return render(request, constants.TEMPLATES.MEMBERSHIP_TERMS_TEMPLATE)
+
+
 def about(request: HttpRequest) -> HttpResponse:
     return render(request, constants.TEMPLATES.ABOUT_TEMPLATE)
 
@@ -45,7 +48,7 @@ def logoutUser(request: HttpRequest) -> HttpResponse:
         auth.logout(request)
     except AttributeError:
         pass
-    return redirect(constants.PAGES.INDEX_PAGE)
+    return redirect(constants.PAGES.LOGIN_PAGE)
 
 
 def unauthorized(request: HttpRequest) -> HttpResponse:
