@@ -1,16 +1,16 @@
 from uuid import uuid4
+from PIL import Image
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
 from django.db import models
 from django.utils.timezone import datetime
 
 from main import constants
+from main.image_processing import ImageProcessingError, ImageProcessor
 from main.models import BaseModel
-
-
-class Image(models.ImageField):
-    pass
 
 
 def photographsDir(instance, filename):
@@ -23,6 +23,10 @@ def passportDir(instance, filename):
 
 def residencyImagesDir(instance, filename):
     return settings.MEDIA_ROOT / constants.MEDIA_DIR.RESIDENCY_IMAGES_DIR / f"{uuid4().hex}.{filename.split('.')[-1]}"
+
+
+def membershipImagesDir(instance, filename):
+    return settings.MEDIA_ROOT / constants.MEDIA_DIR.MEMBERSHIP_IMAGES_DIR / f"{uuid4().hex}.{filename.split('.')[-1]}"
 
 
 class Academic(BaseModel):
@@ -51,15 +55,24 @@ class Address(BaseModel):
 
 
 class Membership(BaseModel):
-    card_number = models.CharField(max_length=10, unique=True)
+    card_number: str = models.CharField(max_length=10, unique=True)
     membership_type: str = models.CharField(
         max_length=1, choices=constants.CHOICES.MEMBERSHIP_TYPE)
     issue_date: datetime = models.DateField(auto_now_add=True)
     expire_date: datetime = models.DateField()
+    membership_card: Image = models.ImageField(
+        upload_to=membershipImagesDir, max_length=255, null=True, blank=True)
+
+    def __str__(self) -> str:
+        return self.card_number
 
     @property
     def getMembershipType(self):
         return constants.MEMBERSHIP_TYPE_AR[int(self.membership_type)]
+
+    @property
+    def getMembershipTypeEnglish(self):
+        return constants.MEMBERSHIP_TYPE_EN[int(self.membership_type)]
 
 
 class FamilyMembers(BaseModel):
@@ -127,3 +140,21 @@ class Person(BaseModel):
     @property
     def periodOfResidence(self) -> str:
         return constants.PERIOD_OF_RESIDENCE_AR[int(self.period_of_residence)]
+
+    def clean(self) -> None:
+        if not self.photograph:
+            if self.gender == constants.GENDER.MALE:
+                raise ValidationError("هذا الحقل مطلوب")
+            else:
+                image_io: bytes = ImageProcessor.validateAndResizePhotograph(
+                    settings.MEDIA_ROOT / constants.MEDIA_DIR.PHOTOGRAPHS_DIR / "female_no_image.jpg")
+                self.photograph = ContentFile(image_io, "no_image.jpg")
+        else:
+            try:
+                image_io: bytes = ImageProcessor.validateAndResizePhotograph(
+                    self.photograph)
+                self.photograph = ContentFile(image_io, self.photograph.name)
+            except ImageProcessingError as error:
+                raise ValidationError(str(error))
+
+        return super().clean()

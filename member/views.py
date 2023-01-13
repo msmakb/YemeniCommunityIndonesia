@@ -1,6 +1,7 @@
 from typing import Any
 
 from django.contrib.auth.models import Group, User
+from django.core.files.base import ContentFile
 from django.db.models.query import QuerySet
 from django.http import HttpRequest, HttpResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
@@ -8,6 +9,7 @@ from django.utils import timezone
 
 from main import constants
 from main import messages as MSG
+from main.image_processing import ImageProcessor
 from main.models import AuditEntry
 from main.parameters import getParameterValue
 from main.utils import Pagination, getClientIp, getUserAgent
@@ -17,6 +19,7 @@ from .models import (Academic, Address, Membership,
                      FamilyMembersWife, Person)
 from .forms import (AddPersonForm, AcademicForm,
                     AddressForm, FamilyMembersForm)
+from .filters import PersonFilter
 
 
 def dashboard(request: HttpRequest, currentPage: str) -> HttpResponse:
@@ -30,9 +33,11 @@ def dashboard(request: HttpRequest, currentPage: str) -> HttpResponse:
         case _:
             raise Http404
 
+    queryset: QuerySet[Person] = Person.filter(is_validated=is_validated)
+    personFilter: PersonFilter = PersonFilter(request.GET, queryset=queryset)
+    queryset = personFilter.qs
     page: str = request.GET.get('page')
-    pagination = Pagination(Person.filter(
-        is_validated=is_validated), int(page) if page is not None else 1)
+    pagination = Pagination(queryset, int(page) if page is not None else 1)
     page_obj: QuerySet[Person] = pagination.getPageObject()
     is_paginated: bool = pagination.isPaginated
 
@@ -41,6 +46,7 @@ def dashboard(request: HttpRequest, currentPage: str) -> HttpResponse:
         'page_obj': page_obj,
         'is_paginated': is_paginated,
         'currentPage': currentPage,
+        'personFilter': personFilter
     }
     return render(request, constants.TEMPLATES.DASHBOARD_TEMPLATE, context)
 
@@ -166,29 +172,80 @@ def detailMember(request: HttpRequest, pk: str) -> HttpResponse:
         if person.is_validated:
             MSG.SOMETHING_WRONG(request)
             return redirect(constants.PAGES.LOGOUT)
+
         passport_number: str = request.POST.get("passportNumber")
-        if "approve" in request.POST:
+        if "generate" in request.POST:
+            membership_type: int = None
+            if request.POST.get('membership') != "1":
+                MSG.ACCEPT_MEMBERSHIP(request)
+                return redirect(constants.PAGES.DETAIL_MEMBER_PAGE, person.id)
+
+            try:
+                membership_type = int(
+                    request.POST.get('membership_type'))
+                constants.MEMBERSHIP_TYPE_AR[membership_type]
+            except IndexError:
+                MSG.SOMETHING_WRONG(request)
+                return redirect(constants.PAGES.DETAIL_MEMBER_PAGE, person.id)
+            except ValueError:
+                MSG.SOMETHING_WRONG(request)
+                return redirect(constants.PAGES.DETAIL_MEMBER_PAGE, person.id)
+
+            if person.membership:
+                membership = person.membership
+                person.membership = None
+                person.save()
+                membership.delete()
+
+            idNum: str = str(person.id)
+            membership: Membership = Membership.create(
+                card_number=getParameterValue(constants.PARAMETERS.THREE_CHARACTER_PREFIX_FOR_MEMBERSHIP
+                                              ) + ('0' * (7 - len(idNum))) + idNum,
+                membership_type=membership_type,
+                expire_date=(timezone.now().date().replace(
+                    year=timezone.now().year + getParameterValue(constants.PARAMETERS.MEMBERSHIP_EXPIRE_PERIOD)))
+            )
+
+            person.membership = membership
+            person.save()
+
+            image_io: bytes = ImageProcessor.generateMembershipCardImage(
+                person.photograph,
+                person.name_ar,
+                person.name_en,
+                person.address.getCityAr,
+                person.address.city,
+                person.membership.getMembershipType,
+                person.membership.getMembershipTypeEnglish,
+                str(person.membership.issue_date),
+                str(person.membership.expire_date),
+                person.membership.card_number
+            )
+
+            membership.membership_card = ContentFile(
+                image_io, "membership.jpg")
+            membership.save()
+
+            return redirect(constants.PAGES.DETAIL_MEMBER_PAGE, person.id)
+
+        elif "approve" in request.POST:
+            try:
+                int(passport_number)
+            except ValueError:
+                MSG.PASSPORT_NUMBER_ERROR(request)
+                return redirect(constants.PAGES.DETAIL_MEMBER_PAGE, person.id)
+
+            if request.POST.get('membership') == "1":
+                if not person.membership:
+                    MSG.MEMBERSHIP_MUST_GENERATED(request)
+                    return redirect(constants.PAGES.DETAIL_MEMBER_PAGE, person.id)
+            elif person.membership:
+                membership = person.membership
+                person.membership = None
+                person.save()
+                membership.delete()
+
             if passport_number != None:
-                if request.POST.get('membership') == "1":
-                    membership_type: int = None
-                    try:
-                        membership_type = int(
-                            request.POST.get('membership_type'))
-                        constants.MEMBERSHIP_TYPE_AR[membership_type]
-                    except IndexError:
-                        MSG.SOMETHING_WRONG(request)
-                        return redirect(constants.PAGES.DASHBOARD, "Approve")
-                    except ValueError:
-                        MSG.SOMETHING_WRONG(request)
-                        return redirect(constants.PAGES.DASHBOARD, "Approve")
-                    idNum: str = str(person.id)
-                    person.membership = Membership.create(
-                        card_number=getParameterValue(constants.PARAMETERS.THREE_CHARACTER_PREFIX_FOR_MEMBERSHIP
-                                                      ) + ('0' * (7 - len(idNum))) + idNum,
-                        membership_type=membership_type,
-                        expire_date=timezone.now().replace(
-                            year=timezone.now().year + getParameterValue(constants.PARAMETERS.MEMBERSHIP_EXPIRE_PERIOD))
-                    )
                 person.passport_number = passport_number
                 person.is_validated = True
                 person.account = User.objects.create_user(
@@ -203,15 +260,20 @@ def detailMember(request: HttpRequest, pk: str) -> HttpResponse:
                 return redirect(constants.PAGES.DASHBOARD, "Approve")
             else:
                 MSG.PASSPORT_NUMBER_ERROR(request)
+                return redirect(constants.PAGES.DETAIL_MEMBER_PAGE, person.id)
         elif "decline" in request.POST:
             try:
-                if int(passport_number) == person.id:
-                    person.delete()
-                    return redirect(constants.PAGES.DASHBOARD, "Approve")
-                else:
-                    MSG.PASSPORT_NUMBER_ERROR(request)
+                int(passport_number)
             except ValueError:
                 MSG.PASSPORT_NUMBER_ERROR(request)
+                return redirect(constants.PAGES.DETAIL_MEMBER_PAGE, person.id)
+
+            if int(passport_number) == person.id:
+                person.delete()
+                return redirect(constants.PAGES.DASHBOARD, "Approve")
+            else:
+                MSG.PASSPORT_NUMBER_ERROR(request)
+                return redirect(constants.PAGES.DETAIL_MEMBER_PAGE, person.id)
 
     context: dict[str, Any] = {
         'person': person,
