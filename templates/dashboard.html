@@ -3,7 +3,7 @@
 {% if currentPage|lower == "list" %}
 <div class="row">
     <h1 class="col m-3">قائمة الجالية المسجلين</h1>
-    <a class="col-2 btn btn-lg {% if waiting > 0 %} btn-success {% else %} btn-secondary {% endif %} my-3"
+    <a class="col-2 btn btn-md {% if waiting > 0 %} btn-success {% else %} btn-secondary {% endif %} my-3 shadow rounded"
         href="{% url 'Dashboard' 'Approve' %}" style="float: left; margin-left: 35px;">
         اعتماد السجلات الجديدة
     </a>
@@ -11,11 +11,92 @@
 {% elif currentPage|lower == "approve" %}
 <div class="row">
     <h1 class="col m-3">اعتماد السجلات الجديدة</h1>
-    <a class="col-2 btn btn-lg btn-info my-3" href="{% url 'Dashboard' 'List' %}"
+    <a class="col-2 btn btn-lg btn-info my-3 shadow rounded" href="{% url 'Dashboard' 'List' %}"
         style="float: left; margin-left: 35px;">
         رجوع
     </a>
 </div>
+{% endif %}
+
+{% if currentPage|lower == "list" %}
+<form method="GET">
+    <div class="container shadow p-3 mb-5 bg-white rounded">
+        <div class="row">
+            <div class="col form-group">
+                <label class="" for="{{ personFilter.form.name_ar.auto_id }}">
+                    {{ personFilter.form.name_ar.label }}
+                </label>
+                {{ personFilter.form.name_ar }}
+            </div>
+            <div class="col form-group">
+                <label class="" for="{{ personFilter.form.name_en.auto_id }}">
+                    {{ personFilter.form.name_en.label }}
+                </label>
+                {{ personFilter.form.name_en }}
+            </div>
+            <div class="col form-group">
+                <label class="" for="{{ personFilter.form.gender.auto_id }}">
+                    {{ personFilter.form.gender.label }}
+                </label>
+                {{ personFilter.form.gender }}
+            </div>
+            <div class="col form-group">
+                <label class="" for="{{ personFilter.form.job_title.auto_id }}">
+                    {{ personFilter.form.job_title.label }}
+                </label>
+                {{ personFilter.form.job_title }}
+            </div>
+            <div class="col form-group">
+                <label class="" for="{{ personFilter.form.period_of_residence.auto_id }}">
+                    {{ personFilter.form.period_of_residence.label }}
+                </label>
+                {{ personFilter.form.period_of_residence }}
+            </div>
+            <div class="col form-group">
+                <label class="" for="{{ personFilter.form.address__city.auto_id }}">
+                    {{ personFilter.form.address__city.label }}
+                </label>
+                {{ personFilter.form.address__city }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col form-group">
+                <label class="" for="{{ personFilter.form.academic__academic_qualification.auto_id }}">
+                    {{ personFilter.form.academic__academic_qualification.label }}
+                </label>
+                {{ personFilter.form.academic__academic_qualification }}
+            </div>
+            <div class="col form-group">
+                <label class="" for="{{ personFilter.form.filter_membership.auto_id }}">
+                    {{ personFilter.form.filter_membership.label }}
+                </label>
+                {{ personFilter.form.filter_membership }}
+            </div>
+            <div class="col form-group">
+                <label class="" for="{{ personFilter.form.membership__membership_type.auto_id }}">
+                    {{ personFilter.form.membership__membership_type.label }}
+                </label>
+                {{ personFilter.form.membership__membership_type }}
+            </div>
+            <div class="col form-group">
+                <label class="" for="{{ personFilter.form.membership__card_number.auto_id }}">
+                    {{ personFilter.form.membership__card_number.label }}
+                </label>
+                {{ personFilter.form.membership__card_number }}
+            </div>
+            <div class="col form-group">
+                <label class="" for="{{ personFilter.form.passport_number.auto_id }}">
+                    {{ personFilter.form.passport_number.label }}
+                </label>
+                {{ personFilter.form.passport_number }}
+            </div>
+            <div class="col">
+                <button class="btn btn-md btn-outline-dark mt-3 mx-auto px-5 shadow rounded"
+                    type="submit">تصفية</button>
+            </div>
+        </div>
+    </div>
+</form>
 {% endif %}
 
 {% if page_obj %}
@@ -53,7 +134,7 @@
 </div>
 {% else %}
 {% if currentPage|lower == "list" %}
-<h2 class="text-center text-danger">قاعدة البيانات خالية من السجلات</h2>
+<h2 class="text-center text-danger">لا توجد بيانات متاحة</h2>
 {% elif currentPage|lower == "approve" %}
 <h2 class="text-center text-success">لا توجد سجلات جديدة لإعتمادها</h2>
 {% endif %}

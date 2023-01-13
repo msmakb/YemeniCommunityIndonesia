@@ -2,13 +2,13 @@
 {% block content %}
 <h1 class="text-center mt-5 mb-3">البيانات الشخصية</h1>
 {% if person.photograph %}
-<div class="card m-auto" style="width: 20rem; height: 25rem;">
-    <img class="card-img-top object-fit-cover" style="width: 20rem; height: 25rem;" src="{{ person.photograph.url }}"
+<div class="card m-auto" style="width: 20rem; height: 20rem;">
+    <img class="card-img-top object-fit-cover" style="width: 20rem; height: 20rem;" src="{{ person.photograph.url }}"
         alt="Card image cap">
 </div>
 {% endif %}
 <h2 class="text-center mt-2 mb-3">{{ person.name_ar }}</h2>
-<table class="table table-striped text-left container m-auto mt-3">
+<table class="table table-striped text-left container m-auto mt-3 shadow rounded">
     <tbody>
         <tr>
             <td class="col-1">الاسم بالعربي</td>
@@ -60,7 +60,7 @@
 </table>
 
 <h2 class="text-center mt-5">البيانات الأكاديمية</h2>
-<table class="table table-striped text-left container m-auto mt-3">
+<table class="table table-striped text-left container m-auto mt-3 shadow rounded">
     <tbody>
         <tr>
             <td class="col-1">المؤهل العلمي</td>
@@ -82,7 +82,7 @@
 </table>
 
 <h2 class="text-center mt-5">مكان الإقامة الحالية</h2>
-<table class="table table-striped text-left container m-auto mt-3">
+<table class="table table-striped text-left container m-auto mt-3 shadow rounded">
     <tbody>
         <tr>
             <td class="col-1">عنوان الشارع</td>
@@ -108,7 +108,7 @@
 </table>
 
 <h2 class="text-center mt-5">المعلومات العائلية</h2>
-<table class="table table-striped text-left container m-auto mt-3">
+<table class="table table-striped text-left container m-auto mt-3 shadow rounded">
     <tbody>
         <tr>
             <td class="col-1">الأسم العائلي</td>
@@ -123,7 +123,7 @@
 
 {% if partners %}
 <h5 class="text-center mt-5">الزوج / الزوجة / الزوجات</h5>
-<table class="table table-striped text-left container m-auto mt-3">
+<table class="table table-striped text-left container m-auto mt-3 shadow rounded">
     <thead>
         <tr>
             <td class="col-1">الأسم</td>
@@ -143,7 +143,7 @@
 
 {% if children %}
 <h5 class="text-center mt-5">الأبناء</h5>
-<table class="table table-striped text-left container m-auto mt-3">
+<table class="table table-striped text-left container m-auto mt-3 shadow rounded">
     <thead>
         <tr>
             <td class="col-1">الأسم</td>
@@ -161,9 +161,9 @@
 </table>
 {% endif %}
 
-{% if person.membership %}
+{% if person.membership and person.is_validated %}
 <h2 class="text-center mt-5">بيانات العضوية</h2>
-<table class="table table-striped text-left container m-auto mt-3">
+<table class="table table-striped text-left container m-auto mt-3 shadow rounded">
     <tbody>
         <tr>
             <td class="col-1">رقم البطاقة</td>
@@ -183,6 +183,10 @@
         </tr>
     </tbody>
 </table>
+<div class="card m-auto mt-5" style="width: 45rem; height: 30rem">
+    <img class="card-img-top object-fit-cover" style="width: 45rem; height: 30rem;"
+        src="{{ person.membership.membership_card.url }}" alt="Card image cap">
+</div>
 {% endif %}
 
 <h2 class="text-center mt-5">الجواز والإقامة</h2>
@@ -194,8 +198,8 @@
     <img class="card-img-top object-fit-cover" style="width: 45rem; height: 60rem;"
         src="{{ person.residency_photo.url }}" alt="Card image cap">
 </div>
-<a class="col-2 btn btn-lg btn-info my-3" style="margin-right: 50px;" href="{% url 'Dashboard' 'List' %}">
-    الرجوع إلى القائمة</a>
+<a class="col-2 btn btn-lg btn-info my-3 shadow rounded" style="margin-right: 50px;"
+    href="{% url 'Dashboard' 'List' %}">الرجوع إلى القائمة</a>
 {% if not person.is_validated %}
 <hr>
 <form method="POST">
@@ -204,28 +208,40 @@
     <div class="container">
         <label for="membership" class="mt-3 lead">لقد طلب صاحب السجل هذا عضوية جديدة، فهل توافق على منحة
             العضوية؟</label>
-        <select id="membership" name="membership" class="form-select mt-1 mb-3 w-25"
+        <select id="membership" name="membership" class="form-select mt-1 mb-3 w-25 shadow rounded"
             onchange="enableMembershipTypeOption()">
             <option value="1">نعم</option>
             <option value="0">لا</option>
         </select>
         <label for="membership_type" class="mt-3 lead">نوع العضوية</label>
-        <select id="membership_type" name="membership_type" class="form-select mt-1 mb-3 w-25" onchange="isAgree()">
+        <select id="membership_type" name="membership_type" class="form-select mt-1 mb-3 w-25 shadow rounded"
+            onchange="isAgree()">
             <option value="0">طالب</option>
             <option value="1">مستثمر</option>
             <option value="2">موضف</option>
         </select>
     </div>
+    {% if person.membership %}
+    <div class="card m-auto mt-5" style="width: 45rem; height: 30rem">
+        <img class="card-img-top object-fit-cover" style="width: 45rem; height: 30rem;"
+            src="{{ person.membership.membership_card.url }}" alt="Card image cap">
+    </div>
     {% endif %}
+    <div class="d-flex justify-content-center">
+        <button class="btn btn-lg btn-outline-warning mt-4 mb-5 shadow rounded" type="submit" name="generate">
+            إنشاء بطاقة عضوية جديدة</button>
+    </div>
+    {% endif %}
+    {% csrf_token %}
     <div class="container center">
         <div class="form-group w-50">
             <label class="mt-3 lead" for="passportNumber">أدخل رقم جواز السفر الصحيح لتأكيد السجل أو معرف السجل
                 ({{ person.id }}) للرفض </label>
-            <input id="passportNumber" name="passportNumber" type="text" required class="form-control"
+            <input id="passportNumber" name="passportNumber" type="text" class="form-control shadow rounded"
                 placeholder="رقم الجواز">
         </div>
-        <button class="btn btn-lg btn-success mt-4 mb-5" type="submit" name="approve">إعتماد</button>
-        <button class="btn btn-lg btn-danger mt-4 mb-5" type="submit" name="decline"
+        <button class="btn btn-lg btn-success mt-4 mb-5 shadow rounded" type="submit" name="approve">إعتماد</button>
+        <button class="btn btn-lg btn-danger mt-4 mb-5 shadow rounded" type="submit" name="decline"
             onclick="return confirm(' هل أنت متأكد من رفض هذا السجل وحذفه تمامًا؟')">
             رفض وحذف
         </button>

@@ -74,11 +74,13 @@ MEDIA_DIR = _NT('str', [
     'PHOTOGRAPHS_DIR',
     'PASSPORTS_DIR',
     'RESIDENCY_IMAGES_DIR',
+    'MEMBERSHIP_IMAGES_DIR',
 
 ])(
     'documents/images/photographs',
     'documents/images/passportImages',
     'documents/images/residencyImages',
+    'documents/images/membershipImages',
 )
 LOGGERS = _NT('str', [
     'MAIN',
@@ -161,6 +163,11 @@ MEMBERSHIP_TYPE = _NT('str', [
     '0',
     '1',
     '2',
+)
+MEMBERSHIP_TYPE_EN: Final[tuple[str, ...]] = (
+    'STUDENT',
+    'INVESTOR',
+    'EMPLOYER',
 )
 MEMBERSHIP_TYPE_AR: Final[tuple[str, ...]] = (
     'طالب',

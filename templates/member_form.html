@@ -2,14 +2,7 @@
 {% load main_tags %}
 {% load static %}
 {% block content %}
-<div class="card text-center position-fixed top-50 start-50 translate-middle bg-light"
-    style="width: 18rem; display: none;" id="loading-screen">
-    <div class="card-body">
-        <div class="spinner-border" style="width: 5rem; height: 5rem;" role="status">
-        </div>
-    </div>
-</div>
-<form method="POST" id="member-form" enctype="multipart/form-data">
+<form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     <div class="col-lg-8 col-xl-8 p-3 mx-auto">
         <h2>البيانات الشخصية</h2>
@@ -71,20 +64,22 @@
                         {% endif %}</span>
                 </div>
                 <div class="col-md-8 col-sm-9">
-                    <input name="partner_name{{i}}" type="text" class="form-control" placeholder='الأسم بالعربي'>
+                    <input name="partner_name{{i}}" type="text" class="form-control shadow-sm rounded"
+                        placeholder='الأسم بالعربي'>
                 </div>
                 <div class="col-md-2 col-sm-3">
-                    <input name="partner_age{{i}}" type="number" class="form-control" placeholder='العمر'>
+                    <input name="partner_age{{i}}" type="number" class="form-control shadow-sm rounded"
+                        placeholder='العمر'>
                 </div>
             </div>
         </div>
         {% endfor %}
         <div class="container">
             <div class="row p-3">
-                <a id="add-prt-btn" style="width: 35px; height: 35px;" class="btn btn-outline-success"
+                <a id="add-prt-btn" style="width: 35px; height: 35px;" class="btn btn-outline-success shadow-sm rounded"
                     onclick="addPrt()">+</a>
                 <a id="remove-prt-btn" style="margin-right:10px; width: 35px; height: 35px;"
-                    class=" btn btn-outline-danger" onclick="removePrt()">-</a>
+                    class=" btn btn-outline-danger shadow-sm rounded" onclick="removePrt()">-</a>
             </div>
         </div>
 
@@ -96,25 +91,28 @@
                     <span class="lead">الإبن / الإبنة {{i|add:1}}</span>
                 </div>
                 <div class="col-md-8 col-sm-9">
-                    <input name="child_name{{i}}" type="text" class="form-control" placeholder='الأسم بالعربي'>
+                    <input name="child_name{{i}}" type="text" class="form-control shadow-sm rounded"
+                        placeholder='الأسم بالعربي'>
                 </div>
                 <div class="col-md-2 col-sm-3">
-                    <input name="child_age{{i}}" type="number" class="form-control" placeholder='العمر'>
+                    <input name="child_age{{i}}" type="number" class="form-control shadow-sm rounded"
+                        placeholder='العمر'>
                 </div>
             </div>
         </div>
         {% endfor %}
         <div class="container">
             <div class="row p-3">
-                <a id="add-chd-btn" style="width: 35px; height: 35px;" class="btn btn-outline-success"
-                    onclick="addChd()">+</a>
+                <a id="add-chd-btn" style="width: 35px; height: 35px;"
+                    class="btn btn-outline-success  shadow-sm rounded" onclick="addChd()">+</a>
                 <a id="remove-chd-btn" style="margin-right:10px; width: 35px; height: 35px;"
-                    class=" btn btn-outline-danger" onclick="removeChd()">-</a>
+                    class=" btn btn-outline-danger  shadow-sm rounded" onclick="removeChd()">-</a>
             </div>
         </div>
 
         <label for="membership" class="mt-3 lead">هل ترغب بالحصول على عضوية في الجالية اليمنية؟</label>
-        <select id="membership" name="membership" class="form-select mt-1 mb-3 w-25" onchange="isAgree()">
+        <select id="membership" name="membership" class="form-select mt-1 mb-3 w-25 shadow-sm rounded"
+            onchange="isAgree()">
             <option value="0">لا</option>
             <option value="1">نعم</option>
         </select>
@@ -139,7 +137,7 @@
             عضوية جديدة. الدفعات السابقة سيتم إحتسابها مع العضوية الجديدة.
         </p>
         <div>
-            <button type="submit" class="btn btn-lg btn-info mt-4 mb-5">إرسال</button>
+            <button type="submit" class="btn btn-lg btn-info mt-4 mb-5 shadow rounded">إرسال</button>
         </div>
     </div>
 </form>

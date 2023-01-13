@@ -1,13 +1,9 @@
 from django import forms
 from django.forms import ModelForm
 
-from main import constants
+from .models import Academic, Address, FamilyMembers, Person
 
-from .models import (Academic, Address, Membership,
-                     FamilyMembers, FamilyMembersChild,
-                     FamilyMembersWife, Person)
-
-form_classes: str = 'form-control'
+form_classes: str = 'form-control shadow-sm rounded'
 
 
 class DateInput(forms.DateInput):
@@ -277,12 +273,3 @@ class AddPersonForm(ModelForm):
             'passport_photo': 'صورة جواز السفر',
             'residency_photo': 'صورة الإقامة أو مايثبت تواجدك في جمهورية إندونيسيا',
         }
-
-    def clean_photograph(self):
-        photograph = self.cleaned_data.get("photograph")
-        gender = self.cleaned_data.get("gender")
-        if not photograph:
-            if gender == constants.GENDER.MALE:
-                raise forms.ValidationError("هذا الحقل مطلوب")
-
-        return photograph

@@ -16,10 +16,13 @@
     </head>
 
     <body class="bg-light">
-        {% include 'navbar.html' %}
-        {% include 'alerts.html' %}
-        {% block content %}{% endblock content %}
-        {% include 'pagination.html' %}
+        <div id="screen">
+            {% include 'navbar.html' %}
+            {% include 'alerts.html' %}
+            {% block content %}{% endblock content %}
+            {% include 'pagination.html' %}
+        </div>
+        {% include 'loading_screen.html' %}
     </body>
 
     <!-- Scripts -->
