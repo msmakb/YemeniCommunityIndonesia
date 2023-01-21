@@ -4,10 +4,9 @@ from django.utils import timezone
 import os
 import sys
 
-from main.constants import PAGES
+from main.constants import _base_dir
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = _base_dir
 
 SECRET_KEY = 'django-insecure-&x$kkv%yo(*nutqe3)=&e@kl9o#ii#vzkwaxg8a=-!fo&cic7n'
 

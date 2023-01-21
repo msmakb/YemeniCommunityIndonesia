@@ -1,12 +1,18 @@
+from collections import namedtuple as _NT
+from pathlib import Path
+import json
 from typing import Final
-from .cities import cities as _cities
 
 # ------------------------------------ private ------------------------------------ #
-from collections import namedtuple as _NT
 _main_app__templates_folder: Final[str] = '.'
-
+_base_dir = Path(__file__).resolve().parent.parent
+with open(_base_dir / "data/cities.json", "r", encoding="utf-8") as _file:
+    _cities: dict[str, str] = json.load(_file)
+with open(_base_dir / "data/country_code.json", "r", encoding="utf-8") as _file:
+    _country_codes: dict[str, str] = json.load(_file)
 # ---------------------------------- public --------------------------------------- #
-CITIES = dict(sorted(_cities.items()))
+PHONE_NUMBERS_COUNTRY_CODES: Final[dict[str, str]] = _country_codes
+CITIES: Final[dict[str, str]] = dict(sorted(_cities.items()))
 BASE_MODEL_FIELDS: Final[tuple[str, ...]] = ('created', 'updated')
 HTML_TAGS_PATTERN: Final[str] = '<.*?>((.|\n)*)<\/.*?>'
 GET_METHOD: Final[str] = 'GET'
@@ -235,6 +241,7 @@ PAGES = _NT('str', [
     'UNAUTHORIZED_PAGE',
     'DASHBOARD',
     'MEMBER_PAGE',
+    'DOWNLOAD_MEMBERSHIP_PAGE',
     'MEMBER_FORM_PAGE',
     'DETAIL_MEMBER_PAGE',
     'THANK_YOU_PAGE',
@@ -247,6 +254,7 @@ PAGES = _NT('str', [
     'Unauthorized',
     'Dashboard',
     'Member',
+    'Download-Membership',
     'MemberFormPage',
     'DetailMemberPage',
     'ThankYouPage',

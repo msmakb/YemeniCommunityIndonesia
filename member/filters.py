@@ -1,6 +1,5 @@
 import django_filters
 from django import forms
-from django.db import models
 from django.db.models.query import QuerySet
 from main import constants
 

@@ -1,5 +1,10 @@
+import re
+
 from django import forms
 from django.forms import ModelForm
+from django.utils import timezone
+
+from main.constants import PHONE_NUMBERS_COUNTRY_CODES
 
 from .models import Academic, Address, FamilyMembers, Person
 
@@ -39,6 +44,13 @@ class FamilyMembersForm(ModelForm):
             'family_name': 'الأسم العائلي',
             'member_count': 'عدد أفراد الأسرة التي تعيلها في إندونيسيا'
         }
+
+    def clean_member_count(self):
+        data = self.cleaned_data.get("member_count")
+        if data > 20:
+            raise forms.ValidationError('أدخل رقما صحيحا.')
+
+        return data
 
 
 class AddressForm(ModelForm):
@@ -146,6 +158,31 @@ class AcademicForm(ModelForm):
 
 
 class AddPersonForm(ModelForm):
+    country_code_choices: list[tuple[str, str]] = [
+        (code, f"{country} (+{code})") for country, code in PHONE_NUMBERS_COUNTRY_CODES.items()
+    ]
+    country_code1 = forms.ChoiceField(
+        label="المفتاح",
+        choices=country_code_choices,
+        initial='62',
+        widget=forms.Select(
+            attrs={
+                'required': True,
+                'class': form_classes,
+            }
+        )
+    )
+    country_code2 = forms.ChoiceField(
+        label="المفتاح",
+        choices=country_code_choices,
+        initial='62',
+        widget=forms.Select(
+            attrs={
+                'required': True,
+                'class': form_classes,
+            }
+        )
+    )
 
     class Meta:
         model = Person
@@ -155,7 +192,9 @@ class AddPersonForm(ModelForm):
             'gender',
             'place_of_birth',
             'date_of_birth',
+            # 'country_code1',
             'call_number',
+            # 'country_code2',
             'whatsapp_number',
             'email',
             'job_title',
@@ -170,6 +209,7 @@ class AddPersonForm(ModelForm):
                     'required': True,
                     'class': form_classes,
                     'placeholder': 'الاسم بالعربي',
+                    'pattern': r'^[\u0600-\u06FF\s]+$'
                 }
             ),
             'name_en': forms.TextInput(
@@ -177,6 +217,7 @@ class AddPersonForm(ModelForm):
                     'required': True,
                     'class': form_classes,
                     'placeholder': 'الاسم بالإنجليزي',
+                    'pattern': r'^[A-Za-z\s]+$'
                 }
             ),
             'gender': forms.Select(
@@ -190,6 +231,7 @@ class AddPersonForm(ModelForm):
                     'required': True,
                     'class': form_classes,
                     'placeholder': 'صنعاء، حضرموت ... ',
+                    'pattern': r'^[\u0600-\u06FF\s,-]+$'
                 }
             ),
             'date_of_birth': DateInput(
@@ -203,18 +245,18 @@ class AddPersonForm(ModelForm):
                 attrs={
                     'required': True,
                     'class': form_classes,
-                    'placeholder': 'ex. +62 8123456789',
-                    # 'pattern': "[+][0-9]{1,3} [0-9]{9,14}",
+                    'placeholder': 'ex. 8123456789',
                     'type': 'tel',
+                    'pattern': r'^\d{9,15}$',
                 }
             ),
             'whatsapp_number': forms.TextInput(
                 attrs={
                     'required': True,
                     'class': form_classes,
-                    'placeholder': 'ex. +62 8123456789',
-                    # 'pattern': "[+][0-9]{1,3} [0-9]{9,14}",
+                    'placeholder': 'ex. 8123456789',
                     'type': 'tel',
+                    'pattern': r'^\d{9,15}$',
                 }
             ),
             'email': forms.EmailInput(
@@ -273,3 +315,64 @@ class AddPersonForm(ModelForm):
             'passport_photo': 'صورة جواز السفر',
             'residency_photo': 'صورة الإقامة أو مايثبت تواجدك في جمهورية إندونيسيا',
         }
+
+    def clean_name_ar(self):
+        data = self.cleaned_data.get('name_ar')
+        pattern = re.compile(r'^[\u0600-\u06FF\s]+$')
+        if not pattern.match(data):
+            raise forms.ValidationError(
+                "يجب أن يحتوي هذا الحقل على أحرف عربية فقط")
+        if len(data) < 10:
+            raise forms.ValidationError(
+                "يجب أن يحتوي الاسم على 10 أحرف على الأقل")
+        return data
+
+    def clean_name_en(self):
+        data = self.cleaned_data.get('name_en')
+        pattern = re.compile(r'^[A-Za-z\s]+$')
+        if not pattern.match(data):
+            raise forms.ValidationError(
+                "يجب أن يحتوي هذا الحقل على أحرف إنجليزية فقط")
+        if len(data) < 10:
+            raise forms.ValidationError(
+                "يجب أن يحتوي الاسم على 10 أحرف على الأقل")
+        return data
+
+    def clean_place_of_birth(self):
+        data = self.cleaned_data.get('place_of_birth')
+        pattern = re.compile(r'^[\u0600-\u06FF\s,-]+$')
+        if not pattern.match(data):
+            raise forms.ValidationError(
+                "يجب كتابة مكان الميلاد باللغة العربية")
+        return data
+
+    def clean_date_of_birth(self):
+        data = self.cleaned_data.get('date_of_birth')
+        age = timezone.now().year - data.year
+        if age < 15:
+            raise forms.ValidationError("يجب أن يكون عمرك 15 عامًا على الأقل")
+        return data
+
+    def clean_call_number(self) -> str:
+        call_number: str = self.cleaned_data.get("call_number")
+        country_code: str = self.cleaned_data.get("country_code1")
+        if call_number.startswith('00') or call_number.startswith("+"):
+            raise forms.ValidationError(
+                "يجب عدم إدخال المفتاح الدولي في هذا الحقل")
+        pattern = re.compile(r'^\d{9,15}$')
+        if not pattern.match(call_number) or len(call_number) < 9:
+            raise forms.ValidationError("رقم الهاتف غير صحيح")
+
+        return f"(+{country_code}) {call_number}"
+
+    def clean_whatsapp_number(self) -> str:
+        whatsapp_number: str = self.cleaned_data.get("whatsapp_number")
+        country_code: str = self.cleaned_data.get("country_code2")
+        if whatsapp_number.startswith('00') or whatsapp_number.startswith("+"):
+            raise forms.ValidationError(
+                "يجب عدم إدخال المفتاح الدولي في هذا الحقل")
+        pattern = re.compile(r'^\d{9,15}$')
+        if not pattern.match(whatsapp_number) or len(whatsapp_number) < 9:
+            raise forms.ValidationError("رقم الهاتف غير صحيح")
+
+        return f"(+{country_code}) {whatsapp_number}"

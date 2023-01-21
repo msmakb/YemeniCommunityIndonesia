@@ -89,6 +89,11 @@ class ImageProcessor:
 
         if len(faces) == 1:
             x, y, width, height = faces[0]
+            print(width, height)
+
+            if width < 240 or height < 240:
+                raise ImageProcessingError(
+                    "صورة غير صالحة ، الرجاء اختيار صورة شخصية رسمية")
 
             left = x
             top = y

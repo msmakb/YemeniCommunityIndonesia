@@ -36,7 +36,7 @@ def isAuthenticatedUser(view_func: Callable) -> Callable:
                     case constants.GROUPS.MANAGER:
                         return redirect(constants.PAGES.DASHBOARD, "list")
                     case constants.GROUPS.MEMBER:
-                        return redirect(constants.PAGES.MEMBER_PAGE, request.user.id)
+                        return redirect(constants.PAGES.MEMBER_PAGE)
                     case _:
                         return redirect(constants.PAGES.LOGOUT)
             else:
