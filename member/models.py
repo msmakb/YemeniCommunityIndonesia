@@ -1,11 +1,12 @@
 from uuid import uuid4
-from PIL import Image
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.db import models
+from django.db.models.fields.files import ImageFieldFile
 from django.utils.timezone import datetime
 
 from main import constants
@@ -27,6 +28,14 @@ def residencyImagesDir(instance, filename):
 
 def membershipImagesDir(instance, filename):
     return settings.MEDIA_ROOT / constants.MEDIA_DIR.MEMBERSHIP_IMAGES_DIR / f"{uuid4().hex}.{filename.split('.')[-1]}"
+
+
+def validateImageSize(image: ImageFieldFile):
+    file: TemporaryUploadedFile = image.file
+    file_size: int = file.size
+    if file_size > 1_048_576:
+        raise ValidationError(
+            "حجم الصورة كبير جدا، يجب ألا يتجاوز حجم الصورة 1 ميقا بايت")
 
 
 class Academic(BaseModel):
@@ -60,7 +69,7 @@ class Membership(BaseModel):
         max_length=1, choices=constants.CHOICES.MEMBERSHIP_TYPE)
     issue_date: datetime = models.DateField(auto_now_add=True)
     expire_date: datetime = models.DateField()
-    membership_card: Image = models.ImageField(
+    membership_card: ImageFieldFile = models.ImageField(
         upload_to=membershipImagesDir, max_length=255, null=True, blank=True)
 
     def __str__(self) -> str:
@@ -108,12 +117,15 @@ class Person(BaseModel):
         max_length=20, choices=constants.CHOICES.JOB_TITLE)
     period_of_residence: str = models.CharField(
         max_length=1, choices=constants.CHOICES.PERIOD_OF_RESIDENCE)
-    photograph: Image = models.ImageField(
-        upload_to=photographsDir, max_length=255, null=True, blank=True)
-    passport_photo: Image = models.ImageField(
-        upload_to=passportDir, max_length=255)
-    residency_photo: Image = models.ImageField(
-        upload_to=residencyImagesDir, max_length=255)
+    photograph: ImageFieldFile = models.ImageField(
+        upload_to=photographsDir, validators=[validateImageSize],
+        max_length=255, null=True, blank=True)
+    passport_photo: ImageFieldFile = models.ImageField(
+        upload_to=passportDir, validators=[validateImageSize],
+        max_length=255)
+    residency_photo: ImageFieldFile = models.ImageField(
+        upload_to=residencyImagesDir, validators=[validateImageSize],
+        max_length=255)
     academic: Academic = models.ForeignKey(
         Academic, on_delete=models.SET_NULL, null=True, blank=True)
     address: Address = models.ForeignKey(
@@ -156,5 +168,7 @@ class Person(BaseModel):
                 self.photograph = ContentFile(image_io, self.photograph.name)
             except ImageProcessingError as error:
                 raise ValidationError(str(error))
+            except IOError:
+                raise ValidationError("صورة غير صالحة")
 
         return super().clean()
