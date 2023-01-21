@@ -1,3 +1,4 @@
+import os
 from typing import Any
 
 from django.contrib.auth.models import Group, User
@@ -51,13 +52,35 @@ def dashboard(request: HttpRequest, currentPage: str) -> HttpResponse:
     return render(request, constants.TEMPLATES.DASHBOARD_TEMPLATE, context)
 
 
-def memberPage(request: HttpRequest, pk: str) -> HttpResponse:
-    person: Person = Person.get(account=int(pk))
+def memberPage(request: HttpRequest) -> HttpResponse:
+    try:
+        person: Person = Person.get(account=request.user.id)
+        if not person:
+            MSG.SOMETHING_WRONG(request)
+            return redirect(constants.PAGES.LOGOUT)
+    except Person.DoesNotExist:
+        MSG.SOMETHING_WRONG(request)
+        return redirect(constants.PAGES.LOGOUT)
 
     context: dict[str, Any] = {
         'person': person
     }
     return render(request, constants.TEMPLATES.MEMBER_PAGE_TEMPLATE, context)
+
+
+def downloadMembershipCard(request: HttpRequest, pk: str) -> HttpResponse:
+    try:
+        membership: Membership = Membership.get(id=pk)
+    except Membership.DoesNotExist:
+        raise Http404
+
+    file_path = membership.membership_card.path
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as file:
+            response = HttpResponse(file.read(), content_type="image/jpg")
+            response['Content-Disposition'] = f'inline; filename={membership.card_number}.jpg'
+            return response
+    raise Http404
 
 
 def memberFormPage(request: HttpRequest) -> HttpResponse:
@@ -117,6 +140,10 @@ def memberFormPage(request: HttpRequest) -> HttpResponse:
                 MSG.TERMS_MUST_AGREE(request)
                 isAgree = False
 
+        if person_form.errors.get("__all__"):
+            person_form.add_error(
+                "photograph", person_form.errors.get("__all__"))
+
         if all(validations):
             academic_form.save()
             academic: Academic = Academic.getLastInsertedObject()
@@ -151,6 +178,9 @@ def memberFormPage(request: HttpRequest) -> HttpResponse:
                               username=request.user)
 
             return redirect(constants.PAGES.THANK_YOU_PAGE)
+
+        else:
+            MSG.FIX_ERRORS(request)
 
     context: dict[str, Any] = {
         'person_form': person_form,

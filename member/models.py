@@ -147,7 +147,7 @@ class Person(BaseModel):
                 raise ValidationError("هذا الحقل مطلوب")
             else:
                 image_io: bytes = ImageProcessor.validateAndResizePhotograph(
-                    settings.MEDIA_ROOT / constants.MEDIA_DIR.PHOTOGRAPHS_DIR / "female_no_image.jpg")
+                    settings.MEDIA_ROOT / "templates/female_no_image.jpg")
                 self.photograph = ContentFile(image_io, "no_image.jpg")
         else:
             try:

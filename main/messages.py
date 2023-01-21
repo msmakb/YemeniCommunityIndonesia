@@ -22,3 +22,5 @@ ACCEPT_MEMBERSHIP: Final[Callable[[HttpRequest], None]] = lambda request: messag
     request, "الرجاء الموافقة على العضوية واختيار نوعها لإنشاء بطاقة عضوية جديدة")
 MEMBERSHIP_MUST_GENERATED: Final[Callable[[HttpRequest], None]] = lambda request: messages.error(
     request, "يجب إنشاء بطاقة العضو أولاً للموافقة على العضوية")
+FIX_ERRORS: Final[Callable[[HttpRequest], None]] = lambda request: messages.error(
+    request, "الرجاء تصحيح الاخطاء الواردة أدناه")
