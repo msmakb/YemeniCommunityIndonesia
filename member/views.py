@@ -1,7 +1,8 @@
 import os
-from typing import Any
+from typing import Any, Callable
 
 from django.contrib.auth.models import Group, User
+from django.core.exceptions import EmptyResultSet
 from django.core.files.base import ContentFile
 from django.db.models.query import QuerySet
 from django.http import HttpRequest, HttpResponse, Http404
@@ -13,7 +14,7 @@ from main import messages as MSG
 from main.image_processing import ImageProcessor
 from main.models import AuditEntry
 from main.parameters import getParameterValue
-from main.utils import Pagination, getClientIp, getUserAgent
+from main.utils import Pagination, getClientIp, getUserAgent, exportAsCsv
 
 from .models import (Academic, Address, Membership,
                      FamilyMembers, FamilyMembersChild,
@@ -41,6 +42,81 @@ def dashboard(request: HttpRequest, currentPage: str) -> HttpResponse:
     pagination = Pagination(queryset, int(page) if page is not None else 1)
     page_obj: QuerySet[Person] = pagination.getPageObject()
     is_paginated: bool = pagination.isPaginated
+
+    if request.method == constants.POST_METHOD:
+        fields: list[str] = [
+            'name_ar',
+            'name_en',
+            'gender',
+            'place_of_birth',
+            'date_of_birth',
+            'call_number',
+            'whatsapp_number',
+            'email',
+            'job_title',
+            'period_of_residence',
+            'passport_number',
+            'academic__academic_qualification',
+            'academic__school',
+            'academic__major',
+            'academic__semester',
+            'address__street_address',
+            'address__district',
+            'address__city',
+            'address__province',
+            'address__postal_code',
+            'membership__card_number',
+            'membership__membership_type',
+            'membership__issue_date',
+            'membership__expire_date',
+            'family_members__family_name',
+            'family_members__member_count'
+        ]
+        labels_to_change: dict[str, str] = {
+            'name_ar': 'الاسم بالعربي',
+            'name_en': 'الاسم بالإنجليزي',
+            'gender': 'الجنس',
+            'place_of_birth': 'مكان الميلاد',
+            'date_of_birth': 'تاريخ الميلاد',
+            'call_number': 'رقم الهاتف (اتصال)',
+            'whatsapp_number': 'رقم الواتساب',
+            'email': 'البريد الإلكتروني',
+            'job_title': 'المسمى الوظيفي',
+            'period_of_residence': 'فترة الإقامة في إندونيسيا',
+            'passport_number': 'رقم جواز',
+            'academic__academic_qualification': 'المؤهل العلمي',
+            'academic__school': 'أسم الجامعة / معهد / مدرسة',
+            'academic__major': 'التخصص الدراسي',
+            'academic__semester': 'الفصل الدراسي',
+            'address__street_address': 'عنوان الشارع',
+            'address__district': 'المنطقة',
+            'address__city': 'المدينة',
+            'address__province': 'الولاية',
+            'address__postal_code': 'الرمز البريدي',
+            'membership__card_number': 'رقم البطاقة',
+            'membership__membership_type': 'نوع العضوية',
+            'membership__issue_date': 'تاريخ الإصدار',
+            'membership__expire_date': 'تاريخ الانتهاء',
+            'family_members__family_name': 'الأسم العائلي',
+            'family_members__member_count': 'عدد أفراد الأسرة التي يعيلها في إندونيسيا'
+        }
+        values_to_change: dict[str, Callable] = {
+            'gender': lambda gender: constants.GENDER_AR[int(gender)],
+            'job_title': lambda job_title: constants.JOB_TITLE_AR[int(job_title)],
+            'period_of_residence': lambda period_of_residence: constants.PERIOD_OF_RESIDENCE_AR[int(period_of_residence)],
+            'academic__academic_qualification': lambda academic_qualification: constants.ACADEMIC_QUALIFICATION_AR[int(academic_qualification)],
+            'membership__membership_type': lambda membership_type: constants.MEMBERSHIP_TYPE_AR[int(membership_type)],
+        }
+        try:
+            file: HttpResponse = exportAsCsv(
+                queryset=queryset,
+                fields=fields,
+                labels_to_change=labels_to_change,
+                values_to_change=values_to_change
+            )
+            return file
+        except EmptyResultSet:
+            MSG.NO_DATA(request)
 
     context: dict[str, Any] = {
         'waiting': waiting,
