@@ -1,4 +1,5 @@
 import re
+from typing import Any
 
 from django import forms
 from django.forms import ModelForm
@@ -363,7 +364,7 @@ class AddPersonForm(ModelForm):
         if not pattern.match(call_number) or len(call_number) < 9:
             raise forms.ValidationError("رقم الهاتف غير صحيح")
 
-        return f"(+{country_code}) {call_number}"
+        return call_number
 
     def clean_whatsapp_number(self) -> str:
         whatsapp_number: str = self.cleaned_data.get("whatsapp_number")
@@ -375,4 +376,10 @@ class AddPersonForm(ModelForm):
         if not pattern.match(whatsapp_number) or len(whatsapp_number) < 9:
             raise forms.ValidationError("رقم الهاتف غير صحيح")
 
-        return f"(+{country_code}) {whatsapp_number}"
+        return whatsapp_number
+
+    def clean(self) -> dict[str, Any]:
+        cleaned_data: dict[str, Any] = super().clean()
+        cleaned_data['call_number'] = f"+({cleaned_data['country_code1']}) {cleaned_data['call_number']}"
+        cleaned_data['whatsapp_number'] = f"+({cleaned_data['country_code2']}) {cleaned_data['whatsapp_number']}"
+        return cleaned_data
