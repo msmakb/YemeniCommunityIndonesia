@@ -24,3 +24,5 @@ MEMBERSHIP_MUST_GENERATED: Final[Callable[[HttpRequest], None]] = lambda request
     request, "يجب إنشاء بطاقة العضو أولاً للموافقة على العضوية")
 FIX_ERRORS: Final[Callable[[HttpRequest], None]] = lambda request: messages.error(
     request, "الرجاء تصحيح الاخطاء الواردة أدناه")
+NO_DATA: Final[Callable[[HttpRequest], None]] = lambda request: messages.warning(
+    request, "لا توجد بيانات لاستخراجها")
