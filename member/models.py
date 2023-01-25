@@ -32,11 +32,15 @@ def membershipImagesDir(instance, filename):
 
 
 def validateImageSize(image: ImageFieldFile):
-    file: TemporaryUploadedFile = image.file
-    file_size: int = file.size
-    if file_size > 1_048_576:
-        raise ValidationError(
-            "حجم الصورة كبير جدا، يجب ألا يتجاوز حجم الصورة 1 ميقا بايت")
+    try:
+        file: TemporaryUploadedFile = image.file
+        file_size: int = file.size
+        if file_size > 1_048_576:
+            raise ValidationError(
+                "حجم الصورة كبير جدا، يجب ألا يتجاوز حجم الصورة 1 ميقا بايت")
+    except FileNotFoundError:
+        # Do noting (This case will not happened by the user, the file is required)
+        pass
 
 
 class Academic(BaseModel):

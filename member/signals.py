@@ -40,10 +40,19 @@ def onUpdatePerson(sender: Person, instance: Person, raw: bool, **kwargs):
         if not raw:
             this: Person = Person.get(id=instance.id)
             if this.photograph != instance.photograph:
-                os.remove(this.photograph.path)
+                try:
+                    os.remove(this.photograph.path)
+                except FileNotFoundError:
+                    pass
             if this.passport_photo != instance.passport_photo:
-                os.remove(this.passport_photo.path)
+                try:
+                    os.remove(this.passport_photo.path)
+                except FileNotFoundError:
+                    pass
             if this.residency_photo != instance.residency_photo:
-                os.remove(this.residency_photo.path)
+                try:
+                    os.remove(this.residency_photo.path)
+                except FileNotFoundError:
+                    pass
     except Person.DoesNotExist:
         pass
