@@ -380,6 +380,6 @@ class AddPersonForm(ModelForm):
 
     def clean(self) -> dict[str, Any]:
         cleaned_data: dict[str, Any] = super().clean()
-        cleaned_data['call_number'] = f"+({cleaned_data['country_code1']}) {cleaned_data['call_number']}"
-        cleaned_data['whatsapp_number'] = f"+({cleaned_data['country_code2']}) {cleaned_data['whatsapp_number']}"
+        cleaned_data['call_number'] = f"(+{cleaned_data.get('country_code1')}) {cleaned_data.get('call_number')}"
+        cleaned_data['whatsapp_number'] = f"(+{cleaned_data.get('country_code2')}) {cleaned_data.get('whatsapp_number')}"
         return cleaned_data
