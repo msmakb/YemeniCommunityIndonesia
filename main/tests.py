@@ -888,3 +888,21 @@ class ImageFilesExistsTest(SimpleTestCase):
         path = os.path.join(settings.STATICFILES_DIRS[0],
                             "img/photo_roles.jpg")
         self.assertTrue(os.path.exists(path))
+
+
+class RemoveBackgroundTest(SimpleTestCase):
+
+    def test_remove_bg_is_ok(self):
+        # if code runs with no errors it means it's ok
+        print('\n ============= TEST REMOVE BACKGROUND PACKAGES START =============')
+        print("check 'u2net'...")
+        import rembg
+        from PIL import Image
+
+        test_image_path = os.path.join(
+            settings.MEDIA_ROOT / "templates/female_no_image.jpg")
+        test_image = Image.open(test_image_path)
+        rembg.remove(
+            test_image, session=rembg.session_factory.new_session("u2netp"))
+        print('u2net OK')
+        print('\n ============= TEST REMOVE BACKGROUND PACKAGES FINISH =============')

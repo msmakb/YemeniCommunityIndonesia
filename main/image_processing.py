@@ -17,7 +17,7 @@ E-Mail: msmabk11@gmail.com
 """
 from io import BytesIO
 from pathlib import Path
-from typing import Final
+from typing import Final, Type
 
 import arabic_reshaper
 from bidi.algorithm import get_display
@@ -25,7 +25,9 @@ import cv2
 from django.conf import settings
 import numpy
 from PIL import Image, ImageDraw, ImageFont, ImageOps
-import rembg
+from rembg import remove as RemoveBackground
+from rembg.session_factory import new_session
+from rembg.session_base import BaseSession
 
 
 class ImageProcessingError(Exception):
@@ -169,7 +171,8 @@ class ImageProcessor:
         image.putalpha(mask)
 
         # Remove background from the image
-        image = rembg.remove(image).resize((230, 230))
+        session: Type[BaseSession] = new_session("u2netp")
+        image = RemoveBackground(image, session=session).resize((230, 230))
 
         # Put the rounded cleared bg image to the membership template
         template.paste(
