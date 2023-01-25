@@ -1,3 +1,4 @@
+from os import path
 from uuid import uuid4
 
 from django.conf import settings
@@ -15,19 +16,19 @@ from main.models import BaseModel
 
 
 def photographsDir(instance, filename):
-    return settings.MEDIA_ROOT / constants.MEDIA_DIR.PHOTOGRAPHS_DIR / f"{uuid4().hex}.{filename.split('.')[-1]}"
+    return path.join(settings.MEDIA_ROOT, constants.MEDIA_DIR.PHOTOGRAPHS_DIR, f"{uuid4().hex}.{filename.split('.')[-1]}")
 
 
 def passportDir(instance, filename):
-    return settings.MEDIA_ROOT / constants.MEDIA_DIR.PASSPORTS_DIR / f"{uuid4().hex}.{filename.split('.')[-1]}"
+    return path.join(settings.MEDIA_ROOT, constants.MEDIA_DIR.PASSPORTS_DIR, f"{uuid4().hex}.{filename.split('.')[-1]}")
 
 
 def residencyImagesDir(instance, filename):
-    return settings.MEDIA_ROOT / constants.MEDIA_DIR.RESIDENCY_IMAGES_DIR / f"{uuid4().hex}.{filename.split('.')[-1]}"
+    return path.join(settings.MEDIA_ROOT, constants.MEDIA_DIR.RESIDENCY_IMAGES_DIR, f"{uuid4().hex}.{filename.split('.')[-1]}")
 
 
 def membershipImagesDir(instance, filename):
-    return settings.MEDIA_ROOT / constants.MEDIA_DIR.MEMBERSHIP_IMAGES_DIR / f"{uuid4().hex}.{filename.split('.')[-1]}"
+    return path.join(settings.MEDIA_ROOT, constants.MEDIA_DIR.MEMBERSHIP_IMAGES_DIR, f"{uuid4().hex}.{filename.split('.')[-1]}")
 
 
 def validateImageSize(image: ImageFieldFile):
