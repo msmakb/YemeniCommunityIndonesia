@@ -5,6 +5,7 @@ from typing import Final
 
 # ------------------------------------ private ------------------------------------ #
 _main_app__templates_folder: Final[str] = '.'
+_email__templates_folder: Final[str] = _main_app__templates_folder + '/email'
 _base_dir = Path(__file__).resolve().parent.parent
 with open(_base_dir / "data/cities.json", "r", encoding="utf-8") as _file:
     _cities: dict[str, str] = json.load(_file)
@@ -46,6 +47,16 @@ ACTION = _NT('str', [
     '5',
     '6',
     '7',
+)
+ACTION_STR: tuple[str, ...] = (
+    'FIRST_VISIT',
+    'LOGGED_IN',
+    'LOGGED_OUT',
+    'LOGGED_FAILED',
+    'NORMAL_POST',
+    'SUSPICIOUS_POST',
+    'ATTACK_ATTEMPT',
+    'MEMBER_FORM_POST',
 )
 BLOCK_TYPES = _NT('str', [
     'UNBLOCKED',
@@ -271,6 +282,8 @@ TEMPLATES = _NT('str', [
     'MEMBER_FORM_TEMPLATE',
     'DETAIL_MEMBER_TEMPLATE',
     'THANK_YOU_TEMPLATE',
+    'THANK_YOU_EMAIL_TEMPLATE',
+    'APPROVE_MEMBER_EMAIL_TEMPLATE',
 ])(
     # Main templates
     f'{_main_app__templates_folder}/index.html',
@@ -283,6 +296,8 @@ TEMPLATES = _NT('str', [
     f'{_main_app__templates_folder}/member_form.html',
     f'{_main_app__templates_folder}/detail_member.html',
     f'{_main_app__templates_folder}/thank_you.html',
+    f'{_email__templates_folder}/thank_you_email.html',
+    f'{_email__templates_folder}/approve_member_email.html',
 )
 PARAMETERS = _NT('str', [
     "ALLOWED_LOGGED_IN_ATTEMPTS",
@@ -295,6 +310,7 @@ PARAMETERS = _NT('str', [
     "MEMBERSHIP_EXPIRE_PERIOD",
     "THREE_CHARACTER_PREFIX_FOR_MEMBERSHIP",
     "MEMBER_FORM_POST_LIMIT",
+    "IMAGE_MAX_SIZE",
 ])(
     "ALLOWED_LOGGED_IN_ATTEMPTS",
     "ALLOWED_LOGGED_IN_ATTEMPTS_RESET",
@@ -306,6 +322,7 @@ PARAMETERS = _NT('str', [
     "MEMBERSHIP_EXPIRE_PERIOD",
     "THREE_CHARACTER_PREFIX_FOR_MEMBERSHIP",
     "MEMBER_FORM_POST_LIMIT",
+    "IMAGE_MAX_SIZE",
 )
 PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {
     GROUPS.MANAGER: (

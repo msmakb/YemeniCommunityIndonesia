@@ -329,7 +329,7 @@ class AddPersonForm(ModelForm):
         return data
 
     def clean_name_en(self):
-        data = self.cleaned_data.get('name_en')
+        data: str = self.cleaned_data.get('name_en')
         pattern = re.compile(r'^[A-Za-z\s]+$')
         if not pattern.match(data):
             raise forms.ValidationError(
@@ -337,7 +337,7 @@ class AddPersonForm(ModelForm):
         if len(data) < 10:
             raise forms.ValidationError(
                 "يجب أن يحتوي الاسم على 10 أحرف على الأقل")
-        return data
+        return data.title()
 
     def clean_place_of_birth(self):
         data = self.cleaned_data.get('place_of_birth')
@@ -356,10 +356,11 @@ class AddPersonForm(ModelForm):
 
     def clean_call_number(self) -> str:
         call_number: str = self.cleaned_data.get("call_number")
-        country_code: str = self.cleaned_data.get("country_code1")
         if call_number.startswith('00') or call_number.startswith("+"):
             raise forms.ValidationError(
                 "يجب عدم إدخال المفتاح الدولي في هذا الحقل")
+        if call_number.startswith('0'):
+            call_number = call_number[1:]
         pattern = re.compile(r'^\d{9,15}$')
         if not pattern.match(call_number) or len(call_number) < 9:
             raise forms.ValidationError("رقم الهاتف غير صحيح")
@@ -368,10 +369,11 @@ class AddPersonForm(ModelForm):
 
     def clean_whatsapp_number(self) -> str:
         whatsapp_number: str = self.cleaned_data.get("whatsapp_number")
-        country_code: str = self.cleaned_data.get("country_code2")
         if whatsapp_number.startswith('00') or whatsapp_number.startswith("+"):
             raise forms.ValidationError(
                 "يجب عدم إدخال المفتاح الدولي في هذا الحقل")
+        if whatsapp_number.startswith('0'):
+            whatsapp_number = whatsapp_number[1:]
         pattern = re.compile(r'^\d{9,15}$')
         if not pattern.match(whatsapp_number) or len(whatsapp_number) < 9:
             raise forms.ValidationError("رقم الهاتف غير صحيح")

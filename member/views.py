@@ -1,12 +1,15 @@
 import os
 from typing import Any, Callable
 
+from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.core.exceptions import EmptyResultSet
 from django.core.files.base import ContentFile
+from django.core.mail import EmailMessage
 from django.db.models.query import QuerySet
 from django.http import HttpRequest, HttpResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
+from django.template.loader import render_to_string
 from django.utils import timezone
 
 from main import constants
@@ -253,6 +256,25 @@ def memberFormPage(request: HttpRequest) -> HttpResponse:
                               action=constants.ACTION.MEMBER_FORM_POST,
                               username=request.user)
 
+            if settings.MAILING_IS_ACTIVE:
+                try:
+                    email: EmailMessage = EmailMessage(
+                        "شكراً على المساهمة",
+                        render_to_string(
+                            constants.TEMPLATES.THANK_YOU_EMAIL_TEMPLATE,
+                            {
+                                "name": person.name_ar,
+                                "is_request_membership": person.is_request_membership
+                            }
+                        ),
+                        settings.EMAIL_HOST_USER,
+                        [person.email]
+                    )
+                    email.fail_silently = False
+                    email.send()
+                except Exception:
+                    pass
+
             return redirect(constants.PAGES.THANK_YOU_PAGE)
 
         else:
@@ -341,6 +363,10 @@ def detailMember(request: HttpRequest, pk: str) -> HttpResponse:
                 MSG.PASSPORT_NUMBER_ERROR(request)
                 return redirect(constants.PAGES.DETAIL_MEMBER_PAGE, person.id)
 
+            if Person.isExists(passport_number=passport_number) and person.passport_number != passport_number:
+                MSG.PASSPORT_NUMBER_EXISTS(request)
+                return redirect(constants.PAGES.DETAIL_MEMBER_PAGE, person.id)
+
             if request.POST.get('membership') == "1":
                 if not person.membership:
                     MSG.MEMBERSHIP_MUST_GENERATED(request)
@@ -362,6 +388,30 @@ def detailMember(request: HttpRequest, pk: str) -> HttpResponse:
                 person.save()
                 Group.objects.get(name=constants.GROUPS.MEMBER).user_set.add(
                     person.account)
+
+                if settings.MAILING_IS_ACTIVE:
+                    email: EmailMessage = EmailMessage(
+                        "قَبُول تسجيل الجالية اليمنية في إندونيسيا",
+                        render_to_string(
+                            constants.TEMPLATES.APPROVE_MEMBER_EMAIL_TEMPLATE,
+                            {
+                                "name": person.name_ar,
+                                "hasMembership": True if person.membership else False,
+                                "username": person.passport_number,
+                                "password": str(person.date_of_birth).replace('-', '')
+                            }
+                        ),
+                        settings.EMAIL_HOST_USER,
+                        [person.email]
+                    )
+                    email.fail_silently = False
+                    if person.membership:
+                        email.attach(
+                            person.membership.card_number,
+                            person.membership.membership_card.file.read(),
+                            'image/jpeg'
+                        )
+                    email.send()
 
                 return redirect(constants.PAGES.DASHBOARD, "Approve")
             else:

@@ -126,7 +126,7 @@
                 <td>{{ page_obj.start_index|add:forloop.counter0 }}</td>
                 <td>{{ person.name_ar }}</td>
                 <td>{{ person.address.city }}</td>
-                <td>{{ person.job_title }}</td>
+                <td>{{ person.getJobTitle }}</td>
                 <td>{{ person.whatsapp_number }}</td>
                 {% if currentPage|lower == "list" %}
                 <td>{% if person.membership %} نعم {% else %} لا {% endif %}</td>

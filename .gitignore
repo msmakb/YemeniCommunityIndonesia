@@ -3,6 +3,7 @@
 accounting_manager/__pycache__/
 accounting_manager/migrations/__pycache__/
 core/__pycache__/
+core/settings/__pycache__/
 main/__pycache__/
 main/migrations/__pycache__/
 main/templatetags/__pycache__/

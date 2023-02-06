@@ -68,7 +68,7 @@ class FamilyMembersWifeAdmin(ModelAdmin):
 
 @register(Person)
 class PersonAdmin(ModelAdmin):
-    list_display: tuple[str, ...] = ('name_ar', 'name_en', 'gender', 'place_of_birth',
+    list_display: tuple[str, ...] = ('id', 'name_ar', 'name_en', 'gender', 'place_of_birth',
                                      'date_of_birth', 'call_number', 'whatsapp_number',
                                      'email', 'job_title', 'period_of_residence', 'photograph',
                                      'passport_photo', 'residency_photo', 'academic', 'address',

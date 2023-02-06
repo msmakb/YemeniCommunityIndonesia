@@ -2,13 +2,13 @@ from django.contrib.admin import ModelAdmin, register
 from django.db.models.query import QuerySet
 from django.http import HttpRequest
 
-from .constants import BASE_MODEL_FIELDS, ROWS_PER_PAGE, ACCESS_TYPE, BLOCK_TYPES
+from .constants import BASE_MODEL_FIELDS, ROWS_PER_PAGE, ACCESS_TYPE, BLOCK_TYPES, ACTION
 from .models import AuditEntry, BlockedClient, Parameter
 
 
 @register(AuditEntry)
 class AuditEntryAdmin(ModelAdmin):
-    list_display: tuple[str, ...] = ('action', 'user_agent', 'username', 'ip',
+    list_display: tuple[str, ...] = ('action_type', 'user_agent', 'username', 'ip',
                                      *BASE_MODEL_FIELDS)
     list_filter: tuple[str, ...] = ('action', 'created',)
     search_fields: tuple[str, ...] = ('action', 'user_agent', 'username', 'ip')

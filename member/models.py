@@ -1,3 +1,4 @@
+from io import BytesIO
 from os import path
 from uuid import uuid4
 
@@ -10,9 +11,13 @@ from django.db import models
 from django.db.models.fields.files import ImageFieldFile
 from django.utils.timezone import datetime
 
+from PIL import Image as Img
+from PIL.Image import Image
+
 from main import constants
 from main.image_processing import ImageProcessingError, ImageProcessor
 from main.models import BaseModel
+from main.parameters import getParameterValue
 
 
 def photographsDir(instance, filename):
@@ -35,9 +40,10 @@ def validateImageSize(image: ImageFieldFile):
     try:
         file: TemporaryUploadedFile = image.file
         file_size: int = file.size
-        if file_size > 1_048_576:
+        max_size: int = getParameterValue(constants.PARAMETERS.IMAGE_MAX_SIZE)
+        if file_size > 1_048_576 * max_size:
             raise ValidationError(
-                "حجم الصورة كبير جدا، يجب ألا يتجاوز حجم الصورة 1 ميقا بايت")
+                f"حجم الصورة كبير جدا، يجب ألا يتجاوز حجم الصورة {max_size} ميقا بايت")
     except FileNotFoundError:
         # Do noting (This case will not happened by the user, the file is required)
         pass
@@ -159,13 +165,20 @@ class Person(BaseModel):
         return constants.PERIOD_OF_RESIDENCE_AR[int(self.period_of_residence)]
 
     def clean(self) -> None:
+        if self.pk and self.__class__.get(pk=self.pk).photograph.name == self.photograph.name:
+            return super().clean()
         if not self.photograph:
             if self.gender == constants.GENDER.MALE:
                 raise ValidationError("هذا الحقل مطلوب")
             else:
-                image_io: bytes = ImageProcessor.validateAndResizePhotograph(
-                    settings.MEDIA_ROOT / "templates/female_no_image.jpg")
-                self.photograph = ContentFile(image_io, "no_image.jpg")
+                image_path: str = settings.MEDIA_ROOT / "templates/female_no_image.jpg"
+                image: Image = Img.open(image_path)
+                image_io: BytesIO = BytesIO()
+                image = image.convert('RGB')
+                image.save(image_io, format="JPEG", quality=85)
+                image.close()
+                self.photograph = ContentFile(
+                    image_io.getvalue(), "no_image.jpg")
         else:
             try:
                 image_io: bytes = ImageProcessor.validateAndResizePhotograph(
