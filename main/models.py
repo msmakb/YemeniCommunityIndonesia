@@ -155,6 +155,10 @@ class AuditEntry(Client):
     def __str__(self):
         return f'{self.action} - {self.username} - {self.ip}'
 
+    @property
+    def action_type(self) -> str:
+        return constants.ACTION_STR[int(self.action)].replace('_', ' ').capitalize()
+
     def setAction(self, action: str) -> None:
         self.action = action
         self.save()

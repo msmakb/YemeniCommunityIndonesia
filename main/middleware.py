@@ -35,12 +35,6 @@ class AllowedClientMiddleware(object):
         self.requester_agent: str = None
         self.user: str = None
         self.last_audit_entry: QuerySet[AuditEntry] = None
-        if settings.DEBUG:
-            from .cron import setMagicNumber
-            from .parameters import _saveDefaultParametersToDataBase
-
-            setMagicNumber()
-            _saveDefaultParametersToDataBase()
 
     def __call__(self, request: HttpRequest) -> HttpResponse | HttpResponsePermanentRedirect | HttpResponseForbidden:
         self.request = request

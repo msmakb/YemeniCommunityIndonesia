@@ -16,6 +16,9 @@ TERMS_MUST_AGREE: Final[Callable[[HttpRequest], None]] = lambda request: message
     request, "إذا كنت ترغب في أن تصبح عضوًا ، يجب أن توافق على جميع شروط العضوية")
 PASSPORT_NUMBER_ERROR: Final[Callable[[HttpRequest], None]] = lambda request: messages.error(
     request, "يجب عليك إدخال رقم جواز السفر الصحيح لتأكيد السجل ، أو إدخال معرف السجل الصحيح للرفض")
+PASSPORT_NUMBER_EXISTS: Final[Callable[[HttpRequest], None]] = lambda request: messages.error(
+    request, "رقم جواز السفر الذي أدخلته مسجل بالفعل في قاعدة البيانات،"
+    + " يرجى التأكد من تسجيل هذا الشخص من قبل أو التأكد من صحة الرقم الذي أدخلته")
 MEMBERSHIP_FORM_POST_LIMIT: Final[Callable[[HttpRequest], None]] = lambda request: messages.warning(
     request, "لقد وصلت إلى الحد الأقصى لعدد الإدخالات لهذا النموذج ، يرجى المحاولة مرة أخرى في وقت لاحق")
 ACCEPT_MEMBERSHIP: Final[Callable[[HttpRequest], None]] = lambda request: messages.error(
