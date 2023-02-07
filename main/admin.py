@@ -2,7 +2,7 @@ from django.contrib.admin import ModelAdmin, register
 from django.db.models.query import QuerySet
 from django.http import HttpRequest
 
-from .constants import BASE_MODEL_FIELDS, ROWS_PER_PAGE, ACCESS_TYPE, BLOCK_TYPES, ACTION
+from .constants import BASE_MODEL_FIELDS, ROWS_PER_PAGE, ACCESS_TYPE, BLOCK_TYPES
 from .models import AuditEntry, BlockedClient, Parameter
 
 
