@@ -11,7 +11,7 @@ from django.utils import timezone
 from member.models import Person
 
 from . import constants
-from .google import GoogleDriveService, FileResources, MIME_TYPE, FILE_TYPE
+from .google import GoogleDriveService, FileResources, MIME_TYPE
 from .models import AuditEntry, Parameter
 from .parameters import getParameterValue
 

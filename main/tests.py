@@ -565,7 +565,7 @@ class AuditEntryAdminTest(TestCase):
             ip='1.2.3.4', username='testuser', action='test action')
 
     def test_list_display(self):
-        self.assertEqual(self.admin.list_display, ('action', 'user_agent', 'username', 'ip',
+        self.assertEqual(self.admin.list_display, ('action_type', 'user_agent', 'username', 'ip',
                                                    'created', 'updated'))
 
     def test_list_filter(self):

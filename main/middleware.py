@@ -4,7 +4,6 @@ from logging import Logger
 import re
 from typing import Callable
 
-from django.conf import settings
 from django.contrib.auth import logout
 from django.db.models.query import QuerySet
 from django.http import (HttpResponsePermanentRedirect,
