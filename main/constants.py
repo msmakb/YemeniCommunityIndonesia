@@ -104,9 +104,9 @@ LOGGERS = _NT('str', [
     'MIDDLEWARE',
     'MODELS',
 ])(
-    'HoneyHome.Main',
-    'HoneyHome.Middleware',
-    'HoneyHome.Models',
+    'YCI.Main',
+    'YCI.Middleware',
+    'YCI.Models',
 )
 GENDER = _NT('str', [
     'MALE',
