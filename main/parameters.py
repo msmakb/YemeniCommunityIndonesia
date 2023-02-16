@@ -122,6 +122,15 @@ def _getDefaultParam() -> list[_DefaultParameter]:
     )
     default_parameters.append(
         _DefaultParameter(
+            name="REMOVE_BG_API_KEY",
+            value="None",
+            description="Remove background API key.",
+            access_type=ACCESS_TYPE.ADMIN_ACCESS,
+            parameter_type=DATA_TYPE.STRING
+        )
+    )
+    default_parameters.append(
+        _DefaultParameter(
             name="TEST",
             value="TEST_PARAMETER",
             description="Just for testing propose.",

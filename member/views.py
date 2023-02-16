@@ -14,7 +14,7 @@ from django.utils import timezone
 
 from main import constants
 from main import messages as MSG
-from main.image_processing import ImageProcessor
+from main.image_processing import ImageProcessor, ImageProcessingError
 from main.models import AuditEntry
 from main.parameters import getParameterValue
 from main.utils import Pagination, getClientIp, getUserAgent, exportAsCsv
@@ -319,40 +319,40 @@ def detailMember(request: HttpRequest, pk: str) -> HttpResponse:
                 MSG.SOMETHING_WRONG(request)
                 return redirect(constants.PAGES.DETAIL_MEMBER_PAGE, person.id)
 
-            if person.membership:
-                membership = person.membership
-                person.membership = None
-                person.save()
-                membership.delete()
-
             idNum: str = str(person.id)
-            membership: Membership = Membership.create(
-                card_number=getParameterValue(constants.PARAMETERS.THREE_CHARACTER_PREFIX_FOR_MEMBERSHIP
-                                              ) + ('0' * (7 - len(idNum))) + idNum,
-                membership_type=membership_type,
-                expire_date=(timezone.now().date().replace(
-                    year=timezone.now().year + getParameterValue(constants.PARAMETERS.MEMBERSHIP_EXPIRE_PERIOD)))
-            )
+            membership: Membership = Membership()
+            membership.card_number = getParameterValue(
+                constants.PARAMETERS.THREE_CHARACTER_PREFIX_FOR_MEMBERSHIP) + ('0' * (7 - len(idNum))) + idNum
+            membership.membership_type = membership_type
+            membership.expire_date = (timezone.now().date().replace(year=timezone.now(
+            ).year + getParameterValue(constants.PARAMETERS.MEMBERSHIP_EXPIRE_PERIOD)))
+            try:
+                image_io: bytes = ImageProcessor.generateMembershipCardImage(
+                    person.photograph,
+                    person.name_ar,
+                    person.name_en,
+                    person.address.getCityAr,
+                    person.address.city,
+                    membership.getMembershipType,
+                    membership.getMembershipTypeEnglish,
+                    str(timezone.now().date()),
+                    str(membership.expire_date),
+                    membership.card_number
+                )
+                membership.membership_card = ContentFile(
+                    image_io, "membership.jpg")
+            except ImageProcessingError as error:
+                MSG.SOMETHING_WRONG(request)
+                MSG.ERROR_MESSAGE(request, str(error))
+                MSG.SCREENSHOT(request)
+                return redirect(constants.PAGES.DETAIL_MEMBER_PAGE, person.id)
 
+            if person.membership:
+                person.membership.delete()
+
+            membership.save()
             person.membership = membership
             person.save()
-
-            image_io: bytes = ImageProcessor.generateMembershipCardImage(
-                person.photograph,
-                person.name_ar,
-                person.name_en,
-                person.address.getCityAr,
-                person.address.city,
-                person.membership.getMembershipType,
-                person.membership.getMembershipTypeEnglish,
-                str(person.membership.issue_date),
-                str(person.membership.expire_date),
-                person.membership.card_number
-            )
-
-            membership.membership_card = ContentFile(
-                image_io, "membership.jpg")
-            membership.save()
 
             return redirect(constants.PAGES.DETAIL_MEMBER_PAGE, person.id)
 
