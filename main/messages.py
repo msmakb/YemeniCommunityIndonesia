@@ -29,3 +29,7 @@ FIX_ERRORS: Final[Callable[[HttpRequest], None]] = lambda request: messages.erro
     request, "الرجاء تصحيح الاخطاء الواردة أدناه")
 NO_DATA: Final[Callable[[HttpRequest], None]] = lambda request: messages.warning(
     request, "لا توجد بيانات لاستخراجها")
+SCREENSHOT: Final[Callable[[HttpRequest], None]] = lambda request: messages.info(
+    request, "يرجى أخذ لقطة شاشة وإرسالها إلى المطور")
+ERROR_MESSAGE: Final[Callable[[HttpRequest, str], None]] = lambda request, message: messages.error(
+    request, message)

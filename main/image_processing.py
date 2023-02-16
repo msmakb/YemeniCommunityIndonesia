@@ -20,10 +20,11 @@ import os
 
 from io import BytesIO
 from pathlib import Path
-from typing import Final, Type
+from typing import Final
 from tempfile import NamedTemporaryFile as TemporaryFile
 
 import arabic_reshaper
+import requests
 import cairo
 import cv2
 
@@ -38,9 +39,8 @@ from PIL import ImageFont, ImageOps
 from PIL.Image import Image
 from PIL.ImageDraw import ImageDraw
 
-from rembg import remove as RemoveBackground
-from rembg.session_factory import new_session
-from rembg.session_base import BaseSession
+from main.constants import PARAMETERS
+from main.parameters import getParameterValue
 
 
 class ImageProcessingError(Exception):
@@ -185,9 +185,28 @@ class ImageProcessor:
             image, mask.size, centering=(0.5, 0.5))
         image.putalpha(mask)
 
-        # Remove background from the image
-        session: Type[BaseSession] = new_session("u2netp")
-        image = RemoveBackground(image, session=session).resize((230, 230))
+        # Request remove background image from 'remove.bg' website
+        api_key: str = getParameterValue(PARAMETERS.REMOVE_BG_API_KEY)
+        if api_key != "None":
+            image_io: BytesIO = BytesIO()
+            image = image.convert('RGBA')
+            image.save(image_io, format="PNG", quality=85)
+            response = requests.post(
+                'https://api.remove.bg/v1.0/removebg',
+                files={'image_file': image_io.getvalue()},
+                data={'size': 'auto'},
+                headers={'X-Api-Key': api_key},
+            )
+            if response.status_code == requests.codes.ok:
+                image: Image = Img.open(
+                    BytesIO(response.content)
+                ).resize((230, 230))
+            else:
+                raise ImageProcessingError(
+                    f"Response Code: {response.status_code} - Error: {response.text}"
+                )
+        else:
+            image = image.resize((230, 230))
 
         # Put the rounded cleared bg image to the membership template
         template.paste(
