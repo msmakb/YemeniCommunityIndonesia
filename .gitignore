@@ -10,3 +10,7 @@ main/templatetags/__pycache__/
 member/migrations/__pycache__/
 member/__pycache__/
 static/static_collection/
+db.sqlite3
+main/migrations/0*.py
+member/migrations/0*.py
+media/documents/*
