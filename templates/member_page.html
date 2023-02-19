@@ -13,7 +13,7 @@
         <a href="{% url 'Download-Membership' person.membership.id %}" class="btn btn-md btn-success mt-2"
             download>تحميل بطاقة العضوية</a>
         <div class="col col-md-6 d-block center">
-            <img class="my-4 w-100" src="{{ person.membership.membership_card.url }}">
+            <img class="my-4 w-100" src="{% url 'Download-Membership' person.membership.id %}">
         </div>
     </div>
 </div>
