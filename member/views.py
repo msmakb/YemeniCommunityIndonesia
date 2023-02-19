@@ -148,11 +148,17 @@ def memberPage(request: HttpRequest) -> HttpResponse:
 
 
 def downloadMembershipCard(request: HttpRequest, pk: str) -> HttpResponse:
+    if not request.user.is_authenticated:
+        return redirect(constants.PAGES.UNAUTHORIZED_PAGE)
     try:
         membership: Membership = Membership.get(id=pk)
-    except Membership.DoesNotExist:
+        person: Person = Person.get(account=request.user)
+    except (Membership.DoesNotExist, Person.DoesNotExist):
         raise Http404
 
+    if person.membership != membership:
+        return redirect(constants.PAGES.UNAUTHORIZED_PAGE)
+    
     file_path = membership.membership_card.path
     if os.path.exists(file_path):
         with open(file_path, 'rb') as file:

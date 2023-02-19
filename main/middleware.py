@@ -300,6 +300,9 @@ class AllowedUserMiddleware:
     def __call__(self, request: HttpRequest) -> HttpResponse:
         self.request = request
         response: HttpResponse = self.get_response(request)
+        # Media allowed for staff only
+        if request.path.startswith('/media/') and (not request.user.is_authenticated or not request.user.is_staff):
+            return HttpResponseForbidden()
 
         return response
 
