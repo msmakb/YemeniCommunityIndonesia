@@ -643,12 +643,12 @@ class AddPersonFormTest(TestCase):
         form = AddPersonForm(data=self.data, files=self.files)
         self.assertTrue(form.is_valid())
 
-    def test_form_date_of_birth_under_15_years(self):
-        self.data['date_of_birth'] = '2010-01-01'
+    def test_form_date_of_birth_under_18_years(self):
+        self.data['date_of_birth'] = '2008-01-01'
         form = AddPersonForm(data=self.data, files=self.files)
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors.get('date_of_birth'), [
-            "يجب أن يكون عمرك 15 عامًا على الأقل"])
+            "يجب أن يكون عمرك 18 عامًا على الأقل"])
 
     def test_form_date_of_birth_valid_age(self):
         self.data['date_of_birth'] = '1970-01-01'

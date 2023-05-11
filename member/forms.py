@@ -350,8 +350,8 @@ class AddPersonForm(ModelForm):
     def clean_date_of_birth(self):
         data = self.cleaned_data.get('date_of_birth')
         age = timezone.now().year - data.year
-        if age < 15:
-            raise forms.ValidationError("يجب أن يكون عمرك 15 عامًا على الأقل")
+        if age < 18:
+            raise forms.ValidationError("يجب أن يكون عمرك 18 عامًا على الأقل")
         return data
 
     def clean_call_number(self) -> str:
