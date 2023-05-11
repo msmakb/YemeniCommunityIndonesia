@@ -454,9 +454,9 @@ $("input, select").on("blur", function () {
         let dateOfBirth = new Date($(this).val());
         let currentDate = new Date();
         let age = currentDate.getFullYear() - dateOfBirth.getFullYear();
-        if (age < 15) {
+        if (age < 18) {
             $(this).after(
-                "<span class='validationError'>يجب أن يكون عمرك 15 عامًا على الأقل</span>"
+                "<span class='validationError'>يجب أن يكون عمرك 18 عامًا على الأقل</span>"
             );
             hasError = true;
         }

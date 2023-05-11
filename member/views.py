@@ -417,7 +417,10 @@ def detailMember(request: HttpRequest, pk: str) -> HttpResponse:
                             person.membership.membership_card.file.read(),
                             'image/jpeg'
                         )
-                    email.send()
+                    try:
+                        email.send()
+                    except Exception:
+                        pass
 
                 return redirect(constants.PAGES.DASHBOARD, "Approve")
             else:
