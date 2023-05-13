@@ -51,8 +51,8 @@ class ImageProcessor:
 
     @staticmethod
     def validateAndResizePhotograph(fp: str | bytes | Path) -> bytes:
-        EXPECTED_WIDTH: Final[int] = 600
-        EXPECTED_HIGHT: Final[int] = 600
+        EXPECTED_WIDTH: Final[int] = 400
+        EXPECTED_HIGHT: Final[int] = 400
         # higher is better, but coste more processing
         RESIZE_ACCURACY: Final[int] = 10
         CASCADE_PATH: Final[Path] = Path(cv2.__file__).parent.absolute(
@@ -98,13 +98,13 @@ class ImageProcessor:
         if len(faces) == 1:
             x, y, width, height = faces[0]
 
-            if width < 240 or height < 240:
+            if width < 160 or height < 160:
                 image.close()
                 raise ImageProcessingError(
                     "الصورة بعيدة جدًا، يرجى اختيار صورة شخصية رسمية")
-            if width > 300 or height > 300:
+            if width > 270 or height > 270:
                 image.close()
-                if abs(size[0] - size[1]) > 100:
+                if abs(size[0] - size[1]) > 70:
                     raise ImageProcessingError(
                         "الصورة قريبة جدًا ، يرجى التأكد من أن الطول مساوٍ للعرض أو قريب منه")
                 raise ImageProcessingError(

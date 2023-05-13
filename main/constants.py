@@ -184,12 +184,12 @@ MEMBERSHIP_TYPE = _NT('str', [
 MEMBERSHIP_TYPE_EN: Final[tuple[str, ...]] = (
     'STUDENT',
     'INVESTOR',
-    'EMPLOYER',
+    'EMPLOYEE',
 )
 MEMBERSHIP_TYPE_AR: Final[tuple[str, ...]] = (
     'طالب',
     'مستثمر',
-    'موضف',
+    'موظف',
 )
 PERIOD_OF_RESIDENCE = _NT('str', [
     'LEES_THAN_SIX_MONTHS',
