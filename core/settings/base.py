@@ -13,6 +13,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'main.apps.MainConfig',
     'member.apps.MemberConfig',
+    'broadcast.apps.BroadcastConfig',
 
     # Third party apps
     'django_crontab',
