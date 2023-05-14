@@ -195,7 +195,7 @@ def memberFormPage(request: HttpRequest) -> HttpResponse:
                     validFamilyMembers = False
                     MSG.SOMETHING_WRONG(request)
             if name:
-                partner_list.append((name, int(age)))
+                partner_list.append((name, None if not age else int(age)))
 
         for i in range(10):
             name: str = request.POST.get(f"child_name{i}")
@@ -413,7 +413,7 @@ def detailMember(request: HttpRequest, pk: str) -> HttpResponse:
                     email.fail_silently = False
                     if person.membership:
                         email.attach(
-                            person.membership.card_number,
+                            person.membership.card_number + '.jpg',
                             person.membership.membership_card.file.read(),
                             'image/jpeg'
                         )

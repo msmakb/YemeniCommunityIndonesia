@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <h1 class="col m-3">تفاصيل البرودكاست</h1>
+        <a class="col-2 btn btn-lg btn-warning my-3 shadow rounded" href="{% url 'UpdateBroadcastPage' broadcast.id %}"
+            style="float: left; margin-left: 35px;">
+            تعديل
+        </a>
+        <a class="col-2 btn btn-lg btn-info my-3 shadow rounded" href="{% url 'BroadcastPage' %}"
+            style="float: left; margin-left: 35px;">
+            رجوع
+        </a>
+    </div>
+
+    <table class="table table-striped text-left m-auto shadow rounded">
+        <tbody>
+            <tr>
+                <td class="col-1">الموضوع</td>
+                <td class="col-1">{{ broadcast.subject }}</td>
+            </tr>
+            <tr>
+                <td class="col-1">محتوى البرودكاست</td>
+                <td class="col-2">
+                    <textarea class="col-12 bg-transparent border-0" rows="10" readonly>{{ broadcast.body }}</textarea>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-1">عدد المستلمين</td>
+                <td class="col-1">{{ broadcast.recipientsCount|apnumber }}</td>
+            </tr>
+            <tr>
+                <td class="col-1">تم الإرسال</td>
+                <td class="col-1">
+                    {% if broadcast.is_broadcasted %}
+                    <img style="width: 20px; height:auto;" src="{% static 'admin/img/icon-yes.svg' %}" alt="Treu">
+                    {% else %}
+                    <img style="width: 20px; height:auto;" src="{% static 'admin/img/icon-no.svg' %}" alt="Treu">
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td class="col-1">تاريخ آخر برودكاست</td>
+                <td class="col-1">
+                    {% if broadcast.is_broadcasting %}
+                    قيد المعالجة
+                    {% else %}
+                    {% if broadcast.broadcast_date %}
+                    {{ broadcast.broadcast_date|naturaltime }}
+                    {% else %}-{% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td class="col-1">تاريخ الإنشاء</td>
+                <td class="col-1">{{ broadcast.created }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="row mt-4">
+        <h1 class="col m-3">المُرفقات</h1>
+        <a class="col-2 btn btn-lg btn-success my-3 shadow rounded" href="{% url 'AddAttachmentPage' broadcast.id %}"
+            style="float: left; margin-left: 35px;">
+            إضافة ملف
+        </a>
+    </div>
+    {% if broadcast.has_attachment %}
+    <table class="table table-striped text-left m-auto shadow rounded">
+        <tbody>
+            {% for attachment in attachments %}
+            <tr>
+                <td class="col-11">
+                    <a href="{{ attachment.content.url }}"
+                        class="link-success link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+                        <span class="p-2">
+                            <img class="card-img-top object-fit-cover" style="width: 32px; height: 32px;"
+                                src="{% static 'ico/'|add:attachment.file_extension %}.ico">
+                        </span>
+                        <span>
+                            {{ attachment.file_name }}
+                        </span>
+                    </a>
+                </td>
+                <td class="col-1">
+                    <a href="{% url 'DeleteAttachmentPage' attachment.id %}"
+                        class="text-danger link-underline-opacity-25 link-underline-opacity-100-hover"
+                        onclick="return confirm('هل أنت متأكد من حذف هذا الملف تمامًا؟\nاسم الملف: {{ attachment.file_name}}')">
+                        حذف الملف
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <h4 class="lead">لم يتم إرفاق أي ملفات</h4>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="row mt-4">
+            <h1 class="col m-3">برودكاست</h1>
+        </div>
+
+        <div class="form-group">
+            <label class="mt-3 lead" for="is-test-broadcast">
+                برودكاست تجريبي
+            </label>
+            <select id="is-test-broadcast" name="is-test-broadcast" class="form-select mt-1 w-25 shadow-sm rounded"
+                onchange="broadcastChange()">
+                <option value="0">لا</option>
+                <option value="1">نعم</option>
+            </select>
+        </div>
+        <div class="form-group" id="test-email" style="display: none;">
+            <label class="mt-3 lead" for="test-email">
+                الإيميل التجريبي
+            </label>
+            <input type="email" name="email" class="form-control mt-1 w-50 shadow-sm rounded">
+        </div>
+        <div class="mt-4">
+            <button type="submit" id="test-broadcast" name="test-broadcast"
+                class="btn btn-lg btn-success my-3 shadow rounded" style="display: none;">
+                برودكاست تجريبي
+            </button>
+            <button type="submit" id="push-broadcast" name="push-broadcast"
+                onclick="return confirm('هل أنت واثق من رغبتك في إرسال هذا البرودكاست إلى {{ broadcast.recipientsCount }} أشخاص؟')"
+                class="btn btn-lg btn-danger my-3 shadow rounded" {% if broadcast.is_broadcasting %}disabled{% endif %}>
+                برودكاست
+            </button>
+        </div>
+
+    </form>
+    <br><br>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    function broadcastChange() {
+        let selectVal = document.getElementById("is-test-broadcast").value;
+        if (selectVal == "0") {
+            document.getElementById("test-email").style.display = "none";
+            document.getElementById("test-broadcast").style.display = "none";
+            document.getElementById("push-broadcast").style.display = "block";
+        }
+        if (selectVal == "1") {
+            document.getElementById("test-email").style.display = "block";
+            document.getElementById("test-broadcast").style.display = "block";
+            document.getElementById("push-broadcast").style.display = "none";
+        }
+    }
+</script>
+{% endblock scripts %}
