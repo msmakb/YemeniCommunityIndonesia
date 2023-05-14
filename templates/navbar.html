@@ -13,6 +13,12 @@
         <a class="nav-link {% if request.path == index %}active{% endif %}" href="{% url 'Index' %}">الصفحة
           الرئيسية</a>
       </li>
+      {% if request.user.is_authenticated and request.user.groups.all.0.name == "Manager" %}
+      <li class="nav-item">
+        {% url 'BroadcastPage' as broadcastPage %}
+        <a class="nav-link {% if request.path == broadcastPage %}active{% endif %}" href="{% url 'BroadcastPage' %}">برودكاست</a>
+      </li>
+      {% endif %}
       <li class="nav-item">
         {% url 'MembershipTerms' as membershipTerms %}
         <a class="nav-link {% if request.path == membershipTerms %}active{% endif %}"

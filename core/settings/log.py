@@ -92,5 +92,10 @@ LOGGING = {
             'level': LOGGING_LEVEL,
             'propagate': False,
         },
+        LOGGERS.BROADCAST: {
+            'handlers': HANDLERS,
+            'level': LOGGING_LEVEL,
+            'propagate': False,
+        },
     },
 }
