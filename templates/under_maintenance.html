@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+        <!-- Icon -->
+        <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/logo.ico' %}">
+        <!-- Fonts -->
+        <link rel="stylesheet" type='text/css' href="{% static 'fonts/NotoNaskhArabic-Regular.ttf' %}">
+        <!-- CSS Styles -->
+        <link href="{% static 'css/bootstrap/bootstrap.min.css' %}" rel="stylesheet">
+        <link rel="stylesheet" type='text/css' href="{% static 'css/styles.css' %}">
+        <title>الجالية اليمنية في اندونيسيا</title>
+    </head>
+
+    <body class="bg-light">
+        <div id="screen">
+
+            <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                <a class="navbar-brand" href="{% url 'Index' %}">الجالية اليمنية في إندونيسيا</a>
+                <div style="float: left;">
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText"
+                        aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                </div>
+            </nav>
+
+            <div class="container">
+                <div class="row">
+                    <h1 class="text-center display-4 p-5">
+                        أهلا بكم في الموقع الرسمي للجالية اليمنية في إندونيسيا
+                    </h1>
+                    <div>
+                        <img class="rounded-circle center logo img-responsive"
+                            style="margin-top: -10px; margin-bottom: -10px;" src="{% static 'img/logo.jpg' %}">
+                    </div>
+                    <h2 class="text-center p-5">
+                        نأسف لإزعاجكم، ولكن الموقع سيكون غير متاح حاليًا. نقوم بإجراء بعض التحديثات والصيانة الضرورية
+                    </h2>
+                    <h2 class="text-center">
+                        نشكركم على تفهمكم وصبركم خلال هذه الفترة. يُرجى المحاولة مرة أخرى في وقت لاحق
+                    </h2>
+                </div>
+            </div>
+
+        </div>
+    </body>
+
+</html>
