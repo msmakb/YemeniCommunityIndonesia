@@ -12,6 +12,7 @@ from django.utils import timezone
 
 from main import constants
 from main.models import BaseModel
+from main.parameters import getParameterValue
 
 
 logger: Logger = getLogger(constants.LOGGERS.BROADCAST)
@@ -26,14 +27,14 @@ class Broadcast(BaseModel):
 
     subject: str = models.CharField(max_length=50)
     body: str = models.TextField()
-    broadcast_date: str = models.DateTimeField(null=True, blank=True)
-    is_broadcasting: bool = models.BooleanField(default=False)
-    is_broadcasted: bool = models.BooleanField(default=False)
+    broadcast_date: str = models.DateTimeField(null=True, blank=True, editable=False)
+    is_broadcasting: bool = models.BooleanField(default=False, editable=False)
+    is_broadcasted: bool = models.BooleanField(default=False, editable=False)
 
 class EmailBroadcast(Broadcast):
 
     email_list: str = models.TextField()
-    has_attachment: bool = models.BooleanField(default=False)
+    has_attachment: bool = models.BooleanField(default=False, editable=False)
 
     @property
     def recipientsCount(self) -> int:
@@ -46,10 +47,11 @@ class EmailBroadcast(Broadcast):
     def _broadcast(self) -> None:
         logger.info("===== Start Broadcasting Email =====")
         email: EmailMessage = EmailMessage(
-            self.subject,
-            self.body,
-            settings.EMAIL_HOST_USER,
-            self.getRecipientsAsList()
+            subject=self.subject,
+            body=self.body,
+            from_email=settings.EMAIL_HOST_USER,
+            to=[getParameterValue(constants.PARAMETERS.PLACEHOLDER_EMAIL)],
+            bcc=self.getRecipientsAsList()
         )
         email.fail_silently = False
         if self.has_attachment:

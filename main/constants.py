@@ -338,6 +338,7 @@ PAGES = _NT('str', [
 )
 TEMPLATES = _NT('str', [
     # Main templates
+    'UNDER_MAINTENANCE_PAGE_TEMPLATE',
     'INDEX_TEMPLATE',
     'UNAUTHORIZED_TEMPLATE',
     'MEMBERSHIP_TERMS_TEMPLATE',
@@ -357,6 +358,7 @@ TEMPLATES = _NT('str', [
     'EMAIL_FOOTER_TEMPLATE',
 ])(
     # Main templates
+    f'{_main_app__templates_folder}/under_maintenance.html',
     f'{_main_app__templates_folder}/index.html',
     f'{_main_app__templates_folder}/unauthorized.html',
     f'{_main_app__templates_folder}/membership_terms.html',
@@ -388,6 +390,7 @@ PARAMETERS = _NT('str', [
     "MEMBER_FORM_POST_LIMIT",
     "IMAGE_MAX_SIZE",
     "REMOVE_BG_API_KEY",
+    "PLACEHOLDER_EMAIL",
 ])(
     "ALLOWED_LOGGED_IN_ATTEMPTS",
     "ALLOWED_LOGGED_IN_ATTEMPTS_RESET",
@@ -401,6 +404,7 @@ PARAMETERS = _NT('str', [
     "MEMBER_FORM_POST_LIMIT",
     "IMAGE_MAX_SIZE",
     "REMOVE_BG_API_KEY",
+    "PLACEHOLDER_EMAIL",
 )
 PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {
     GROUPS.MANAGER: (
