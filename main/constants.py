@@ -338,6 +338,7 @@ PAGES = _NT('str', [
 )
 TEMPLATES = _NT('str', [
     # Main templates
+    'UNDER_MAINTENANCE_PAGE_TEMPLATE',
     'INDEX_TEMPLATE',
     'UNAUTHORIZED_TEMPLATE',
     'MEMBERSHIP_TERMS_TEMPLATE',
@@ -357,6 +358,7 @@ TEMPLATES = _NT('str', [
     'EMAIL_FOOTER_TEMPLATE',
 ])(
     # Main templates
+    f'{_main_app__templates_folder}/under_maintenance.html',
     f'{_main_app__templates_folder}/index.html',
     f'{_main_app__templates_folder}/unauthorized.html',
     f'{_main_app__templates_folder}/membership_terms.html',

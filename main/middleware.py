@@ -4,6 +4,7 @@ from logging import Logger
 import re
 from typing import Callable
 
+from django.conf import settings
 from django.contrib.auth import logout
 from django.db.models.query import QuerySet
 from django.http import (HttpResponsePermanentRedirect,
@@ -11,7 +12,7 @@ from django.http import (HttpResponsePermanentRedirect,
                          HttpRequest,
                          HttpResponse,
                          Http404)
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.urls import reverse, resolve
 from django.utils import timezone
 from django.utils.timezone import datetime
@@ -337,3 +338,18 @@ class AllowedUserMiddleware:
                                + f' IP: {getClientIp(request)}')
                 return False
         return True
+
+
+class SiteUnderMaintenanceMiddleware:
+    def __init__(self, get_response) -> None:
+        self.get_response: Callable[[HttpRequest], HttpResponse] = get_response
+
+    def __call__(self, request: HttpRequest) -> HttpResponse:
+        if settings.UNDER_MAINTENANCE:
+            if request.user.is_authenticated:
+                logout(request)
+            return render(request, constants.TEMPLATES.UNDER_MAINTENANCE_PAGE_TEMPLATE)
+
+        response: HttpResponse = self.get_response(request)
+
+        return response

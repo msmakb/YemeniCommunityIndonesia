@@ -26,14 +26,14 @@ class Broadcast(BaseModel):
 
     subject: str = models.CharField(max_length=50)
     body: str = models.TextField()
-    broadcast_date: str = models.DateTimeField(null=True, blank=True)
-    is_broadcasting: bool = models.BooleanField(default=False)
-    is_broadcasted: bool = models.BooleanField(default=False)
+    broadcast_date: str = models.DateTimeField(null=True, blank=True, editable=False)
+    is_broadcasting: bool = models.BooleanField(default=False, editable=False)
+    is_broadcasted: bool = models.BooleanField(default=False, editable=False)
 
 class EmailBroadcast(Broadcast):
 
     email_list: str = models.TextField()
-    has_attachment: bool = models.BooleanField(default=False)
+    has_attachment: bool = models.BooleanField(default=False, editable=False)
 
     @property
     def recipientsCount(self) -> int:

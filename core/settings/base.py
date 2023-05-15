@@ -33,6 +33,7 @@ MIDDLEWARE = [
 
     # System Middleware
     'main.middleware.AllowedClientMiddleware',
+    'main.middleware.SiteUnderMaintenanceMiddleware',
     'main.middleware.LoginRequiredMiddleware',
     'main.middleware.AllowedUserMiddleware',
 ]

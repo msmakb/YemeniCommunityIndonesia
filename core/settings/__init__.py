@@ -8,7 +8,10 @@ from core.settings.mail import *
 from core.settings.urls import *
 
 # Version
-PROJECT_VERSION = '1.0.0'
+PROJECT_VERSION = '1.1.0'
+
+# Site Under Maintenance
+UNDER_MAINTENANCE = False
 
 # Internationalization
 WSGI_APPLICATION = 'core.wsgi.application'
