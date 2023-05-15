@@ -9,6 +9,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('main.urls')),
     path('', include('member.urls')),
+    path('', include('broadcast.urls')),
 ]
 
 # Static and Media URL Patterns

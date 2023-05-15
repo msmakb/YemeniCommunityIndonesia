@@ -92,21 +92,69 @@ MEDIA_DIR = _NT('str', [
     'PASSPORTS_DIR',
     'RESIDENCY_IMAGES_DIR',
     'MEMBERSHIP_IMAGES_DIR',
+    'EMAIL_ATTACHMENTS_DIR',
 
 ])(
     'documents/images/photographs',
     'documents/images/passportImages',
     'documents/images/residencyImages',
     'documents/images/membershipImages',
+    'broadcast/emailAttachment',
+)
+_MIME_TYPE: dict[str, str] = {
+    'AVI': 'video/x-msvideo',
+    'JPEG': 'image/jpeg',
+    'MP4': 'video/mp4',
+    'MP3': 'audio/mpeg',
+    'PNG': 'image/png',
+    'PDF': 'application/pdf',
+    'RAR': 'application/vnd.rar',
+    'TEXT': 'text/plain',
+    'WAV': 'audio/wav',
+    'MS_EXCEL': 'application/vnd.ms-excel',
+    'MS_POWERPOINT': 'application/vnd.ms-powerpoint',
+    'MS_EXCEL_OPEN_XML': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'MS_POWERPOINT_OPEN_XML': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+}
+MIME_TYPE = _NT('str', [
+    'AVI', # .avi	AVI: Audio Video Interleave
+    'JPEG', # .jpeg, .jpg	JPEG images
+    'MP4', # .mp4	MP4 video
+    'MP3', # .mp3	MP3 audio
+    'PNG', # .png	Portable Network Graphics
+    'PDF', # .pdf	Adobe Portable Document Format (PDF)
+    'RAR', # .rar	RAR archive
+    'TEXT', # .txt	Text, (generally ASCII or ISO 8859-n)
+    'WAV', # .wav	Waveform Audio Format
+    'MS_EXCEL', # .xls	Microsoft Excel
+    'MS_POWERPOINT', # .ppt	Microsoft PowerPoint
+    'MS_EXCEL_OPEN_XML', # .xlsx	Microsoft Excel (OpenXML)
+    'MS_POWERPOINT_OPEN_XML', # .pptx	Microsoft PowerPoint (OpenXML)
+])(
+    _MIME_TYPE.get('AVI'),
+    _MIME_TYPE.get('JPEG'),
+    _MIME_TYPE.get('MP4'),
+    _MIME_TYPE.get('MP3'),
+    _MIME_TYPE.get('PNG'),
+    _MIME_TYPE.get('PDF'),
+    _MIME_TYPE.get('RAR'),
+    _MIME_TYPE.get('TEXT'),
+    _MIME_TYPE.get('WAV'),
+    _MIME_TYPE.get('MS_EXCEL'),
+    _MIME_TYPE.get('MS_POWERPOINT'),
+    _MIME_TYPE.get('MS_EXCEL_OPEN_XML'),
+    _MIME_TYPE.get('MS_POWERPOINT_OPEN_XML'),
 )
 LOGGERS = _NT('str', [
     'MAIN',
     'MIDDLEWARE',
     'MODELS',
+    'BROADCAST',
 ])(
     'YCI.Main',
     'YCI.Middleware',
     'YCI.Models',
+    'YCI.Broadcast',
 )
 GENDER = _NT('str', [
     'MALE',
@@ -141,7 +189,7 @@ ACADEMIC_QUALIFICATION = _NT('str', [
     '3',
     '4',
     '5',
-    '9',
+    '6',
 )
 ACADEMIC_QUALIFICATION_AR: Final[tuple[str, ...]] = (
     'دكتوراه',
@@ -176,20 +224,24 @@ MEMBERSHIP_TYPE = _NT('str', [
     'STUDENT',
     'INVESTOR',
     'EMPLOYER',
+    'GENERAL',
 ])(
     '0',
     '1',
     '2',
+    '3',
 )
 MEMBERSHIP_TYPE_EN: Final[tuple[str, ...]] = (
     'STUDENT',
     'INVESTOR',
     'EMPLOYEE',
+    'GENERAL',
 )
 MEMBERSHIP_TYPE_AR: Final[tuple[str, ...]] = (
     'طالب',
     'مستثمر',
     'موظف',
+    'عامة',
 )
 PERIOD_OF_RESIDENCE = _NT('str', [
     'LEES_THAN_SIX_MONTHS',
@@ -227,6 +279,7 @@ CHOICES = _NT('tuple', [
     'GENDER',
     'JOB_TITLE',
     'MEMBERSHIP_TYPE',
+    'MIME_TYPE',
     'PERIOD_OF_RESIDENCE',
 ])(
     [(aq, ACADEMIC_QUALIFICATION_AR[i])
@@ -240,6 +293,7 @@ CHOICES = _NT('tuple', [
     [(job_title, JOB_TITLE_AR[i]) for i, job_title in enumerate(JOB_TITLE)],
     [(membership_type, MEMBERSHIP_TYPE_AR[i])
      for i, membership_type in enumerate(MEMBERSHIP_TYPE)],
+    [(value, key) for key, value in _MIME_TYPE.items()],
     [(period, PERIOD_OF_RESIDENCE_AR[i])
      for i, period in enumerate(PERIOD_OF_RESIDENCE)]
 )
@@ -256,6 +310,12 @@ PAGES = _NT('str', [
     'MEMBER_FORM_PAGE',
     'DETAIL_MEMBER_PAGE',
     'THANK_YOU_PAGE',
+    'BROADCAST_PAGE',
+    'DETAIL_BROADCAST_PAGE',
+    'ADD_BROADCAST_PAGE',
+    'UPDATE_BROADCAST_PAGE',
+    'ADD_ATTACHMENT_PAGE',
+    'DELETE_ATTACHMENT_PAGE',
 ])(
     'Index',
     'MembershipTerms',
@@ -269,6 +329,12 @@ PAGES = _NT('str', [
     'MemberFormPage',
     'DetailMemberPage',
     'ThankYouPage',
+    'BroadcastPage',
+    'DetailBroadcastPage',
+    'AddBroadcastPage',
+    'UpdateBroadcastPage',
+    'AddAttachmentPage',
+    'DeleteAttachmentPage',
 )
 TEMPLATES = _NT('str', [
     # Main templates
@@ -282,8 +348,13 @@ TEMPLATES = _NT('str', [
     'MEMBER_FORM_TEMPLATE',
     'DETAIL_MEMBER_TEMPLATE',
     'THANK_YOU_TEMPLATE',
+    'BROADCAST_PAGE_TEMPLATE',
+    'DETAIL_BROADCAST_PAGE_TEMPLATE',
+    'ADD_UPDATE_BROADCAST_PAGE_TEMPLATE',
+    'ADD_ATTACHMENT_PAGE_TEMPLATE',
     'THANK_YOU_EMAIL_TEMPLATE',
     'APPROVE_MEMBER_EMAIL_TEMPLATE',
+    'EMAIL_FOOTER_TEMPLATE',
 ])(
     # Main templates
     f'{_main_app__templates_folder}/index.html',
@@ -296,8 +367,13 @@ TEMPLATES = _NT('str', [
     f'{_main_app__templates_folder}/member_form.html',
     f'{_main_app__templates_folder}/detail_member.html',
     f'{_main_app__templates_folder}/thank_you.html',
+    f'{_main_app__templates_folder}/broadcasts.html',
+    f'{_main_app__templates_folder}/detail_broadcast.html',
+    f'{_main_app__templates_folder}/add_update_broadcast.html',
+    f'{_main_app__templates_folder}/add_attachment.html',
     f'{_email__templates_folder}/thank_you_email.html',
     f'{_email__templates_folder}/approve_member_email.html',
+    f'{_email__templates_folder}/email_footer.html',
 )
 PARAMETERS = _NT('str', [
     "ALLOWED_LOGGED_IN_ATTEMPTS",
@@ -330,6 +406,14 @@ PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {
     GROUPS.MANAGER: (
         PAGES.DASHBOARD,
         PAGES.DETAIL_MEMBER_PAGE,
+        
+        # Broadcast
+        PAGES.BROADCAST_PAGE,
+        PAGES.DETAIL_BROADCAST_PAGE,
+        PAGES.ADD_BROADCAST_PAGE,
+        PAGES.UPDATE_BROADCAST_PAGE,
+        PAGES.ADD_ATTACHMENT_PAGE,
+        PAGES.DELETE_ATTACHMENT_PAGE,
     ),
     GROUPS.MEMBER: (
         PAGES.MEMBER_PAGE,
