@@ -33,3 +33,13 @@ SCREENSHOT: Final[Callable[[HttpRequest], None]] = lambda request: messages.info
     request, "يرجى أخذ لقطة شاشة وإرسالها إلى المطور")
 ERROR_MESSAGE: Final[Callable[[HttpRequest, str], None]] = lambda request, message: messages.error(
     request, message)
+
+# ==== Broadcast App Messages ====
+ADD_BROADCAST: Final[Callable[[HttpRequest, str], None]] = lambda request: messages.success(
+    request, "تم إضافة البرودكاست بنجاح")
+UPDATE_BROADCAST: Final[Callable[[HttpRequest, str], None]] = lambda request: messages.success(
+    request, "تم تعديل البرودكاست بنجاح")
+ADD_ATTACHMENT: Final[Callable[[HttpRequest, str], None]] = lambda request: messages.success(
+    request, "تم إضافة المُرفق بنجاح")
+DELETE_ATTACHMENT: Final[Callable[[HttpRequest, str], None]] = lambda request: messages.success(
+    request, "تم إزالة الملف بنجاح")

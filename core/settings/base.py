@@ -11,8 +11,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'main.apps.MainConfig',
     'member.apps.MemberConfig',
+    'broadcast.apps.BroadcastConfig',
 
     # Third party apps
     'django_crontab',
