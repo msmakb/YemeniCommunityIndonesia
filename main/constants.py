@@ -20,6 +20,7 @@ GET_METHOD: Final[str] = 'GET'
 POST_METHOD: Final[str] = 'POST'
 DELETE_METHOD: Final[str] = 'DELETE'
 ROWS_PER_PAGE: Final[int] = 10
+DEFAULT_CACHE_EXPIRE: Final[int] = 86_400 # One day
 ACCESS_TYPE = _NT('str', [
     'No_ACCESS',
     'ADMIN_ACCESS',
@@ -407,6 +408,11 @@ PARAMETERS = _NT('str', [
     "REMOVE_BG_API_KEY",
     "PLACEHOLDER_EMAIL",
     "OPEN_MEMBER_REGISTRATION_FORM",
+)
+CACHE = _NT('str', [
+    "LAST_AUDIT_ENTRY_QUERYSET",
+])(
+    "LAST_AUDIT_ENTRY_QUERYSET",
 )
 PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {
     GROUPS.MANAGER: (
