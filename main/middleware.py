@@ -41,18 +41,7 @@ class AllowedClientMiddleware(object):
         self.requester_ip = getClientIp(request)
         self.requester_agent = getUserAgent(request)
         self.user = str(request.user)
-        # ------------------------------------------------------------- #
-        # This is the last object that is not included of the specified #
-        # period of allowed logged in attempts reset                    #
-        # Ex. if the parameter 'ALLOWED_LOGGED_IN_ATTEMPTS_RESET'       #
-        # set to 7 days, the last object that will be reset, It will be #
-        # saved in the in 'MAGIC_NUMBER' parameter, to make the search  #
-        # in the table 'AuditEntry' faster and more scalable            #
-        start_chunk_object_id: int = getParameterValue(                 #
-            constants.PARAMETERS.MAGIC_NUMBER)                          #
-        self.last_audit_entry = AuditEntry.filter(                      #
-            id__gte=start_chunk_object_id)                              #
-        # ------------------------------------------------------------- #
+        self.last_audit_entry: int = AuditEntry.getLastAuditEntry()
         current_path = request.path
 
         # Is new visitor

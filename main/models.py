@@ -6,6 +6,7 @@ from django.db import models
 from django.db.models.query import QuerySet
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from django.core.cache import cache
 
 from . import constants
 
@@ -158,6 +159,22 @@ class AuditEntry(Client):
     @property
     def action_type(self) -> str:
         return constants.ACTION_STR[int(self.action)].replace('_', ' ').capitalize()
+    
+    @classmethod
+    def getLastAuditEntry(self) -> QuerySet[AuditEntry]:
+        result: QuerySet[AuditEntry] | None = cache.get(
+            constants.CACHE.LAST_AUDIT_ENTRY_QUERYSET)
+        if not result:
+            from .parameters import getParameterValue
+            logger.info("Fetching last audit entry queryset from database.")
+            start_chunk_object_id: int = getParameterValue(
+                constants.PARAMETERS.MAGIC_NUMBER)
+            result = AuditEntry.filter(
+                id__gte=start_chunk_object_id)
+            cache.set(constants.CACHE.LAST_AUDIT_ENTRY_QUERYSET, result, 
+                      constants.DEFAULT_CACHE_EXPIRE)
+        
+        return result
 
     def setAction(self, action: str) -> None:
         self.action = action
@@ -234,3 +251,8 @@ class Parameter(BaseModel):
                                           + "('true' or 'false', 'yes' or 'no', '1' or '0')")
 
         return super().clean()
+
+    def save(self, *args, **kwargs) -> None:
+        super().save(*args, **kwargs)
+        logger.info(f"Saving parameter '{self.name}' in cache")
+        cache.set(self.name, self, constants.DEFAULT_CACHE_EXPIRE)

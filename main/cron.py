@@ -5,6 +5,7 @@ from typing import Final
 
 from django.conf import settings
 from django.core.management import call_command
+from django.core.cache import cache
 from django.db.models.query import QuerySet
 from django.utils import timezone
 
@@ -56,6 +57,9 @@ def setMagicNumber() -> None:
     pram = Parameter.get(name=constants.PARAMETERS.MAGIC_NUMBER)
     pram.value = magic_number  # NOQA
     pram.save()
+    # Reset the last audit entry cache
+    cache.delete(constants.CACHE.LAST_AUDIT_ENTRY_QUERYSET)
+    AuditEntry.getLastAuditEntry()
     logger.info(f'Magic Number Updated to [{magic_number}].')
     logger.info('=========== CRON FINISH SETTING MAGIC NUMBER ===========')
 

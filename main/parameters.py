@@ -3,7 +3,9 @@ import logging as logging
 from logging import Logger
 from typing import Union
 
-from .constants import ACCESS_TYPE, DATA_TYPE, LOGGERS
+from django.core.cache import cache
+
+from .constants import ACCESS_TYPE, DATA_TYPE, LOGGERS, DEFAULT_CACHE_EXPIRE
 from .models import Parameter as _parameter
 
 logger: Logger = logging.getLogger(LOGGERS.MAIN)
@@ -180,7 +182,11 @@ def getParameterValue(key: str) -> Union[str, int, float, bool]:
     if not isinstance(key, str):
         raise ValueError("The key must be a string.")
     try:
-        param: _parameter = _parameter.get(name=key)
+        param: _parameter | None = cache.get(key)
+        if not param:
+            logger.info(f"Parameter '{key}' is not cached, trying to retrieve it form database")
+            param = _parameter.get(name=key)
+            cache.set(key, param, DEFAULT_CACHE_EXPIRE)
         match param.getParameterType:
             case DATA_TYPE.INTEGER:
                 value: int = int(param.getValue)
