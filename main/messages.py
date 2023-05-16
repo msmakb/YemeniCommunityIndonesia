@@ -33,6 +33,8 @@ SCREENSHOT: Final[Callable[[HttpRequest], None]] = lambda request: messages.info
     request, "يرجى أخذ لقطة شاشة وإرسالها إلى المطور")
 ERROR_MESSAGE: Final[Callable[[HttpRequest, str], None]] = lambda request, message: messages.error(
     request, message)
+MEMBER_FORM_CLOSE: Final[Callable[[HttpRequest], None]] = lambda request: messages.info(
+    request, "رابط التسجيل للعضوية مغلق في الوقت الحالي. يرجى العودة لاحقاً")
 
 # ==== Broadcast App Messages ====
 ADD_BROADCAST: Final[Callable[[HttpRequest, str], None]] = lambda request: messages.success(
