@@ -133,9 +133,18 @@ def _getDefaultParam() -> list[_DefaultParameter]:
         _DefaultParameter(
             name="PLACEHOLDER_EMAIL",
             value="placeholder@example.com",
-            description="JThis ensures that the email is properly delivered and avoids potential issues with spam filters or email clients.",
+            description="This ensures that the email is properly delivered and avoids potential issues with spam filters or email clients.",
             access_type=ACCESS_TYPE.ADMIN_ACCESS,
             parameter_type=DATA_TYPE.STRING
+        )
+    )
+    default_parameters.append(
+        _DefaultParameter(
+            name="OPEN_MEMBER_REGISTRATION_FORM",
+            value="YES",
+            description="This for opening and closing the registration form for new members. The value must be 'YES' or 'NO'.",
+            access_type=ACCESS_TYPE.ADMIN_ACCESS,
+            parameter_type=DATA_TYPE.BOOLEAN
         )
     )
     default_parameters.append(

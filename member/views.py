@@ -169,6 +169,10 @@ def downloadMembershipCard(request: HttpRequest, pk: str) -> HttpResponse:
 
 
 def memberFormPage(request: HttpRequest) -> HttpResponse:
+    if not getParameterValue(constants.PARAMETERS.OPEN_MEMBER_REGISTRATION_FORM):
+        MSG.MEMBER_FORM_CLOSE(request)
+        return redirect(constants.PAGES.INDEX_PAGE)
+
     person_form: AddPersonForm = AddPersonForm()
     academic_form: AcademicForm = AcademicForm()
     address_form: AddressForm = AddressForm()
