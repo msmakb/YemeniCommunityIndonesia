@@ -2,10 +2,13 @@ from datetime import timedelta
 import logging
 from logging import Logger
 import re
+import traceback
 from typing import Callable
 
 from django.conf import settings
 from django.contrib.auth import logout
+from django.core.exceptions import DisallowedHost
+from django.core.cache import cache
 from django.db.models.query import QuerySet
 from django.http import (HttpResponsePermanentRedirect,
                          HttpResponseForbidden,
@@ -342,3 +345,33 @@ class SiteUnderMaintenanceMiddleware:
         response: HttpResponse = self.get_response(request)
 
         return response
+
+
+class ErrorHandlerMiddleware:
+    def __init__(self, get_response) -> None:
+        self.get_response: Callable[[HttpRequest], HttpResponse] = get_response
+
+    def __call__(self, request: HttpRequest) -> HttpResponse:
+
+        response: HttpResponse = self.get_response(request)
+
+        return response
+    
+    def process_exception(self, request: HttpRequest, exception: Exception) -> HttpResponse:
+        if isinstance(exception, DisallowedHost):
+            return None
+        
+        if cache.get('ERROR_' + getClientIp(request)) == type(exception):
+            cache.delete('ERROR_' + getClientIp(request))
+            if request.user.is_authenticated:
+                logout(request)
+            return redirect(constants.PAGES.INDEX_PAGE)
+        
+        MSG.SOMETHING_WRONG(request)
+        logger.error(traceback.format_exc())
+        if request.user.is_authenticated and request.user.is_staff:
+            MSG.ERROR_MESSAGE(request, exception)
+            MSG.SCREENSHOT(request)
+
+        cache.set('ERROR_' + getClientIp(request), type(exception), timeout=5)
+        return redirect(request.path)

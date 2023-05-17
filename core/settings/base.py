@@ -36,6 +36,7 @@ MIDDLEWARE = [
     'main.middleware.SiteUnderMaintenanceMiddleware',
     'main.middleware.LoginRequiredMiddleware',
     'main.middleware.AllowedUserMiddleware',
+    'main.middleware.ErrorHandlerMiddleware',
 ]
 
 # Password validation
