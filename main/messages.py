@@ -8,6 +8,9 @@ BLOCK_WARNING: Final[Callable[[HttpRequest], None]] = lambda request: messages.w
     + "العشوائية إلى النظام ، فكن حذرًا وإلا فسيتم حظرك في المرة القادمة.")
 INCORRECT_INFO: Final[Callable[[HttpRequest], None]] = lambda request: messages.error(
     request, "اسم المستخدم أو كلمة المرور غير صحيحة، أو أن عضويتك قيد المعالجة من قِبَل الإدارة")
+MANY_FAILED_LOGIN_WARNING: Final[Callable[[HttpRequest], None]] = lambda request: messages.warning(
+    request, "تنبيه: تم تكرار محاولات تسجيل الدخول الفاشلة بشكل متكرر. الرجاء التحقق من صحة المعلومات "
+    + "وتجنب المحاولات غير المصرح بها. سيتم حظرك بعد 5 محاولات فاشلة. للمساعدة، يرجى التواصل مع الدعم الفني.")
 SOMETHING_WRONG: Final[Callable[[HttpRequest], None]] = lambda request: messages.warning(
     request, "عفوًا!! هناك خطأ ما...")
 TIME_OUT: Final[Callable[[HttpRequest], None]] = lambda request: messages.info(
