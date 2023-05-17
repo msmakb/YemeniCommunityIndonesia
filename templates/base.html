@@ -22,7 +22,7 @@
     <body class="bg-light">
         <div id="screen">
             {% include 'navbar.html' %}
-            {% include 'alerts.html' %}
+            {% if "Login" not in request.path %}{% include 'alerts.html' %}{% endif %}
             {% block content %}{% endblock content %}
             {% include 'pagination.html' %}
         </div>
