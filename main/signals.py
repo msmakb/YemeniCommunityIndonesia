@@ -24,12 +24,6 @@ def createGroups(**kwargs) -> None:
         Group.objects.get(name=constants.GROUPS.MANAGER).user_set.add(user)
 
 
-def createParameters(**kwargs):
-    from .parameters import _saveDefaultParametersToDataBase
-    _saveDefaultParametersToDataBase()
-    logger.info("All default parameters was successfully created.")
-
-
 def userLoggedIn(sender: User, request: HttpRequest, user: User, **kwargs):
     ip: str = getClientIp(request)
     AuditEntry.create(action=constants.ACTION.LOGGED_IN,

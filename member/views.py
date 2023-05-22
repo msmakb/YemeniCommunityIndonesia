@@ -16,7 +16,7 @@ from main import constants
 from main import messages as MSG
 from main.image_processing import ImageProcessor, ImageProcessingError
 from main.models import AuditEntry
-from main.parameters import getParameterValue
+from parameter.service import getParameterValue
 from main.utils import Pagination, getClientIp, getUserAgent, exportAsCsv
 
 from .models import (Academic, Address, Membership,
