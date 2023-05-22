@@ -15,6 +15,7 @@ INSTALLED_APPS = [
     'main.apps.MainConfig',
     'member.apps.MemberConfig',
     'broadcast.apps.BroadcastConfig',
+    'parameter.apps.ParameterConfig',
 
     # Third party apps
     'django_crontab',

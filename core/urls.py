@@ -10,6 +10,7 @@ urlpatterns = [
     path('', include('main.urls')),
     path('', include('member.urls')),
     path('', include('broadcast.urls')),
+    path('', include('parameter.urls')),
 ]
 
 # Static and Media URL Patterns

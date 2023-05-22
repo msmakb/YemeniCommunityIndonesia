@@ -11,7 +11,7 @@ from . import constants
 from . import messages as MSG
 from .decorators import isAuthenticatedUser
 from .models import AuditEntry
-from .parameters import getParameterValue
+from parameter.service import getParameterValue
 from .utils import getClientIp
 
 logger: Logger = logging.getLogger(constants.LOGGERS.MAIN)

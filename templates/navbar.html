@@ -19,6 +19,12 @@
         <a class="nav-link {% if request.path == broadcastPage %}active{% endif %}" href="{% url 'BroadcastPage' %}">برودكاست</a>
       </li>
       {% endif %}
+      {% if request.user.is_authenticated and request.user.is_superuser %}
+      <li class="nav-item">
+        {% url 'SettingsPage' as settingsPage %}
+        <a class="nav-link {% if request.path == settingsPage %}active{% endif %}" href="{% url 'SettingsPage' %}">اعدادات النظام</a>
+      </li>
+      {% endif %}
       <li class="nav-item">
         {% url 'MembershipTerms' as membershipTerms %}
         <a class="nav-link {% if request.path == membershipTerms %}active{% endif %}"

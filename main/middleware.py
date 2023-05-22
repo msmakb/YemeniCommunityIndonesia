@@ -7,7 +7,7 @@ from typing import Callable
 
 from django.conf import settings
 from django.contrib.auth import logout
-from django.core.exceptions import DisallowedHost
+from django.core.exceptions import DisallowedHost, ValidationError
 from django.core.cache import cache
 from django.db.models.query import QuerySet
 from django.http import (HttpResponsePermanentRedirect,
@@ -23,7 +23,7 @@ from django.utils.timezone import datetime
 from . import constants
 from . import messages as MSG
 from .models import AuditEntry, BlockedClient
-from .parameters import getParameterValue
+from parameter.service import getParameterValue
 from .utils import getClientIp, getUserAgent, getUserGroupe
 
 logger: Logger = logging.getLogger(constants.LOGGERS.MIDDLEWARE)
@@ -358,8 +358,9 @@ class ErrorHandlerMiddleware:
         return response
     
     def process_exception(self, request: HttpRequest, exception: Exception) -> HttpResponse:
-        if isinstance(exception, DisallowedHost):
-            return None
+        if isinstance(exception, ValidationError): return None
+        if isinstance(exception, DisallowedHost): return None
+        if isinstance(exception, Http404): return None
         
         if cache.get('ERROR_' + getClientIp(request)) == type(exception):
             cache.delete('ERROR_' + getClientIp(request))

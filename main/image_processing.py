@@ -40,7 +40,7 @@ from PIL.Image import Image
 from PIL.ImageDraw import ImageDraw
 
 from main.constants import PARAMETERS
-from main.parameters import getParameterValue
+from parameter.service import getParameterValue
 
 
 class ImageProcessingError(Exception):
