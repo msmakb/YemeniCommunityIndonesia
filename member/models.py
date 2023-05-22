@@ -17,7 +17,7 @@ from PIL.Image import Image
 from main import constants
 from main.image_processing import ImageProcessingError, ImageProcessor
 from main.models import BaseModel
-from main.parameters import getParameterValue
+from parameter.service import getParameterValue
 
 
 def photographsDir(instance, filename):

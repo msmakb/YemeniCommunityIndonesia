@@ -72,12 +72,14 @@ DATA_TYPE = _NT('str', [
     'STRING',
     'INTEGER',
     'FLOAT',
-    'BOOLEAN'
+    'BOOLEAN',
+    'EMAIL',
 ])(
     '0',
     '1',
     '2',
-    '3'
+    '3',
+    '4',
 )
 ADMIN_SITE = _NT('str', [
     'SITE_HEADER',
@@ -151,11 +153,13 @@ LOGGERS = _NT('str', [
     'MIDDLEWARE',
     'MODELS',
     'BROADCAST',
+    'PARAMETER',
 ])(
     'YCI.Main',
     'YCI.Middleware',
     'YCI.Models',
     'YCI.Broadcast',
+    'YCI.Parameter',
 )
 GENDER = _NT('str', [
     'MALE',
@@ -299,43 +303,59 @@ CHOICES = _NT('tuple', [
      for i, period in enumerate(PERIOD_OF_RESIDENCE)]
 )
 PAGES = _NT('str', [
+    # Main pages
     'INDEX_PAGE',
     'MEMBERSHIP_TERMS_PAGE',
     'ABOUT_PAGE',
     'LOGIN_PAGE',
     'LOGOUT',
     'UNAUTHORIZED_PAGE',
+
+    # Member pages
     'DASHBOARD',
     'MEMBER_PAGE',
     'DOWNLOAD_MEMBERSHIP_PAGE',
     'MEMBER_FORM_PAGE',
     'DETAIL_MEMBER_PAGE',
     'THANK_YOU_PAGE',
+
+    # Broadcast pages
     'BROADCAST_PAGE',
     'DETAIL_BROADCAST_PAGE',
     'ADD_BROADCAST_PAGE',
     'UPDATE_BROADCAST_PAGE',
     'ADD_ATTACHMENT_PAGE',
     'DELETE_ATTACHMENT_PAGE',
+
+    # Parameters pages
+    'SETTINGS_PAGE',
 ])(
+    # Main pages
     'Index',
     'MembershipTerms',
     'About',
     'Login',
     'Logout',
     'Unauthorized',
+
+    # Member pages
     'Dashboard',
     'Member',
     'Download-Membership',
     'MemberFormPage',
     'DetailMemberPage',
     'ThankYouPage',
+
+    # Broadcast pages
     'BroadcastPage',
     'DetailBroadcastPage',
     'AddBroadcastPage',
     'UpdateBroadcastPage',
     'AddAttachmentPage',
     'DeleteAttachmentPage',
+
+    # Parameter pages
+    'SettingsPage',
 )
 TEMPLATES = _NT('str', [
     # Main templates
@@ -345,15 +365,24 @@ TEMPLATES = _NT('str', [
     'MEMBERSHIP_TERMS_TEMPLATE',
     'ABOUT_TEMPLATE',
     'LOGIN_TEMPLATE',
+
+    # Member templates
     'DASHBOARD_TEMPLATE',
     'MEMBER_PAGE_TEMPLATE',
     'MEMBER_FORM_TEMPLATE',
     'DETAIL_MEMBER_TEMPLATE',
     'THANK_YOU_TEMPLATE',
+
+    # Broadcast Template
     'BROADCAST_PAGE_TEMPLATE',
     'DETAIL_BROADCAST_PAGE_TEMPLATE',
     'ADD_UPDATE_BROADCAST_PAGE_TEMPLATE',
     'ADD_ATTACHMENT_PAGE_TEMPLATE',
+
+    # Parameter template
+    'SYSTEM_SETTINGS_PAGE_TEMPLATE',
+    
+    # Email template
     'THANK_YOU_EMAIL_TEMPLATE',
     'APPROVE_MEMBER_EMAIL_TEMPLATE',
     'EMAIL_FOOTER_TEMPLATE',
@@ -365,15 +394,24 @@ TEMPLATES = _NT('str', [
     f'{_main_app__templates_folder}/membership_terms.html',
     f'{_main_app__templates_folder}/about.html',
     f'{_main_app__templates_folder}/login.html',
+
+    # Member templates
     f'{_main_app__templates_folder}/dashboard.html',
     f'{_main_app__templates_folder}/member_page.html',
     f'{_main_app__templates_folder}/member_form.html',
     f'{_main_app__templates_folder}/detail_member.html',
     f'{_main_app__templates_folder}/thank_you.html',
+
+    # Broadcast templates
     f'{_main_app__templates_folder}/broadcasts.html',
     f'{_main_app__templates_folder}/detail_broadcast.html',
     f'{_main_app__templates_folder}/add_update_broadcast.html',
     f'{_main_app__templates_folder}/add_attachment.html',
+
+    # Parameter templates
+    f'{_main_app__templates_folder}/system_settings.html',
+
+    # Email templates
     f'{_email__templates_folder}/thank_you_email.html',
     f'{_email__templates_folder}/approve_member_email.html',
     f'{_email__templates_folder}/email_footer.html',
@@ -411,8 +449,10 @@ PARAMETERS = _NT('str', [
 )
 CACHE = _NT('str', [
     "LAST_AUDIT_ENTRY_QUERYSET",
+    "ALLOWED_ClIENTS",
 ])(
     "LAST_AUDIT_ENTRY_QUERYSET",
+    "ALLOWED_ClIENTS",
 )
 PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {
     GROUPS.MANAGER: (

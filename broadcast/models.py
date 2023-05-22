@@ -12,7 +12,7 @@ from django.utils import timezone
 
 from main import constants
 from main.models import BaseModel
-from main.parameters import getParameterValue
+from parameter.service import getParameterValue
 
 
 logger: Logger = getLogger(constants.LOGGERS.BROADCAST)

@@ -10,11 +10,12 @@ from django.db.models.query import QuerySet
 from django.utils import timezone
 
 from member.models import Person
+from parameter.models import Parameter
 
 from . import constants
 from .google import GoogleDriveService, FileResources, MIME_TYPE
-from .models import AuditEntry, Parameter
-from .parameters import getParameterValue
+from .models import AuditEntry
+from parameter.service import getParameterValue
 
 logger: Logger = logging.getLogger(constants.LOGGERS.MAIN)
 

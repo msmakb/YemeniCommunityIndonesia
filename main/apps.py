@@ -16,6 +16,5 @@ class MainConfig(AppConfig):
         user_login_failed.connect(signals.userLoggedFailed)
 
         post_migrate.connect(signals.createGroups, sender=self)
-        post_migrate.connect(signals.createParameters, sender=self)
 
         return super().ready()
