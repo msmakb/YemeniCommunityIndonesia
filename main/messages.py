@@ -48,3 +48,7 @@ ADD_ATTACHMENT: Final[Callable[[HttpRequest, str], None]] = lambda request: mess
     request, "تم إضافة المُرفق بنجاح")
 DELETE_ATTACHMENT: Final[Callable[[HttpRequest, str], None]] = lambda request: messages.success(
     request, "تم إزالة الملف بنجاح")
+
+# ==== Parameter App Messages ====
+PAGE_REQUIRE_RE_LOGIN: Final[Callable[[HttpRequest], None]] = lambda request: messages.info(
+    request, "الرجاء إعادة تسجيل الدخول لعرض محتوى هذه الصفحة")
