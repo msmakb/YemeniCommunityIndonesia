@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load main_tags %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-6 p-3 m-4 m-auto">
+            <div class="row shadow rounded my-4">
+                <div class="card bg-light border-0">
+                    <div class="card-body">
+                        <h1 class="card-title">لوحة الرقابة</h1>
+                        <div class="row">
+                            <div class="col-6">
+                                <a class="col-6 btn btn-md btn-info shadow rounded w-100"
+                                    href="{% url 'ActivityLogPage' %}">
+                                    سجل النشاطات
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a class="col-6 btn btn-md btn-info shadow rounded w-100"
+                                    href="{% url 'BlockListPage' %}">
+                                    قائمة المحظورين
+                                </a>
+                            </div>
+                        </div>
+                        <hr>
+                        <table class="table shadow rounded mt-2 m-auto">
+                            <tbody>
+                                <tr class="text-white {% if sus_count %}bg-danger{% else %}bg-success{% endif %}">
+                                    <td>عدد المحاولات المشتبهة:</td>
+                                    <td>{{ sus_count }}</td>
+                                </tr>
+                                <tr
+                                    class="text-white {% if blocked_devices_count %}bg-danger{% else %}bg-success{% endif %}">
+                                    <td>عدد الأجهزة المحظورة:</td>
+                                    <td>{{ blocked_devices_count }}</td>
+                                </tr>
+                                <tr
+                                    class="text-white {% if failed_login_attempt_count %}bg-secondary{% else %}bg-success{% endif %}">
+                                    <td>تسجيلات الدخول الفاشلة خلال آخر ٣٠ يوم:</td>
+                                    <td>{{ failed_login_attempt_count }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="row shadow rounded my-4 m-auto">
+                <canvas class="shadow rounded" id="first-visit-chart" data-labels="{{ months_labels|join:', '|safe }}"
+                    data-data="{{ first_visits_data|join:', '|safe }}">
+                </canvas>
+            </div>
+        </div>
+        <div class="col p-3 m-4 text-center shadow rounded">
+            <span style="font-size: 16px;">عدد النماذج المقدمة</span>
+            <canvas id="member-forms-chart" data-labels="{{ months_labels|join:', '|safe }}"
+                data-data="{{  submit_form_data|join:', '|safe }}">
+            </canvas>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+{% block scripts %}
+<script src="{% static 'js\chart\chart.js' %}?{% cache_bust %}"></script>
+<script src="{% static 'js\monitor.js' %}"></script>
+{% endblock scripts %}

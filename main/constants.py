@@ -59,6 +59,16 @@ ACTION_STR: tuple[str, ...] = (
     'ATTACK_ATTEMPT',
     'MEMBER_FORM_POST',
 )
+ACTION_STR_AR: tuple[str, ...] = (
+    'زيارة أولى',
+    'تسجيل دخول',
+    'تسجيل خروج',
+    'تسجيل دخول فاشل',
+    'NORMAL_POST',
+    'محاولة مشتبهة',
+    'محاولة مشتبهة',
+    'تقديم النموذج',
+)
 BLOCK_TYPES = _NT('str', [
     'UNBLOCKED',
     'TEMPORARY',
@@ -67,6 +77,11 @@ BLOCK_TYPES = _NT('str', [
     '0',
     '1',
     '2',
+)
+BLOCK_TYPES_AR: Final[tuple[str, ...]] = (
+    'ملغى حظره',
+    'حظر مؤقت',
+    'حظر مؤبد',
 )
 DATA_TYPE = _NT('str', [
     'STRING',
@@ -248,6 +263,20 @@ MEMBERSHIP_TYPE_AR: Final[tuple[str, ...]] = (
     'موظف',
     'عامة',
 )
+MONTHS_AR = [
+    'يناير',
+    'فبراير',
+    'مارس',
+    'أبريل',
+    'مايو',
+    'يونيو',
+    'يوليو',
+    'أغسطس',
+    'سبتمبر',
+    'أكتوبر',
+    'نوفمبر',
+    'ديسمبر',
+]
 PERIOD_OF_RESIDENCE = _NT('str', [
     'LEES_THAN_SIX_MONTHS',
     'ONE_YEAR_OR_LESS',
@@ -329,6 +358,11 @@ PAGES = _NT('str', [
 
     # Parameters pages
     'SETTINGS_PAGE',
+
+    # Monitor pages
+    'MONITOR_PAGE',
+    'ACTIVITY_LOG_PAGE',
+    'BLOCK_LIST_PAGE',
 ])(
     # Main pages
     'Index',
@@ -356,6 +390,11 @@ PAGES = _NT('str', [
 
     # Parameter pages
     'SettingsPage',
+
+    # Monitor pages
+    'MonitorPage',
+    'ActivityLogPage',
+    'BlockListPage',
 )
 TEMPLATES = _NT('str', [
     # Main templates
@@ -381,6 +420,11 @@ TEMPLATES = _NT('str', [
 
     # Parameter template
     'SYSTEM_SETTINGS_PAGE_TEMPLATE',
+
+    # Monitor templates
+    'MONITOR_PAGE_TEMPLATE',
+    'ACTIVITY_LOG_PAGE_TEMPLATE',
+    'BLOCK_LIST_PAGE_TEMPLATE',
     
     # Email template
     'THANK_YOU_EMAIL_TEMPLATE',
@@ -410,6 +454,11 @@ TEMPLATES = _NT('str', [
 
     # Parameter templates
     f'{_main_app__templates_folder}/system_settings.html',
+
+    # Monitor templates
+    f'{_main_app__templates_folder}/monitor.html',
+    f'{_main_app__templates_folder}/activity_log.html',
+    f'{_main_app__templates_folder}/block_list.html',
 
     # Email templates
     f'{_email__templates_folder}/thank_you_email.html',
@@ -466,6 +515,14 @@ PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {
         PAGES.UPDATE_BROADCAST_PAGE,
         PAGES.ADD_ATTACHMENT_PAGE,
         PAGES.DELETE_ATTACHMENT_PAGE,
+
+        # Parameter
+        PAGES.SETTINGS_PAGE,
+
+        # Monitor
+        PAGES.MONITOR_PAGE,
+        PAGES.ACTIVITY_LOG_PAGE,
+        PAGES.BLOCK_LIST_PAGE,
     ),
     GROUPS.MEMBER: (
         PAGES.MEMBER_PAGE,
