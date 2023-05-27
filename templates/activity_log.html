@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <h1 class="col m-3">سجل النشاطات</h1>
+        <a class="col-2 btn btn-lg btn-info my-3 shadow rounded" href="{% url 'MonitorPage' %}"
+            style="float: left; margin-left: 35px;">
+            رجوع
+        </a>
+    </div>
+
+    <table class="table table-sm table-striped text-center shadow rounded">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">رقم</th>
+                <th scope="col">نوع النشاط</th>
+                <th scope="col">عنوان الآي بي (IP)</th>
+                <th scope="col">التفاصيل</th>
+                <th scope="col">التاريخ</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for activity in page_obj %}
+            <tr>
+                <td>{{ page_obj.start_index|add:forloop.counter0 }}</td>
+                <td>{{ activity.action_type_ar }}</td>
+                <td>{{ activity.ip }}</td>
+                <td>
+                    {% if activity.isEntry %}
+                    أسم المستخدم المدخل ({{ activity.username }})
+                    {% endif %}
+                </td>
+                <td>{{ activity.created }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock content %}

@@ -15,8 +15,10 @@
       </li>
       {% if request.user.is_authenticated and request.user.groups.all.0.name == "Manager" %}
       <li class="nav-item">
-        {% url 'BroadcastPage' as broadcastPage %}
-        <a class="nav-link {% if request.path == broadcastPage %}active{% endif %}" href="{% url 'BroadcastPage' %}">برودكاست</a>
+        <a class="nav-link {% if "Broadcast" in request.path %}active{% endif %}" href="{% url 'BroadcastPage' %}">برودكاست</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if "Monitor" in request.path %}active{% endif %}" href="{% url 'MonitorPage' %}">مراقبة</a>
       </li>
       {% endif %}
       {% if request.user.is_authenticated and request.user.is_superuser %}

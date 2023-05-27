@@ -8,7 +8,7 @@ from core.settings.mail import *
 from core.settings.urls import *
 
 # Version
-PROJECT_VERSION = '1.1.0'
+PROJECT_VERSION = '1.2.0'
 
 # Site Under Maintenance
 UNDER_MAINTENANCE = False
@@ -34,3 +34,8 @@ if PRODUCTION:
 else:
     SECRET_KEY = 'django-insecure-f82e4206-a63c-11ed-afa1-0242ac120002'
     SP = "CSS59XPUZ8"
+
+# Hosts
+ALLOWED_HOSTS = [
+
+]
