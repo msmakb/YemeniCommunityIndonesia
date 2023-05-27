@@ -358,6 +358,9 @@ class ErrorHandlerMiddleware:
         return response
     
     def process_exception(self, request: HttpRequest, exception: Exception) -> HttpResponse:
+        if settings.DEBUG:
+            return
+        
         if isinstance(exception, ValidationError): return None
         if isinstance(exception, DisallowedHost): return None
         if isinstance(exception, Http404): return None

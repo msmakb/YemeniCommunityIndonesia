@@ -134,6 +134,10 @@ class BlockedClient(Client):
                                        choices=constants.CHOICES.BLOCK_TYPE)
     blocked_times: int = models.PositiveSmallIntegerField(default=1)
 
+    @property
+    def block_type_ar(self) -> str:
+        return constants.BLOCK_TYPES_AR[int(self.block_type)]
+
     def __str__(self) -> str:
         return f"IP: {self.ip} - User Agent: {self.user_agent}"
 
@@ -158,6 +162,15 @@ class AuditEntry(Client):
     @property
     def action_type(self) -> str:
         return constants.ACTION_STR[int(self.action)].replace('_', ' ').capitalize()
+
+    @property
+    def action_type_ar(self) -> str:
+        return constants.ACTION_STR_AR[int(self.action)]
+
+    @property
+    def isEntry(self) -> str:
+        entry: list[str] = constants.ACTION[1:4]
+        return True if self.action in entry else False
     
     @classmethod
     def getLastAuditEntry(self) -> QuerySet[AuditEntry]:
