@@ -1,6 +1,9 @@
+import six
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 import csv
 import logging
 from typing import Callable, Optional, Union
+from uuid import uuid4
 
 from django.contrib.auth.models import User
 from django.core.exceptions import EmptyResultSet
@@ -127,3 +130,18 @@ def exportAsCsv(
         writer.writerow(row)
 
     return response
+
+
+def generateRandomString() -> str:
+    return str(uuid4()).rsplit('-', maxsplit=1).pop().upper()
+
+
+class AccountActivationTokenGenerator(PasswordResetTokenGenerator):
+    def _make_hash_value(self, user, timestamp):
+        return (
+            six.text_type(user.pk) + six.text_type(timestamp) +
+            six.text_type(user.is_active)
+        )
+
+
+account_activation_token = AccountActivationTokenGenerator()

@@ -18,7 +18,7 @@ from .service import getParameterValue
 
 
 def systemSettings(request: HttpRequest) -> HttpResponse:
-    if not request.user.is_authenticated and not request.user.is_superuser:
+    if not request.user.is_authenticated and not request.user.is_staff:
         raise Http404
     
     allowed_clients: dict[str, int] = cache.get(constants.CACHE.ALLOWED_ClIENTS)
@@ -30,7 +30,7 @@ def systemSettings(request: HttpRequest) -> HttpResponse:
                 request, username=UserName, password=Password)
 
             if user is not None:
-                if user.is_superuser:
+                if user.is_staff:
                     if not allowed_clients:
                         allowed_clients = {}
                     allowed_clients[getClientIp(request)] = timezone.now() + timezone.timedelta(minutes=5)

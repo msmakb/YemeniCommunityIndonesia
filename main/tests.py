@@ -224,7 +224,7 @@ class TestLoginRequiredMiddleware(TestCase):
         group = Group.objects.get(name=constants.GROUPS.MEMBER)
         user.groups.add(group)
         request: HttpRequest = self.client.get(
-            reverse(constants.PAGES.MEMBER_PAGE))
+            reverse(constants.PAGES.MEMBER_DASHBOARD))
         request.user = self.anonymous_user
         response: HttpResponse = self.middleware.process_view(request)
         response.client = Client()
@@ -233,7 +233,7 @@ class TestLoginRequiredMiddleware(TestCase):
             constants.PAGES.UNAUTHORIZED_PAGE))
 
         request: HttpRequest = self.client.get(
-            reverse(constants.PAGES.DASHBOARD, args=['list']))
+            reverse(constants.PAGES.MEMBERS_PAGE, args=['list']))
         request.user = self.anonymous_user
         response: HttpResponse = self.middleware.process_view(request)
         response.client = Client()
@@ -365,7 +365,7 @@ class TestAllowedUserMiddleware(TestCase):
             return request
 
         request: HttpRequest = self.client.get(
-            reverse(constants.PAGES.DASHBOARD, args=['list']))
+            reverse(constants.PAGES.MEMBERS_PAGE, args=['list']))
         request = process_session(request)
         request.user = self.logged_superuser_admin
         self.assertIsNone(self.middleware.process_view(request))
@@ -377,7 +377,7 @@ class TestAllowedUserMiddleware(TestCase):
         self.assertIsNone(self.middleware.process_view(request))
 
         request: HttpRequest = self.client.get(
-            reverse(constants.PAGES.MEMBER_PAGE))
+            reverse(constants.PAGES.MEMBER_DASHBOARD))
         request = process_session(request)
         request.user = self.logged_non_superuser
         self.assertEquals(request.user.groups.first().name,
@@ -400,7 +400,7 @@ class TestAllowedUserMiddleware(TestCase):
             return request, response
 
         request: HttpRequest = self.client.get(
-            reverse(constants.PAGES.MEMBER_PAGE))
+            reverse(constants.PAGES.MEMBER_DASHBOARD))
         request, response = process_session_request_and_response(
             request, self.logged_superuser_admin)
         self.assertEquals(response.status_code, 302)
@@ -418,7 +418,7 @@ class TestAllowedUserMiddleware(TestCase):
             constants.PAGES.UNAUTHORIZED_PAGE))
 
         request: HttpRequest = self.client.get(
-            reverse(constants.PAGES.DASHBOARD, args=['list']))
+            reverse(constants.PAGES.MEMBERS_PAGE, args=['list']))
         request, response = process_session_request_and_response(
             request, self.logged_non_superuser)
         self.assertEquals(response.status_code, 302)
@@ -426,7 +426,7 @@ class TestAllowedUserMiddleware(TestCase):
             constants.PAGES.UNAUTHORIZED_PAGE))
 
         request: HttpRequest = self.client.get(
-            reverse(constants.PAGES.DASHBOARD, args=['approve']))
+            reverse(constants.PAGES.MEMBERS_PAGE, args=['approve']))
         request, response = process_session_request_and_response(
             request, self.logged_non_superuser)
         self.assertEquals(response.status_code, 302)
@@ -646,7 +646,7 @@ class TestViews(TestCase):
         response.client = Client()
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse(
-            constants.PAGES.DASHBOARD, args=['list']), target_status_code=302)
+            constants.PAGES.STAFF_DASHBOARD), target_status_code=302)
 
     def test_login_failure(self):
         request = self.factory.post(reverse(constants.PAGES.LOGIN_PAGE), {

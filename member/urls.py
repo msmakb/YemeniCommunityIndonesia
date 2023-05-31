@@ -4,19 +4,24 @@ from main.constants import PAGES
 
 urlpatterns = [
     path(
-        'Manager/Dashboard/<str:currentPage>/',
-        views.dashboard,
-        name=PAGES.DASHBOARD
+        'Staff-Dashboard/',
+        views.staffDashboard,
+        name=PAGES.STAFF_DASHBOARD
     ),
     path(
-        'Manager/Detail-Member/<str:pk>',
+        'Members/<str:currentPage>/',
+        views.membersPage,
+        name=PAGES.MEMBERS_PAGE
+    ),
+    path(
+        'Members/Detail-Member/<str:pk>',
         views.detailMember,
         name=PAGES.DETAIL_MEMBER_PAGE
     ),
     path(
-        'Member/',
+        'Member-Dashboard/',
         views.memberPage,
-        name=PAGES.MEMBER_PAGE
+        name=PAGES.MEMBER_DASHBOARD
     ),
     path(
         'Member/Membership-Card/<str:pk>',

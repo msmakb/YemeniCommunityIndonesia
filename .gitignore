@@ -12,6 +12,8 @@ member/migrations/__pycache__/
 member/__pycache__/
 broadcast/migrations/__pycache__/
 broadcast/__pycache__/
+company_user/migrations/__pycache__/
+company_user/__pycache__/
 parameter/migrations/__pycache__/
 parameter/__pycache__/
 monitor/migrations/__pycache__/
@@ -21,6 +23,7 @@ db.sqlite3
 main/migrations/0*.py
 member/migrations/0*.py
 broadcast/migrations/0*.py
+company_user/migrations/0*.py
 parameter/migrations/0*.py
 monitor/migrations/0*.py
 media/*

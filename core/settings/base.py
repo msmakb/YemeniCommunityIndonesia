@@ -15,6 +15,7 @@ INSTALLED_APPS = [
     'broadcast.apps.BroadcastConfig',
     'parameter.apps.ParameterConfig',
     'monitor.apps.MonitorConfig',
+    'company_user.apps.CompanyUserConfig',
 
     # Third party apps
     'django_crontab',
@@ -35,7 +36,7 @@ MIDDLEWARE = [
     'main.middleware.AllowedClientMiddleware',
     'main.middleware.SiteUnderMaintenanceMiddleware',
     'main.middleware.LoginRequiredMiddleware',
-    'main.middleware.AllowedUserMiddleware',
+    'company_user.middleware.AllowedUserMiddleware',
     'main.middleware.ErrorHandlerMiddleware',
 ]
 
