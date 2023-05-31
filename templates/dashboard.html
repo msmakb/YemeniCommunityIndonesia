@@ -1,158 +1,24 @@
 {% extends 'base.html' %}
+{% load main_tags %}
+{% load static %}
 {% block content %}
-{% if currentPage|lower == "list" %}
-<form method="POST">
-    {% csrf_token %}
-    <div class="row">
-        <h1 class="col-7 m-3">قائمة الجالية المسجلين</h1>
-        <a class="col-2 btn btn-md {% if waiting > 0 %} btn-success {% else %} btn-secondary {% endif %} my-3 shadow rounded"
-            href="{% url 'Dashboard' 'Approve' %}" style="float: left; margin-left: 35px;">
-            اعتماد السجلات الجديدة
+<div class="container">
+    <h1 class="text-center display-4 p-5 mt-4">
+        مرحباً
+        {% if request.user.get_full_name %}{{ request.user.get_full_name }}{% else %}{{ request.user.username }}{% endif %}،
+        لقد قمت بتسجيل الدخول كـ {{ user_role }}
+    </h1>
+    <div class="row text-center m-auto justify-content-center">
+        {% getUserMenus request as userMenus %}
+        {% for menuItem in userMenus %}
+        <a class="col-1 btn btn-outline-secondary shadow rounded-circle p-5 m-4" style="width: 200px; height: 200px"
+            href="{% if menuItem.arg %}{% url menuItem.page menuItem.arg %}{% else %}{% url menuItem.page %}{% endif %}">
+            <img src="{% static menuItem.icon %}" alt="{{ menuItem.name }}"
+                style="width: 100px; height: 100px; margin-top: -30px;" />
+            <h4 class="mt-2">{{ menuItem.name }}</h4>
         </a>
-        <button type="submit" id="export_button" class="col-2 btn btn-md btn-info my-3 shadow rounded"
-            style="float: left; margin-left: 35px;" download>استخراج البيانات</button>
-    </div>
-</form>
-{% elif currentPage|lower == "approve" %}
-<div class="row">
-    <h1 class="col m-3">اعتماد السجلات الجديدة</h1>
-    <a class="col-2 btn btn-lg btn-info my-3 shadow rounded" href="{% url 'Dashboard' 'List' %}"
-        style="float: left; margin-left: 35px;">
-        رجوع
-    </a>
-</div>
-{% endif %}
+        {% endfor %}
 
-{% if currentPage|lower == "list" %}
-<form method="GET">
-    <div class="container shadow p-3 mb-5 bg-white rounded">
-        <div class="row">
-            <div class="col form-group">
-                <label class="" for="{{ personFilter.form.name_ar.auto_id }}">
-                    {{ personFilter.form.name_ar.label }}
-                </label>
-                {{ personFilter.form.name_ar }}
-            </div>
-            <div class="col form-group">
-                <label class="" for="{{ personFilter.form.name_en.auto_id }}">
-                    {{ personFilter.form.name_en.label }}
-                </label>
-                {{ personFilter.form.name_en }}
-            </div>
-            <div class="col form-group">
-                <label class="" for="{{ personFilter.form.gender.auto_id }}">
-                    {{ personFilter.form.gender.label }}
-                </label>
-                {{ personFilter.form.gender }}
-            </div>
-            <div class="col form-group">
-                <label class="" for="{{ personFilter.form.job_title.auto_id }}">
-                    {{ personFilter.form.job_title.label }}
-                </label>
-                {{ personFilter.form.job_title }}
-            </div>
-            <div class="col form-group">
-                <label class="" for="{{ personFilter.form.period_of_residence.auto_id }}">
-                    {{ personFilter.form.period_of_residence.label }}
-                </label>
-                {{ personFilter.form.period_of_residence }}
-            </div>
-            <div class="col form-group">
-                <label class="" for="{{ personFilter.form.address__city.auto_id }}">
-                    {{ personFilter.form.address__city.label }}
-                </label>
-                {{ personFilter.form.address__city }}
-            </div>
-        </div>
-        <div class="row">
-            <div class="col form-group">
-                <label class="" for="{{ personFilter.form.academic__academic_qualification.auto_id }}">
-                    {{ personFilter.form.academic__academic_qualification.label }}
-                </label>
-                {{ personFilter.form.academic__academic_qualification }}
-            </div>
-            <div class="col form-group">
-                <label class="" for="{{ personFilter.form.filter_membership.auto_id }}">
-                    {{ personFilter.form.filter_membership.label }}
-                </label>
-                {{ personFilter.form.filter_membership }}
-            </div>
-            <div class="col form-group">
-                <label class="" for="{{ personFilter.form.membership__membership_type.auto_id }}">
-                    {{ personFilter.form.membership__membership_type.label }}
-                </label>
-                {{ personFilter.form.membership__membership_type }}
-            </div>
-            <div class="col form-group">
-                <label class="" for="{{ personFilter.form.membership__card_number.auto_id }}">
-                    {{ personFilter.form.membership__card_number.label }}
-                </label>
-                {{ personFilter.form.membership__card_number }}
-            </div>
-            <div class="col form-group">
-                <label class="" for="{{ personFilter.form.passport_number.auto_id }}">
-                    {{ personFilter.form.passport_number.label }}
-                </label>
-                {{ personFilter.form.passport_number }}
-            </div>
-            <div class="col">
-                <button class="btn btn-md btn-outline-dark mt-3 mx-auto px-5 shadow rounded"
-                    type="submit">تصفية</button>
-            </div>
-        </div>
     </div>
-</form>
-{% endif %}
-
-{% if page_obj %}
-<div class="container-fluid">
-    <table class="table text-center">
-        <thead>
-            <tr>
-                <th scope="col">رقم</th>
-                <th scope="col">الأسم</th>
-                <th scope="col">المدينة</th>
-                <th scope="col">الوظيفة</th>
-                <th scope="col">رقم الواتس</th>
-                {% if currentPage|lower == "list" %}
-                <th scope="col">عضو في الجالية</th>
-                {% endif %}
-                <th scope="col">التفاصيل</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for person in page_obj %}
-            <tr>
-                <td>{{ page_obj.start_index|add:forloop.counter0 }}</td>
-                <td>{{ person.name_ar }}</td>
-                <td>{{ person.address.city }}</td>
-                <td>{{ person.getJobTitle }}</td>
-                <td>{{ person.whatsapp_number }}</td>
-                {% if currentPage|lower == "list" %}
-                <td>{% if person.membership %} نعم {% else %} لا {% endif %}</td>
-                {% endif %}
-                <td><a class="btn btn-outline-info" href="{% url 'DetailMemberPage' person.id %}">عرض</a></td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
 </div>
-{% else %}
-{% if currentPage|lower == "list" %}
-<h2 class="text-center text-danger">لا توجد بيانات متاحة</h2>
-{% elif currentPage|lower == "approve" %}
-<h2 class="text-center text-success">لا توجد سجلات جديدة لإعتمادها</h2>
-{% endif %}
-{% endif %}
 {% endblock content %}
-{% block scripts %}
-<script>
-    $('#export_button').click(function () {
-        setTimeout(function () {
-            document.body.classList.remove("posting");
-            document.getElementById("loading-screen").style.display = "none";
-            document.getElementById("screen").classList.remove("blur");
-        }, 500);
-    });
-</script>
-{% endblock scripts %}

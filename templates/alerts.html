@@ -2,19 +2,19 @@
 <div class="mt-2 px-3">
     {% if message.tags == "info" %}
     <div class="alert alert-info" role="alert">
-        <p class="my-auto text-center">{{ message }}</p>
+        <p class="my-auto text-center">{{ message|safe }}</p>
     </div>
     {% elif message.tags == "success" %}
     <div class="alert alert-success" role="alert">
-        <p class="my-auto text-center">{{ message }}</p>
+        <p class="my-auto text-center">{{ message|safe }}</p>
     </div>
     {% elif message.tags == "warning" %}
     <div class="alert alert-warning" role="alert">
-        <p class="my-auto text-center">{{ message }}</p>
+        <p class="my-auto text-center">{{ message|safe }}</p>
     </div>
     {% elif message.tags == "error" %}
     <div class="alert alert-danger" role="alert">
-        <p class="my-auto text-center">{{ message }}</p>
+        <p class="my-auto text-center">{{ message|safe }}</p>
     </div>
     {% endif %}
 </div>

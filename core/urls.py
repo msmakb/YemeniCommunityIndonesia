@@ -12,6 +12,7 @@ urlpatterns = [
     path('', include('broadcast.urls')),
     path('', include('parameter.urls')),
     path('', include('monitor.urls')),
+    path('', include('company_user.urls')),
 ]
 
 # Static and Media URL Patterns

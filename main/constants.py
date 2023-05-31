@@ -20,7 +20,7 @@ GET_METHOD: Final[str] = 'GET'
 POST_METHOD: Final[str] = 'POST'
 DELETE_METHOD: Final[str] = 'DELETE'
 ROWS_PER_PAGE: Final[int] = 10
-DEFAULT_CACHE_EXPIRE: Final[int] = 86_400 # One day
+DEFAULT_CACHE_EXPIRE: Final[int] = 86_400  # One day
 ACCESS_TYPE = _NT('str', [
     'No_ACCESS',
     'ADMIN_ACCESS',
@@ -135,19 +135,19 @@ _MIME_TYPE: dict[str, str] = {
     'MS_POWERPOINT_OPEN_XML': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
 }
 MIME_TYPE = _NT('str', [
-    'AVI', # .avi	AVI: Audio Video Interleave
-    'JPEG', # .jpeg, .jpg	JPEG images
-    'MP4', # .mp4	MP4 video
-    'MP3', # .mp3	MP3 audio
-    'PNG', # .png	Portable Network Graphics
-    'PDF', # .pdf	Adobe Portable Document Format (PDF)
-    'RAR', # .rar	RAR archive
-    'TEXT', # .txt	Text, (generally ASCII or ISO 8859-n)
-    'WAV', # .wav	Waveform Audio Format
-    'MS_EXCEL', # .xls	Microsoft Excel
-    'MS_POWERPOINT', # .ppt	Microsoft PowerPoint
-    'MS_EXCEL_OPEN_XML', # .xlsx	Microsoft Excel (OpenXML)
-    'MS_POWERPOINT_OPEN_XML', # .pptx	Microsoft PowerPoint (OpenXML)
+    'AVI',  # .avi	AVI: Audio Video Interleave
+    'JPEG',  # .jpeg, .jpg	JPEG images
+    'MP4',  # .mp4	MP4 video
+    'MP3',  # .mp3	MP3 audio
+    'PNG',  # .png	Portable Network Graphics
+    'PDF',  # .pdf	Adobe Portable Document Format (PDF)
+    'RAR',  # .rar	RAR archive
+    'TEXT',  # .txt	Text, (generally ASCII or ISO 8859-n)
+    'WAV',  # .wav	Waveform Audio Format
+    'MS_EXCEL',  # .xls	Microsoft Excel
+    'MS_POWERPOINT',  # .ppt	Microsoft PowerPoint
+    'MS_EXCEL_OPEN_XML',  # .xlsx	Microsoft Excel (OpenXML)
+    'MS_POWERPOINT_OPEN_XML',  # .pptx	Microsoft PowerPoint (OpenXML)
 ])(
     _MIME_TYPE.get('AVI'),
     _MIME_TYPE.get('JPEG'),
@@ -188,12 +188,25 @@ GENDER_AR: Final[tuple[str, ...]] = (
     'أنثى'
 )
 GROUPS = _NT('str', [
-    'MANAGER',
-    'MEMBER',
+    'MEMBERS',
+    'BROADCAST',
+    'MONITOR',
+    'PARAMETER',
+    'COMPANY_USER',
 ])(
-    'Manager',
-    'Member',
+    'Members',
+    'Broadcast',
+    'Monitor',
+    'Parameter',
+    'Company User',
 )
+GROUPS_AR: Final[dict[str, str]] = {
+    GROUPS.MEMBERS: 'الأعضاء',
+    GROUPS.BROADCAST: 'برودكاست',
+    GROUPS.MONITOR: 'مراقبة',
+    GROUPS.PARAMETER: 'اعدادات النظام',
+    GROUPS.COMPANY_USER: 'إدارة المستخدم',
+}
 ACADEMIC_QUALIFICATION = _NT('str', [
     'PHD',
     'MASTER',
@@ -341,8 +354,9 @@ PAGES = _NT('str', [
     'UNAUTHORIZED_PAGE',
 
     # Member pages
-    'DASHBOARD',
-    'MEMBER_PAGE',
+    'STAFF_DASHBOARD',
+    'MEMBERS_PAGE',
+    'MEMBER_DASHBOARD',
     'DOWNLOAD_MEMBERSHIP_PAGE',
     'MEMBER_FORM_PAGE',
     'DETAIL_MEMBER_PAGE',
@@ -363,6 +377,17 @@ PAGES = _NT('str', [
     'MONITOR_PAGE',
     'ACTIVITY_LOG_PAGE',
     'BLOCK_LIST_PAGE',
+
+    # Company user pages
+    'COMPANY_USERS_PAGE',
+    'ADD_COMPANY_USER_PAGE',
+    'UPDATE_COMPANY_USER_PAGE',
+    'DELETE_COMPANY_USER_PAGE',
+    'ROLES_PAGE',
+    'ADD_ROLE_PAGE',
+    'UPDATE_ROLE_PAGE',
+    'DELETE_ROLE_PAGE',
+    'COMPANY_USER_REGISTRATION_PAGE',
 ])(
     # Main pages
     'Index',
@@ -373,8 +398,9 @@ PAGES = _NT('str', [
     'Unauthorized',
 
     # Member pages
-    'Dashboard',
-    'Member',
+    'StaffDashboard',
+    'MembersPage',
+    'MemberDashboard',
     'Download-Membership',
     'MemberFormPage',
     'DetailMemberPage',
@@ -395,6 +421,17 @@ PAGES = _NT('str', [
     'MonitorPage',
     'ActivityLogPage',
     'BlockListPage',
+
+    # Company user pages
+    'CompanyUsersPage',
+    'AddCompanyUserPage',
+    'UpdateCompanyUserPage',
+    'DeleteCompanyUserPage',
+    'RolesPage',
+    'AddRolePage',
+    'UpdateRolePage',
+    'DeleteRolePage',
+    'CompanyUserRegistrationPage',
 )
 TEMPLATES = _NT('str', [
     # Main templates
@@ -407,6 +444,7 @@ TEMPLATES = _NT('str', [
 
     # Member templates
     'DASHBOARD_TEMPLATE',
+    'MEMBERS_PAGE_TEMPLATE',
     'MEMBER_PAGE_TEMPLATE',
     'MEMBER_FORM_TEMPLATE',
     'DETAIL_MEMBER_TEMPLATE',
@@ -425,11 +463,19 @@ TEMPLATES = _NT('str', [
     'MONITOR_PAGE_TEMPLATE',
     'ACTIVITY_LOG_PAGE_TEMPLATE',
     'BLOCK_LIST_PAGE_TEMPLATE',
-    
+
+    # Company user templates
+    'COMPANY_USERS_PAGE_TEMPLATE',
+    'ADD_UPDATE_COMPANY_USER_PAGE_TEMPLATE',
+    'ROLES_PAGE_TEMPLATE',
+    'ADD_UPDATE_ROLE_PAGE_TEMPLATE',
+    'COMPANY_USER_REGISTRATION_PAGE_TEMPLATE',
+
     # Email template
     'THANK_YOU_EMAIL_TEMPLATE',
     'APPROVE_MEMBER_EMAIL_TEMPLATE',
     'EMAIL_FOOTER_TEMPLATE',
+    'NEW_COMPANY_USER_EMAIL_TEMPLATE',
 ])(
     # Main templates
     f'{_main_app__templates_folder}/under_maintenance.html',
@@ -441,6 +487,7 @@ TEMPLATES = _NT('str', [
 
     # Member templates
     f'{_main_app__templates_folder}/dashboard.html',
+    f'{_main_app__templates_folder}/members_page.html',
     f'{_main_app__templates_folder}/member_page.html',
     f'{_main_app__templates_folder}/member_form.html',
     f'{_main_app__templates_folder}/detail_member.html',
@@ -460,10 +507,18 @@ TEMPLATES = _NT('str', [
     f'{_main_app__templates_folder}/activity_log.html',
     f'{_main_app__templates_folder}/block_list.html',
 
+    # Company user templates
+    f'{_main_app__templates_folder}/company_users.html',
+    f'{_main_app__templates_folder}/add_update_company_user.html',
+    f'{_main_app__templates_folder}/roles.html',
+    f'{_main_app__templates_folder}/add_update_role.html',
+    f'{_main_app__templates_folder}/company_user_registration_page.html',
+
     # Email templates
     f'{_email__templates_folder}/thank_you_email.html',
     f'{_email__templates_folder}/approve_member_email.html',
     f'{_email__templates_folder}/email_footer.html',
+    f'{_email__templates_folder}/new_company_user_email.html',
 )
 PARAMETERS = _NT('str', [
     "ALLOWED_LOGGED_IN_ATTEMPTS",
@@ -503,31 +558,45 @@ CACHE = _NT('str', [
     "LAST_AUDIT_ENTRY_QUERYSET",
     "ALLOWED_ClIENTS",
 )
-PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {
-    GROUPS.MANAGER: (
-        PAGES.DASHBOARD,
+STAFF_PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {
+    "COMMON": {
+        PAGES.STAFF_DASHBOARD,
+    },
+    GROUPS.MEMBERS: (
+        PAGES.MEMBERS_PAGE,
         PAGES.DETAIL_MEMBER_PAGE,
-        
-        # Broadcast
+    ),
+    GROUPS.BROADCAST: (
         PAGES.BROADCAST_PAGE,
         PAGES.DETAIL_BROADCAST_PAGE,
         PAGES.ADD_BROADCAST_PAGE,
         PAGES.UPDATE_BROADCAST_PAGE,
         PAGES.ADD_ATTACHMENT_PAGE,
         PAGES.DELETE_ATTACHMENT_PAGE,
-
-        # Parameter
+    ),
+    GROUPS.PARAMETER: (
         PAGES.SETTINGS_PAGE,
-
-        # Monitor
+    ),
+    GROUPS.MONITOR: (
         PAGES.MONITOR_PAGE,
         PAGES.ACTIVITY_LOG_PAGE,
         PAGES.BLOCK_LIST_PAGE,
     ),
-    GROUPS.MEMBER: (
-        PAGES.MEMBER_PAGE,
-    )
+    GROUPS.COMPANY_USER: (
+        PAGES.COMPANY_USERS_PAGE,
+        PAGES.ADD_COMPANY_USER_PAGE,
+        PAGES.UPDATE_COMPANY_USER_PAGE,
+        PAGES.DELETE_COMPANY_USER_PAGE,
+        PAGES.ROLES_PAGE,
+        PAGES.ADD_ROLE_PAGE,
+        PAGES.UPDATE_ROLE_PAGE,
+        PAGES.DELETE_ROLE_PAGE,
+    ),
 }
+NON_STAFF_PERMISSIONS: Final[tuple[str, ...]] = (
+    PAGES.MEMBER_DASHBOARD,
+)
 RESTRICTED_PAGES: Final[list[str]] = [
-    page for pages in PERMISSIONS.values() for page in pages
+    *(page for pages in STAFF_PERMISSIONS.values() for page in pages),
+    *(page for page in NON_STAFF_PERMISSIONS)
 ]

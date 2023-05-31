@@ -12,6 +12,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
 from django.utils import timezone
 
+from company_user.models import CompanyUser
+
 from main import constants
 from main import messages as MSG
 from main.image_processing import ImageProcessor, ImageProcessingError
@@ -27,7 +29,17 @@ from .forms import (AddPersonForm, AcademicForm,
 from .filters import PersonFilter
 
 
-def dashboard(request: HttpRequest, currentPage: str) -> HttpResponse:
+def staffDashboard(request: HttpRequest) -> HttpResponse:
+    if request.user.is_superuser:
+        user_role: str = "مستخدم متميز"
+    else:
+        user_role: str = CompanyUser.filter(
+            user=request.user).values('role__name').first()['role__name']
+    context: dict[str, Any] = {'user_role': user_role}
+    return render(request, constants.TEMPLATES.DASHBOARD_TEMPLATE, context)
+
+
+def membersPage(request: HttpRequest, currentPage: str) -> HttpResponse:
     waiting: int = Person.countFiltered(is_validated=False)
     is_validated: bool | None = None
     match currentPage.lower():
@@ -128,7 +140,7 @@ def dashboard(request: HttpRequest, currentPage: str) -> HttpResponse:
         'currentPage': currentPage,
         'personFilter': personFilter
     }
-    return render(request, constants.TEMPLATES.DASHBOARD_TEMPLATE, context)
+    return render(request, constants.TEMPLATES.MEMBERS_PAGE_TEMPLATE, context)
 
 
 def memberPage(request: HttpRequest) -> HttpResponse:
@@ -158,7 +170,7 @@ def downloadMembershipCard(request: HttpRequest, pk: str) -> HttpResponse:
 
     if person.membership != membership:
         return redirect(constants.PAGES.UNAUTHORIZED_PAGE)
-    
+
     file_path = membership.membership_card.path
     if os.path.exists(file_path):
         with open(file_path, 'rb') as file:
@@ -426,7 +438,7 @@ def detailMember(request: HttpRequest, pk: str) -> HttpResponse:
                     except Exception:
                         pass
 
-                return redirect(constants.PAGES.DASHBOARD, "Approve")
+                return redirect(constants.PAGES.MEMBERS_PAGE, "Approve")
             else:
                 MSG.PASSPORT_NUMBER_ERROR(request)
                 return redirect(constants.PAGES.DETAIL_MEMBER_PAGE, person.id)
@@ -439,7 +451,7 @@ def detailMember(request: HttpRequest, pk: str) -> HttpResponse:
 
             if int(passport_number) == person.id:
                 person.delete()
-                return redirect(constants.PAGES.DASHBOARD, "Approve")
+                return redirect(constants.PAGES.MEMBERS_PAGE, "Approve")
             else:
                 MSG.PASSPORT_NUMBER_ERROR(request)
                 return redirect(constants.PAGES.DETAIL_MEMBER_PAGE, person.id)

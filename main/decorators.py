@@ -4,11 +4,8 @@ from typing import Any, Callable
 
 from django.http import HttpRequest
 from django.shortcuts import redirect
-from django.urls import resolve
 
 from . import constants
-from . import messages as MSG
-from .utils import getUserGroupe
 
 logger: Logger = logging.getLogger(constants.LOGGERS.MAIN)
 
@@ -30,19 +27,10 @@ def isAuthenticatedUser(view_func: Callable) -> Callable:
         if request.user.is_authenticated:
             logger.info(
                 f"The user [{request.user.username}] is authenticated")
-            if request.user.groups.exists():
-                group: str = getUserGroupe(request)
-                match group:
-                    case constants.GROUPS.MANAGER:
-                        return redirect(constants.PAGES.DASHBOARD, "list")
-                    case constants.GROUPS.MEMBER:
-                        return redirect(constants.PAGES.MEMBER_PAGE)
-                    case _:
-                        return redirect(constants.PAGES.LOGOUT)
+            if request.user.is_staff:
+                return redirect(constants.PAGES.STAFF_DASHBOARD)
             else:
-                logger.warning("The user has no groups!!")
-                MSG.SOMETHING_WRONG(request)
-                return redirect(constants.PAGES.LOGOUT)
+                return redirect(constants.PAGES.MEMBER_DASHBOARD)
         else:
             return view_func(*args, **kwargs)
     return wrapper_func

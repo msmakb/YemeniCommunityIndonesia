@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load main_tags %}
+{% block content %}
+<form method="POST" class="col-lg-8 col-xl-8 p-3 mx-auto">
+    <span id="groups-names-ar" data="{{ groupsAr|safe }}"></span>
+    {% csrf_token %}
+    <h2>
+        {% if "Add" in request.path %}
+        إضافة وظيفة جديد
+        {% else %}
+        تعديل الوظيفة
+        {% endif %}
+    </h2>
+    {% for field in roleForm.visible_fields %}
+    <div class="form-group">
+        <label class="mt-3 lead" for="{{ field.auto_id }}">
+            {{ field.label }}
+            {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+        </label>
+        {% getFieldErrors roleForm field.name as errors %}
+        <div class="{% if errors %}border border-danger{% endif %}">{{ field }}</div>
+        {% if errors %}<span class="text-danger">{{ errors }}</span>{% endif %}
+    </div>
+    {% endfor %}
+    <div>
+        <button type="submit" class="btn btn-lg btn-info mt-4 mb-5 shadow rounded">
+            {% if "Add" in request.path %}
+            إضافة
+            {% else %}
+            تعديل
+            {% endif %}
+        </button>
+        <a type="submit" class="btn btn-lg btn-secondary mt-4 mb-5 shadow rounded"
+            href="{% url 'RolesPage' %}">إلغاء</a>
+    </div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+    let count = 0;
+    let groups_names_ar = document.getElementById('groups-names-ar').getAttribute("data");
+    groups_names_ar = groups_names_ar.replace("{", "")
+    groups_names_ar = groups_names_ar.replace("}", "")
+    groups_names_ar = groups_names_ar.replaceAll("'", "")
+    groups_names_ar = groups_names_ar.split(',')
+
+    let groups_names_obj = {};
+
+    groups_names_ar.forEach((i) => {
+        groups_names_obj[i.split(': ')[0].trim()] = i.split(': ')[1].trim();
+    });
+
+    while (true) {
+        let input = document.getElementById(`id_groups_${count}`);
+        count++;
+        if (input == null) {
+            break;
+        }
+        // console.log(input.nextSibling.textContent.trim());
+        input.nextSibling.textContent = " " + groups_names_obj[input.nextSibling.textContent.trim()];
+    }
+</script>
+{% endblock scripts %}
