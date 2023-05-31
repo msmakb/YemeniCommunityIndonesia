@@ -20,6 +20,7 @@ GET_METHOD: Final[str] = 'GET'
 POST_METHOD: Final[str] = 'POST'
 DELETE_METHOD: Final[str] = 'DELETE'
 ROWS_PER_PAGE: Final[int] = 10
+DEFAULT_CACHE_EXPIRE: Final[int] = 86_400 # One day
 ACCESS_TYPE = _NT('str', [
     'No_ACCESS',
     'ADMIN_ACCESS',
@@ -58,6 +59,16 @@ ACTION_STR: tuple[str, ...] = (
     'ATTACK_ATTEMPT',
     'MEMBER_FORM_POST',
 )
+ACTION_STR_AR: tuple[str, ...] = (
+    'زيارة أولى',
+    'تسجيل دخول',
+    'تسجيل خروج',
+    'تسجيل دخول فاشل',
+    'NORMAL_POST',
+    'محاولة مشتبهة',
+    'محاولة مشتبهة',
+    'تقديم النموذج',
+)
 BLOCK_TYPES = _NT('str', [
     'UNBLOCKED',
     'TEMPORARY',
@@ -67,16 +78,23 @@ BLOCK_TYPES = _NT('str', [
     '1',
     '2',
 )
+BLOCK_TYPES_AR: Final[tuple[str, ...]] = (
+    'ملغى حظره',
+    'حظر مؤقت',
+    'حظر مؤبد',
+)
 DATA_TYPE = _NT('str', [
     'STRING',
     'INTEGER',
     'FLOAT',
-    'BOOLEAN'
+    'BOOLEAN',
+    'EMAIL',
 ])(
     '0',
     '1',
     '2',
-    '3'
+    '3',
+    '4',
 )
 ADMIN_SITE = _NT('str', [
     'SITE_HEADER',
@@ -150,11 +168,13 @@ LOGGERS = _NT('str', [
     'MIDDLEWARE',
     'MODELS',
     'BROADCAST',
+    'PARAMETER',
 ])(
     'YCI.Main',
     'YCI.Middleware',
     'YCI.Models',
     'YCI.Broadcast',
+    'YCI.Parameter',
 )
 GENDER = _NT('str', [
     'MALE',
@@ -243,6 +263,20 @@ MEMBERSHIP_TYPE_AR: Final[tuple[str, ...]] = (
     'موظف',
     'عامة',
 )
+MONTHS_AR = [
+    'يناير',
+    'فبراير',
+    'مارس',
+    'أبريل',
+    'مايو',
+    'يونيو',
+    'يوليو',
+    'أغسطس',
+    'سبتمبر',
+    'أكتوبر',
+    'نوفمبر',
+    'ديسمبر',
+]
 PERIOD_OF_RESIDENCE = _NT('str', [
     'LEES_THAN_SIX_MONTHS',
     'ONE_YEAR_OR_LESS',
@@ -298,43 +332,69 @@ CHOICES = _NT('tuple', [
      for i, period in enumerate(PERIOD_OF_RESIDENCE)]
 )
 PAGES = _NT('str', [
+    # Main pages
     'INDEX_PAGE',
     'MEMBERSHIP_TERMS_PAGE',
     'ABOUT_PAGE',
     'LOGIN_PAGE',
     'LOGOUT',
     'UNAUTHORIZED_PAGE',
+
+    # Member pages
     'DASHBOARD',
     'MEMBER_PAGE',
     'DOWNLOAD_MEMBERSHIP_PAGE',
     'MEMBER_FORM_PAGE',
     'DETAIL_MEMBER_PAGE',
     'THANK_YOU_PAGE',
+
+    # Broadcast pages
     'BROADCAST_PAGE',
     'DETAIL_BROADCAST_PAGE',
     'ADD_BROADCAST_PAGE',
     'UPDATE_BROADCAST_PAGE',
     'ADD_ATTACHMENT_PAGE',
     'DELETE_ATTACHMENT_PAGE',
+
+    # Parameters pages
+    'SETTINGS_PAGE',
+
+    # Monitor pages
+    'MONITOR_PAGE',
+    'ACTIVITY_LOG_PAGE',
+    'BLOCK_LIST_PAGE',
 ])(
+    # Main pages
     'Index',
     'MembershipTerms',
     'About',
     'Login',
     'Logout',
     'Unauthorized',
+
+    # Member pages
     'Dashboard',
     'Member',
     'Download-Membership',
     'MemberFormPage',
     'DetailMemberPage',
     'ThankYouPage',
+
+    # Broadcast pages
     'BroadcastPage',
     'DetailBroadcastPage',
     'AddBroadcastPage',
     'UpdateBroadcastPage',
     'AddAttachmentPage',
     'DeleteAttachmentPage',
+
+    # Parameter pages
+    'SettingsPage',
+
+    # Monitor pages
+    'MonitorPage',
+    'ActivityLogPage',
+    'BlockListPage',
 )
 TEMPLATES = _NT('str', [
     # Main templates
@@ -344,15 +404,29 @@ TEMPLATES = _NT('str', [
     'MEMBERSHIP_TERMS_TEMPLATE',
     'ABOUT_TEMPLATE',
     'LOGIN_TEMPLATE',
+
+    # Member templates
     'DASHBOARD_TEMPLATE',
     'MEMBER_PAGE_TEMPLATE',
     'MEMBER_FORM_TEMPLATE',
     'DETAIL_MEMBER_TEMPLATE',
     'THANK_YOU_TEMPLATE',
+
+    # Broadcast Template
     'BROADCAST_PAGE_TEMPLATE',
     'DETAIL_BROADCAST_PAGE_TEMPLATE',
     'ADD_UPDATE_BROADCAST_PAGE_TEMPLATE',
     'ADD_ATTACHMENT_PAGE_TEMPLATE',
+
+    # Parameter template
+    'SYSTEM_SETTINGS_PAGE_TEMPLATE',
+
+    # Monitor templates
+    'MONITOR_PAGE_TEMPLATE',
+    'ACTIVITY_LOG_PAGE_TEMPLATE',
+    'BLOCK_LIST_PAGE_TEMPLATE',
+    
+    # Email template
     'THANK_YOU_EMAIL_TEMPLATE',
     'APPROVE_MEMBER_EMAIL_TEMPLATE',
     'EMAIL_FOOTER_TEMPLATE',
@@ -364,15 +438,29 @@ TEMPLATES = _NT('str', [
     f'{_main_app__templates_folder}/membership_terms.html',
     f'{_main_app__templates_folder}/about.html',
     f'{_main_app__templates_folder}/login.html',
+
+    # Member templates
     f'{_main_app__templates_folder}/dashboard.html',
     f'{_main_app__templates_folder}/member_page.html',
     f'{_main_app__templates_folder}/member_form.html',
     f'{_main_app__templates_folder}/detail_member.html',
     f'{_main_app__templates_folder}/thank_you.html',
+
+    # Broadcast templates
     f'{_main_app__templates_folder}/broadcasts.html',
     f'{_main_app__templates_folder}/detail_broadcast.html',
     f'{_main_app__templates_folder}/add_update_broadcast.html',
     f'{_main_app__templates_folder}/add_attachment.html',
+
+    # Parameter templates
+    f'{_main_app__templates_folder}/system_settings.html',
+
+    # Monitor templates
+    f'{_main_app__templates_folder}/monitor.html',
+    f'{_main_app__templates_folder}/activity_log.html',
+    f'{_main_app__templates_folder}/block_list.html',
+
+    # Email templates
     f'{_email__templates_folder}/thank_you_email.html',
     f'{_email__templates_folder}/approve_member_email.html',
     f'{_email__templates_folder}/email_footer.html',
@@ -391,6 +479,7 @@ PARAMETERS = _NT('str', [
     "IMAGE_MAX_SIZE",
     "REMOVE_BG_API_KEY",
     "PLACEHOLDER_EMAIL",
+    "OPEN_MEMBER_REGISTRATION_FORM",
 ])(
     "ALLOWED_LOGGED_IN_ATTEMPTS",
     "ALLOWED_LOGGED_IN_ATTEMPTS_RESET",
@@ -405,6 +494,14 @@ PARAMETERS = _NT('str', [
     "IMAGE_MAX_SIZE",
     "REMOVE_BG_API_KEY",
     "PLACEHOLDER_EMAIL",
+    "OPEN_MEMBER_REGISTRATION_FORM",
+)
+CACHE = _NT('str', [
+    "LAST_AUDIT_ENTRY_QUERYSET",
+    "ALLOWED_ClIENTS",
+])(
+    "LAST_AUDIT_ENTRY_QUERYSET",
+    "ALLOWED_ClIENTS",
 )
 PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {
     GROUPS.MANAGER: (
@@ -418,6 +515,14 @@ PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {
         PAGES.UPDATE_BROADCAST_PAGE,
         PAGES.ADD_ATTACHMENT_PAGE,
         PAGES.DELETE_ATTACHMENT_PAGE,
+
+        # Parameter
+        PAGES.SETTINGS_PAGE,
+
+        # Monitor
+        PAGES.MONITOR_PAGE,
+        PAGES.ACTIVITY_LOG_PAGE,
+        PAGES.BLOCK_LIST_PAGE,
     ),
     GROUPS.MEMBER: (
         PAGES.MEMBER_PAGE,

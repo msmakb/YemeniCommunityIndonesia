@@ -5,10 +5,14 @@ from django.contrib import auth
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpRequest
 from django.shortcuts import render, redirect
+from django.utils import timezone
 
 from . import constants
 from . import messages as MSG
 from .decorators import isAuthenticatedUser
+from .models import AuditEntry
+from parameter.service import getParameterValue
+from .utils import getClientIp
 
 logger: Logger = logging.getLogger(constants.LOGGERS.MAIN)
 
@@ -31,6 +35,13 @@ def loginPage(request: HttpRequest) -> HttpResponse:
             return redirect(constants.PAGES.INDEX_PAGE)
         else:
             MSG.INCORRECT_INFO(request)
+            allowed_attempts: int = getParameterValue(constants.PARAMETERS.ALLOWED_LOGGED_IN_ATTEMPTS)
+            failed_login_count: int = AuditEntry.getLastAuditEntry().filter(
+                action=constants.ACTION.LOGGED_FAILED,
+                ip=getClientIp(request)
+            ).count()
+            if failed_login_count > abs(allowed_attempts / failed_login_count):
+                MSG.MANY_FAILED_LOGIN_WARNING(request)
 
     return render(request, constants.TEMPLATES.LOGIN_TEMPLATE)
 

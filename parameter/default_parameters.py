@@ -1,12 +1,7 @@
 from dataclasses import dataclass
 import logging as logging
-from logging import Logger
-from typing import Union
 
-from .constants import ACCESS_TYPE, DATA_TYPE, LOGGERS
-from .models import Parameter as _parameter
-
-logger: Logger = logging.getLogger(LOGGERS.MAIN)
+from main.constants import ACCESS_TYPE, DATA_TYPE
 
 
 @dataclass
@@ -133,9 +128,18 @@ def _getDefaultParam() -> list[_DefaultParameter]:
         _DefaultParameter(
             name="PLACEHOLDER_EMAIL",
             value="placeholder@example.com",
-            description="JThis ensures that the email is properly delivered and avoids potential issues with spam filters or email clients.",
+            description="This ensures that the email is properly delivered and avoids potential issues with spam filters or email clients.",
             access_type=ACCESS_TYPE.ADMIN_ACCESS,
-            parameter_type=DATA_TYPE.STRING
+            parameter_type=DATA_TYPE.EMAIL
+        )
+    )
+    default_parameters.append(
+        _DefaultParameter(
+            name="OPEN_MEMBER_REGISTRATION_FORM",
+            value="YES",
+            description="This for opening and closing the registration form for new members. The value must be 'YES' or 'NO'.",
+            access_type=ACCESS_TYPE.ADMIN_ACCESS,
+            parameter_type=DATA_TYPE.BOOLEAN
         )
     )
     default_parameters.append(
@@ -147,90 +151,5 @@ def _getDefaultParam() -> list[_DefaultParameter]:
             parameter_type=DATA_TYPE.STRING
         )
     )
+
     return default_parameters
-
-
-def _saveDefaultParametersToDataBase() -> None:
-    # This executed one time only, when parameters table is created
-    for pram in _getDefaultParam():
-        if pram.name == "TEST":
-            continue
-        if not _parameter.isExists(name=pram.name):
-            logger.info(f"The default parameter {pram.name}"
-                        + " added to the database.")
-            _parameter.create(
-                name=pram.name,
-                value=pram.value,
-                description=pram.description,
-                access_type=pram.access_type,
-                parameter_type=pram.parameter_type,
-            )
-
-
-def getParameterValue(key: str) -> Union[str, int, float, bool]:
-    if not isinstance(key, str):
-        raise ValueError("The key must be a string.")
-    try:
-        param: _parameter = _parameter.get(name=key)
-        match param.getParameterType:
-            case DATA_TYPE.INTEGER:
-                value: int = int(param.getValue)
-                return value
-            case DATA_TYPE.FLOAT:
-                value: float = float(param.getValue)
-                return value
-            case DATA_TYPE.BOOLEAN:
-                val: str = param.getValue
-                true_con: tuple[bool, ...] = (
-                    val.lower() == 'yes',
-                    val.lower() == 'true',
-                    val == '1',
-                )
-                false_con: tuple[bool, ...] = (
-                    val.lower() == 'no',
-                    val.lower() == 'false',
-                    val == '0'
-                )
-                if any(true_con):
-                    return True
-                elif any(false_con):
-                    return False
-                else:
-                    raise ValueError
-            case _:
-                return param.getValue
-    except _parameter.DoesNotExist:
-        if key != "TEST":
-            logger.warning(f"The parameter [{key}] "
-                           + "dose not exist in database!")
-        for pram in _getDefaultParam():
-            if key == pram.name:
-                match pram.parameter_type:
-                    case DATA_TYPE.INTEGER:
-                        value: int = int(pram.value)
-                        return value
-                    case DATA_TYPE.FLOAT:
-                        value: float = float(pram.value)
-                        return value
-                    case DATA_TYPE.BOOLEAN:
-                        val: str = pram.value
-                        true_con: tuple[bool, ...] = (
-                            val.lower() == 'yes',
-                            val.lower() == 'true',
-                            val == '1',
-                        )
-                        false_con: tuple[bool, ...] = (
-                            val.lower() == 'no',
-                            val.lower() == 'false',
-                            val == '0'
-                        )
-                        if any(true_con):
-                            return True
-                        elif any(false_con):
-                            return False
-                        else:
-                            raise ValueError
-                    case _:
-                        return pram.value
-        raise KeyError("The parameter does not exist in the database "
-                       + "nor the default parameters.")

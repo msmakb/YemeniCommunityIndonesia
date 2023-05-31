@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container my-4 text-center">
+    <div class="row">
+        <h1 class="col m-3">اعدادات النظام</h1>
+    </div>
+    <form id="form" method="post">
+        {% csrf_token %}
+        <table class="table table-striped text-left m-auto shadow rounded">
+            <tbody id="parameter-table-body">
+                {% for parameter in parameters %}
+                <tr id="{{ parameter.name }}" class="text-dark">
+                    <td class="col-2">{{ parameter }}</td>
+                    <td class="col-8">{{ parameter.getDescription }}</td>
+                    <td class="input-value" style="display: none;">
+                        <input type="{{ parameter.getInputType }}" name="{{ parameter.name }}"
+                            value="{{ parameter.value }}" {% if parameter.getCheckboxValue == True %}checked{% endif %}
+                            class="{% if parameter.getInputType == "checkbox" %}form-check-input{% else %}form-control bg-transparent{% endif %} shadow-sm rounded">
+                    </td>
+                    <td class="static-value col-2">
+                        {% if parameter.getCheckboxValue != "" %}
+                        {% if parameter.getCheckboxValue == True %}
+                        <img style="width: 20px; height:auto;" src="{% static 'admin/img/icon-yes.svg' %}" alt="Treu">
+                        {% else %}
+                        <img style="width: 20px; height:auto;" src="{% static 'admin/img/icon-no.svg' %}" alt="Treu">
+                        {% endif %}
+                        {% else %}
+                        {{ parameter.value }}
+                        {% endif %}
+                    </td>
+                    <td class="col-1">
+                        <a class="btn btn-sm btn-outline-dark"
+                            onclick="editParameter( '{{ parameter.name }}' )">تعديل</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="row">
+            <button id="submit" type="submit" class="btn btn-lg btn-dark w-25 m-4 p-2" onclick="submtButton()"
+                disabled>تطبيق التغييرات</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    function submtButton() {
+        let form = document.getElementById('form');
+        let inputsWithoutAttr = form.querySelectorAll(
+            'input:not([data-changed]):not([type="checkbox"]):not([name="csrfmiddlewaretoken"])');
+        console.log = (inputsWithoutAttr);
+
+        inputsWithoutAttr.forEach((input) => {
+            input.disabled = true;
+        });
+
+        form.submit();
+    }
+
+    function editParameter(parameterName) {
+        let row = document.getElementById(parameterName);
+        let staticValueCell = row.querySelector('.static-value');
+        let inputCell = row.querySelector('.input-value');
+        let inputElement = inputCell.querySelector('input');
+
+        staticValueCell.style.display = "none";
+        inputCell.style.display = "table-cell";
+
+        if (inputElement.type === "checkbox") {
+            staticValueCell.checked = inputElement.checked;
+        } else {
+            inputElement.value = staticValueCell.textContent.trim();;
+        }
+        inputElement.focus();
+
+        inputElement.addEventListener('blur', function () {
+            let orignalValue;
+            if (inputElement.type === "checkbox") {
+                orignalValue = staticValueCell.checked;
+                let image = staticValueCell.querySelector('img');
+                if (inputElement.checked) {
+                    image.src = image.src.replace("no", "yes");
+                    inputElement.value = "true";
+                } else {
+                    image.src = image.src.replace("yes", "no");
+                    inputElement.value = "false";
+                }
+            } else {
+                orignalValue = staticValueCell.textContent.trim();
+                staticValueCell.textContent = inputElement.value;
+            }
+            staticValueCell.style.display = 'table-cell';
+            inputCell.style.display = 'none';
+
+            let isEdited = false;
+            if (inputElement.type === "checkbox") {
+                if ((orignalValue !== inputElement.checked)) {
+                    inputElement.setAttribute("data-changed", true);
+                    isEdited = true;
+                }
+            } else {
+                if ((orignalValue !== inputElement.value)) {
+                    inputElement.setAttribute("data-changed", true);
+                    isEdited = true;
+                }
+            }
+
+            if (isEdited) {
+                row.style.backgroundColor = 'rgba(255, 193, 7, 0.5)';
+                document.getElementById('submit').disabled = false;
+            }
+        });
+    }
+</script>
+{% endblock scripts %}

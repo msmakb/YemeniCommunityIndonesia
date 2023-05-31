@@ -8,6 +8,9 @@ BLOCK_WARNING: Final[Callable[[HttpRequest], None]] = lambda request: messages.w
     + "العشوائية إلى النظام ، فكن حذرًا وإلا فسيتم حظرك في المرة القادمة.")
 INCORRECT_INFO: Final[Callable[[HttpRequest], None]] = lambda request: messages.error(
     request, "اسم المستخدم أو كلمة المرور غير صحيحة، أو أن عضويتك قيد المعالجة من قِبَل الإدارة")
+MANY_FAILED_LOGIN_WARNING: Final[Callable[[HttpRequest], None]] = lambda request: messages.warning(
+    request, "تنبيه: تم تكرار محاولات تسجيل الدخول الفاشلة بشكل متكرر. الرجاء التحقق من صحة المعلومات "
+    + "وتجنب المحاولات غير المصرح بها. سيتم حظرك بعد 5 محاولات فاشلة. للمساعدة، يرجى التواصل مع الدعم الفني.")
 SOMETHING_WRONG: Final[Callable[[HttpRequest], None]] = lambda request: messages.warning(
     request, "عفوًا!! هناك خطأ ما...")
 TIME_OUT: Final[Callable[[HttpRequest], None]] = lambda request: messages.info(
@@ -33,6 +36,8 @@ SCREENSHOT: Final[Callable[[HttpRequest], None]] = lambda request: messages.info
     request, "يرجى أخذ لقطة شاشة وإرسالها إلى المطور")
 ERROR_MESSAGE: Final[Callable[[HttpRequest, str], None]] = lambda request, message: messages.error(
     request, message)
+MEMBER_FORM_CLOSE: Final[Callable[[HttpRequest], None]] = lambda request: messages.info(
+    request, "رابط التسجيل للعضوية مغلق في الوقت الحالي. يرجى العودة لاحقاً")
 
 # ==== Broadcast App Messages ====
 ADD_BROADCAST: Final[Callable[[HttpRequest, str], None]] = lambda request: messages.success(
@@ -43,3 +48,7 @@ ADD_ATTACHMENT: Final[Callable[[HttpRequest, str], None]] = lambda request: mess
     request, "تم إضافة المُرفق بنجاح")
 DELETE_ATTACHMENT: Final[Callable[[HttpRequest, str], None]] = lambda request: messages.success(
     request, "تم إزالة الملف بنجاح")
+
+# ==== Parameter App Messages ====
+PAGE_REQUIRE_RE_LOGIN: Final[Callable[[HttpRequest], None]] = lambda request: messages.info(
+    request, "الرجاء إعادة تسجيل الدخول لعرض محتوى هذه الصفحة")

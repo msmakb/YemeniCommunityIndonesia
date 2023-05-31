@@ -28,3 +28,14 @@ Path(BACKUP_FOLDER).mkdir(parents=True, exist_ok=True)
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 DBBACKUP_STORAGE_OPTIONS = {'location': BACKUP_FOLDER}
+
+# Caches
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/0",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}

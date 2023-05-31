@@ -1,10 +1,6 @@
-# Hosts
-ALLOWED_HOSTS = [
-
-]
-
 # Application definition
 INSTALLED_APPS = [
+    # Django apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -12,9 +8,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+
+    # System apps
     'main.apps.MainConfig',
     'member.apps.MemberConfig',
     'broadcast.apps.BroadcastConfig',
+    'parameter.apps.ParameterConfig',
+    'monitor.apps.MonitorConfig',
 
     # Third party apps
     'django_crontab',
@@ -36,6 +36,7 @@ MIDDLEWARE = [
     'main.middleware.SiteUnderMaintenanceMiddleware',
     'main.middleware.LoginRequiredMiddleware',
     'main.middleware.AllowedUserMiddleware',
+    'main.middleware.ErrorHandlerMiddleware',
 ]
 
 # Password validation
