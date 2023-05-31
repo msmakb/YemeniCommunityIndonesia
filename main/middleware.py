@@ -2,10 +2,13 @@ from datetime import timedelta
 import logging
 from logging import Logger
 import re
+import traceback
 from typing import Callable
 
 from django.conf import settings
 from django.contrib.auth import logout
+from django.core.exceptions import DisallowedHost, ValidationError
+from django.core.cache import cache
 from django.db.models.query import QuerySet
 from django.http import (HttpResponsePermanentRedirect,
                          HttpResponseForbidden,
@@ -20,7 +23,7 @@ from django.utils.timezone import datetime
 from . import constants
 from . import messages as MSG
 from .models import AuditEntry, BlockedClient
-from .parameters import getParameterValue
+from parameter.service import getParameterValue
 from .utils import getClientIp, getUserAgent, getUserGroupe
 
 logger: Logger = logging.getLogger(constants.LOGGERS.MIDDLEWARE)
@@ -41,18 +44,7 @@ class AllowedClientMiddleware(object):
         self.requester_ip = getClientIp(request)
         self.requester_agent = getUserAgent(request)
         self.user = str(request.user)
-        # ------------------------------------------------------------- #
-        # This is the last object that is not included of the specified #
-        # period of allowed logged in attempts reset                    #
-        # Ex. if the parameter 'ALLOWED_LOGGED_IN_ATTEMPTS_RESET'       #
-        # set to 7 days, the last object that will be reset, It will be #
-        # saved in the in 'MAGIC_NUMBER' parameter, to make the search  #
-        # in the table 'AuditEntry' faster and more scalable            #
-        start_chunk_object_id: int = getParameterValue(                 #
-            constants.PARAMETERS.MAGIC_NUMBER)                          #
-        self.last_audit_entry = AuditEntry.filter(                      #
-            id__gte=start_chunk_object_id)                              #
-        # ------------------------------------------------------------- #
+        self.last_audit_entry: int = AuditEntry.getLastAuditEntry()
         current_path = request.path
 
         # Is new visitor
@@ -353,3 +345,37 @@ class SiteUnderMaintenanceMiddleware:
         response: HttpResponse = self.get_response(request)
 
         return response
+
+
+class ErrorHandlerMiddleware:
+    def __init__(self, get_response) -> None:
+        self.get_response: Callable[[HttpRequest], HttpResponse] = get_response
+
+    def __call__(self, request: HttpRequest) -> HttpResponse:
+
+        response: HttpResponse = self.get_response(request)
+
+        return response
+    
+    def process_exception(self, request: HttpRequest, exception: Exception) -> HttpResponse:
+        if settings.DEBUG:
+            return
+        
+        if isinstance(exception, ValidationError): return None
+        if isinstance(exception, DisallowedHost): return None
+        if isinstance(exception, Http404): return None
+        
+        if cache.get('ERROR_' + getClientIp(request)) == type(exception):
+            cache.delete('ERROR_' + getClientIp(request))
+            if request.user.is_authenticated:
+                logout(request)
+            return redirect(constants.PAGES.INDEX_PAGE)
+        
+        MSG.SOMETHING_WRONG(request)
+        logger.error(traceback.format_exc())
+        if request.user.is_authenticated and request.user.is_staff:
+            MSG.ERROR_MESSAGE(request, exception)
+            MSG.SCREENSHOT(request)
+
+        cache.set('ERROR_' + getClientIp(request), type(exception), timeout=5)
+        return redirect(request.path)

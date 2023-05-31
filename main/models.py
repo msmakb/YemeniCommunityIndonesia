@@ -5,7 +5,7 @@ from typing import Optional
 from django.db import models
 from django.db.models.query import QuerySet
 from django.utils import timezone
-from django.core.exceptions import ValidationError
+from django.core.cache import cache
 
 from . import constants
 
@@ -134,6 +134,10 @@ class BlockedClient(Client):
                                        choices=constants.CHOICES.BLOCK_TYPE)
     blocked_times: int = models.PositiveSmallIntegerField(default=1)
 
+    @property
+    def block_type_ar(self) -> str:
+        return constants.BLOCK_TYPES_AR[int(self.block_type)]
+
     def __str__(self) -> str:
         return f"IP: {self.ip} - User Agent: {self.user_agent}"
 
@@ -159,6 +163,31 @@ class AuditEntry(Client):
     def action_type(self) -> str:
         return constants.ACTION_STR[int(self.action)].replace('_', ' ').capitalize()
 
+    @property
+    def action_type_ar(self) -> str:
+        return constants.ACTION_STR_AR[int(self.action)]
+
+    @property
+    def isEntry(self) -> str:
+        entry: list[str] = constants.ACTION[1:4]
+        return True if self.action in entry else False
+    
+    @classmethod
+    def getLastAuditEntry(self) -> QuerySet[AuditEntry]:
+        result: QuerySet[AuditEntry] | None = cache.get(
+            constants.CACHE.LAST_AUDIT_ENTRY_QUERYSET)
+        if not result:
+            from parameter.service import getParameterValue
+            logger.info("Fetching last audit entry queryset from database.")
+            start_chunk_object_id: int = getParameterValue(
+                constants.PARAMETERS.MAGIC_NUMBER)
+            result = AuditEntry.filter(
+                id__gte=start_chunk_object_id)
+            cache.set(constants.CACHE.LAST_AUDIT_ENTRY_QUERYSET, result, 
+                      constants.DEFAULT_CACHE_EXPIRE)
+        
+        return result
+
     def setAction(self, action: str) -> None:
         self.action = action
         self.save()
@@ -167,70 +196,9 @@ class AuditEntry(Client):
         self.username = username
         self.save()
 
-
-class Parameter(BaseModel):
-    """ 
-    ---------------------------------------------------------
-    #       There is no setters for parameter model         #
-    #   Parameters can be set when the table is created     #
-    #                see main.signals.py                    #
-    #     And only can be modified via admin dashboard      #
-    ---------------------------------------------------------
-    """
-
-    _name: str = models.CharField(max_length=50, editable=False,
-                                  db_column='name', name='name')
-    _value: str = models.CharField(max_length=50, db_column='value',
-                                   name='value')
-    _access_type: str = models.CharField(max_length=1, editable=False,
-                                         db_column='access_type', name='access_type',
-                                         choices=constants.CHOICES.ACCESS_TYPE,
-                                         default=constants.ACCESS_TYPE.No_ACCESS)
-    _parameter_type: str = models.CharField(max_length=1, editable=False,
-                                            db_column='parameter_type', name='parameter_type',
-                                            choices=constants.CHOICES.DATA_TYPE,
-                                            default=constants.DATA_TYPE.STRING)
-    _description: str = models.CharField(max_length=255, db_column='description',
-                                         name='description', editable=False,
-                                         null=True, blank=True)
-
-    def __str__(self) -> str:
-        name: str = self.name
-        return name.replace('_', ' ').capitalize()
-
-    @property
-    def getValue(self) -> str:
-        return self.value
-
-    @property
-    def getParameterType(self) -> str:
-        return self.parameter_type
-
-    def clean(self) -> None:
-        val: str = self.getValue
-        match self.getParameterType:
-            case constants.DATA_TYPE.INTEGER:
-                try:
-                    int(val)
-                except ValueError:
-                    raise ValidationError(
-                        "Sorry, the value must be a integer.")
-            case constants.DATA_TYPE.FLOAT:
-                try:
-                    float(val)
-                except ValueError:
-                    raise ValidationError("Sorry, the value must be a number.")
-            case constants.DATA_TYPE.BOOLEAN:
-                con: tuple[bool, ...] = (
-                    val.lower() == 'yes',
-                    val.lower() == 'no',
-                    val.lower() == 'true',
-                    val.lower() == 'false',
-                    val == '1',
-                    val == '0'
-                )
-                if not any(con):
-                    raise ValidationError("Sorry, the value must be "
-                                          + "('true' or 'false', 'yes' or 'no', '1' or '0')")
-
-        return super().clean()
+    def save(self, *args, **kwargs) -> None:
+        super().save(*args, **kwargs)
+        last_audit_entry: QuerySet[AuditEntry] = self.getLastAuditEntry()
+        if last_audit_entry is not None:
+            last_audit_entry = last_audit_entry | AuditEntry.objects.filter(pk=self.pk)
+            cache.set(constants.CACHE.LAST_AUDIT_ENTRY_QUERYSET, last_audit_entry, constants.DEFAULT_CACHE_EXPIRE)

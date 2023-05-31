@@ -5,15 +5,17 @@ from typing import Final
 
 from django.conf import settings
 from django.core.management import call_command
+from django.core.cache import cache
 from django.db.models.query import QuerySet
 from django.utils import timezone
 
 from member.models import Person
+from parameter.models import Parameter
 
 from . import constants
 from .google import GoogleDriveService, FileResources, MIME_TYPE
-from .models import AuditEntry, Parameter
-from .parameters import getParameterValue
+from .models import AuditEntry
+from parameter.service import getParameterValue
 
 logger: Logger = logging.getLogger(constants.LOGGERS.MAIN)
 
@@ -46,16 +48,18 @@ def setMagicNumber() -> None:
             magic_number = 1
 
     # cleanup unsuspicious post requests
-    normal_posts: QuerySet[AuditEntry] = AuditEntry.filter(
+    AuditEntry.filter(
         id__lt=magic_number,
-        action=constants.ACTION.NORMAL_POST)
-    for post in normal_posts:
-        post.delete()
+        action=constants.ACTION.NORMAL_POST
+    ).delete()
 
     # This is the only time which a parameter updated in code
     pram = Parameter.get(name=constants.PARAMETERS.MAGIC_NUMBER)
     pram.value = magic_number  # NOQA
     pram.save()
+    # Reset the last audit entry cache
+    cache.delete(constants.CACHE.LAST_AUDIT_ENTRY_QUERYSET)
+    AuditEntry.getLastAuditEntry()
     logger.info(f'Magic Number Updated to [{magic_number}].')
     logger.info('=========== CRON FINISH SETTING MAGIC NUMBER ===========')
 

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load humanize %}
+<div class="container">
+    <div class="row">
+        <h1 class="col m-3">قائمة المحظورين</h1>
+        <a class="col-2 btn btn-lg btn-info my-3 shadow rounded" href="{% url 'MonitorPage' %}"
+            style="float: left; margin-left: 35px;">
+            رجوع
+        </a>
+    </div>
+
+    {% if page_obj %}
+    <table class="table table-sm table-striped text-center shadow rounded">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">رقم</th>
+                <th scope="col">نوع الحظر</th>
+                <th scope="col">عنوان الآي بي (IP)</th>
+                <th scope="col">مرات الحظر</th>
+                <th scope="col">تاريخ الحظر</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for block in page_obj %}
+            <tr>
+                <td>{{ page_obj.start_index|add:forloop.counter0 }}</td>
+                <td>{{ block.block_type_ar }}</td>
+                <td>{{ block.ip }}</td>
+                <td>{{ block.blocked_times|apnumber }}</td>
+                <td>{{ block.created }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    No Date
+    {% endif %}
+</div>
+{% endblock content %}
