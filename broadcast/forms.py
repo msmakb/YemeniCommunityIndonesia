@@ -35,15 +35,19 @@ class EmailBroadcastForm(forms.ModelForm):
                 'placeholder': 'محتوى البرودكاست',
             }
         ),
-        initial='\n\n\n'+render_to_string(constants.TEMPLATES.EMAIL_FOOTER_TEMPLATE),
+        initial='\n\n\n' +
+        render_to_string(constants.TEMPLATES.EMAIL_FOOTER_TEMPLATE),
         label='محتوى البرودكاست',
     )
-    
+
+    field_order = ['subject', 'body', 'to', 'is_special_email_broadcast']
+
     class Meta:
         model = EmailBroadcast
         fields = [
             'subject',
             'body',
+            'is_special_email_broadcast',
             'email_list',
         ]
         widgets = {
@@ -54,6 +58,12 @@ class EmailBroadcastForm(forms.ModelForm):
                     'placeholder': 'الموضوع',
                 }
             ),
+            'is_special_email_broadcast': forms.CheckboxInput(
+                attrs={
+                    'required': True,
+                    'class': form_classes.replace('control', 'check-input'),
+                }
+            ),
             'email_list': forms.HiddenInput(
                 attrs={
                     'required': True,
@@ -62,11 +72,12 @@ class EmailBroadcastForm(forms.ModelForm):
         }
         labels = {
             'subject': 'الموضوع',
+            'is_special_email_broadcast': 'برودكاست بريد إلكتروني خاص',
         }
 
 
 class AttachmentForm(forms.ModelForm):
-    
+
     class Meta:
         model = Attachment
         fields = [
@@ -87,9 +98,9 @@ class AttachmentForm(forms.ModelForm):
                 attrs={
                     'required': False,
                     'class': form_classes,
-                    'accept': '.avi, .jpeg, .jpg, .mp4, .mp3, ' 
-                        + '.png, .pdf, .rar, .txt, .wav, '
-                        + '.xls, .xlsx, .ppt, .pptx'
+                    'accept': '.avi, .jpeg, .jpg, .mp4, .mp3, '
+                    + '.png, .pdf, .rar, .txt, .wav, '
+                    + '.xls, .xlsx, .ppt, .pptx'
                 }
             ),
             'mimetype': forms.Select(
@@ -109,4 +120,3 @@ class AttachmentForm(forms.ModelForm):
             'content': 'الملف',
             'mimetype': 'نوع الملف',
         }
-

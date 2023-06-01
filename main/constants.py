@@ -355,6 +355,7 @@ PAGES = _NT('str', [
     'UPDATE_BROADCAST_PAGE',
     'ADD_ATTACHMENT_PAGE',
     'DELETE_ATTACHMENT_PAGE',
+    'UPDATE_ATTACH_MEMBERSHIP_CARD_API',
 
     # Parameters pages
     'SETTINGS_PAGE',
@@ -387,6 +388,7 @@ PAGES = _NT('str', [
     'UpdateBroadcastPage',
     'AddAttachmentPage',
     'DeleteAttachmentPage',
+    'UpdateAttachMembershipCardApi',
 
     # Parameter pages
     'SettingsPage',
@@ -515,6 +517,7 @@ PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {
         PAGES.UPDATE_BROADCAST_PAGE,
         PAGES.ADD_ATTACHMENT_PAGE,
         PAGES.DELETE_ATTACHMENT_PAGE,
+        PAGES.UPDATE_ATTACH_MEMBERSHIP_CARD_API,
 
         # Parameter
         PAGES.SETTINGS_PAGE,

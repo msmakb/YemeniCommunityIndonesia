@@ -66,9 +66,30 @@
             إضافة ملف
         </a>
     </div>
-    {% if broadcast.has_attachment %}
+    {% if broadcast.has_attachment or broadcast.attache_membership_card %}
     <table class="table table-striped text-left m-auto shadow rounded">
         <tbody>
+            {% if broadcast.is_special_email_broadcast and broadcast.attache_membership_card %}
+            <tr>
+                <td class="col-11">
+                    <a class="link-success link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+                        <span class="p-2">
+                            <img class="card-img-top object-fit-cover" style="width: 32px; height: 32px;"
+                                src="{% static 'ico/jpeg' %}.ico">
+                        </span>
+                        <span>
+                            بطاقة العضوية
+                        </span>
+                    </a>
+                </td>
+                <td class="col-1">
+                    <a href="{% url 'UpdateAttachMembershipCardApi' broadcast.id 'D' %}"
+                        class="text-danger link-underline-opacity-25 link-underline-opacity-100-hover">
+                        حذف الملف
+                    </a>
+                </td>
+            </tr>
+            {% endif %}
             {% for attachment in attachments %}
             <tr>
                 <td class="col-11">
@@ -96,6 +117,12 @@
     </table>
     {% else %}
     <h4 class="lead">لم يتم إرفاق أي ملفات</h4>
+    {% endif %}
+    {% if broadcast.is_special_email_broadcast and not broadcast.attache_membership_card %}
+    <a href="{% url 'UpdateAttachMembershipCardApi' broadcast.id 'A' %}"
+        class="text-success link-underline-opacity-25 link-underline-opacity-100-hover">
+        إضافة بطاقة العضوية
+    </a>
     {% endif %}
 
     <form method="POST">
