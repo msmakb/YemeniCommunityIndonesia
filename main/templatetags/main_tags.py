@@ -50,3 +50,17 @@ def cache_bust():
         version = settings.PROJECT_VERSION
 
     return 'version={version}'.format(version=version)
+
+
+@register.simple_tag
+def setPage(path: str, page_number: int) -> str:
+    if '?' in path:
+        if 'page' in path:
+            path = path.replace(
+                f"page={path.split('page=')[-1].split('&')[0]}", f"page={page_number}")
+        else:
+            path += f'&page={page_number}'
+    else:
+        path += f'?page={page_number}'
+
+    return path
