@@ -35,4 +35,9 @@ urlpatterns = [
         views.deleteAttachment,
         name=PAGES.DELETE_ATTACHMENT_PAGE
     ),
+    path(
+        'Broadcast/api/<str:pk>/<str:status>/',
+        views.updateSpecialBroadcastEmailAttacheMembershipCard,
+        name=PAGES.UPDATE_ATTACH_MEMBERSHIP_CARD_API
+    ),
 ]
