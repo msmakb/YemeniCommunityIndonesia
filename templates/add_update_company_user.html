@@ -22,7 +22,12 @@
         {% if field.name == "email" %}
         <h5 class="text-center text-danger mt-3">يجب أن تتأكد أن عنوان البريد الإلكتروني صالحاً، لأنه سيتم عن طريقه
             إرسال
-            رابط إنشاء حساب جديد</h5>
+            {% if "Add" in request.path %}
+            رابط إنشاء حساب جديد
+            {% else %}
+            اشعارات النظام
+            {% endif %}
+        </h5>
         {% endif %}
     </div>
     {% endfor %}

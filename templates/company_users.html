@@ -40,7 +40,7 @@
                     {{ companyUser.user.username }}
                     {% endif %}
                 </td>
-                <td>{{ companyUser.user.username }}</td>
+                <td>{% if companyUser.user.is_active %}{{ companyUser.user.username }}{% else %}-{% endif %}</td>
                 <td>{{ companyUser.user.email }}</td>
                 <td>
                     {% if companyUser.user.is_superuser %}
@@ -63,15 +63,25 @@
                 </td>
                 <td>{{ companyUser.user.date_joined }}</td>
                 <td>
-                    {% if companyUser.user.username != 'admin' and companyUser.user != request.user %}
-                        {% if request.user.is_superuser or not companyUser.user.is_superuser %}
-                                <a class="btn btn-danger" href="{% url 'DeleteCompanyUserPage' companyUser.user.id %}"
-                                    onclick="return confirm('هل أنت متأكد من إزالة هذا المستخدم تمامًا؟\nاسم المستخدم: {{ companyUser.user.get_full_name }}')">حذف</a>
-                            {% else %}
-                                <a class="btn btn-secondary" style="pointer-events: none;">حذف</a>
-                        {% endif %}
+                    {% if companyUser.user.username != 'admin' or request.user.username == 'admin' %}
+                    {% if request.user.is_superuser or not companyUser.user.is_superuser %}
+                    <a class="btn btn-warning" href="{% url 'UpdateCompanyUserPage' companyUser.user.id %}">تعديل</a>
                     {% else %}
-                        <a class="btn btn-secondary" style="pointer-events: none;">حذف</a>
+                    <a class="btn btn-secondary" style="pointer-events: none;">تعديل</a>
+                    {% endif %}
+                    {% else %}
+                    <a class="btn btn-secondary" style="pointer-events: none;">تعديل</a>
+                    {% endif %}
+
+                    {% if companyUser.user.username != 'admin' and companyUser.user != request.user %}
+                    {% if request.user.is_superuser or not companyUser.user.is_superuser %}
+                    <a class="btn btn-danger" href="{% url 'DeleteCompanyUserPage' companyUser.user.id %}"
+                        onclick="return confirm('هل أنت متأكد من إزالة هذا المستخدم تمامًا؟\nاسم المستخدم: {{ companyUser.user.get_full_name }}')">حذف</a>
+                    {% else %}
+                    <a class="btn btn-secondary" style="pointer-events: none;">حذف</a>
+                    {% endif %}
+                    {% else %}
+                    <a class="btn btn-secondary" style="pointer-events: none;">حذف</a>
                     {% endif %}
                 </td>
             </tr>

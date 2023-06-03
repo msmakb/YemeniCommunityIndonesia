@@ -13,3 +13,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "yemenicommunityindonesia@gmail.com"
 
 EMAIL_HOST_PASSWORD = "vqxwfapbmvhgdujn"  # environ.get('EMAIL_HOST_PASSWORD')
+
+SERVER_EMAIL = EMAIL_HOST_USER
+
+ADMINS = [('Mohammed Ba Karman', 'msmakb11@gmail.com')]
