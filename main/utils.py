@@ -1,6 +1,9 @@
+import six
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 import csv
 import logging
 from typing import Callable, Optional, Union
+from uuid import uuid4
 
 from django.contrib.auth.models import User
 from django.core.exceptions import EmptyResultSet
@@ -10,7 +13,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import datetime
 
 from . import constants
-from .models import BaseModel
+from .models import AuditEntry, BaseModel
 
 logger = logging.getLogger(constants.LOGGERS.MAIN)
 logger_models = logging.getLogger(constants.LOGGERS.MODELS)
@@ -127,3 +130,35 @@ def exportAsCsv(
         writer.writerow(row)
 
     return response
+
+
+def generateRandomString() -> str:
+    return str(uuid4()).rsplit('-', maxsplit=1).pop().upper()
+
+
+class AccountActivationTokenGenerator(PasswordResetTokenGenerator):
+    def _make_hash_value(self, user, timestamp):
+        return (
+            six.text_type(user.pk) + six.text_type(timestamp) +
+            six.text_type(user.is_active)
+        )
+
+
+account_activation_token = AccountActivationTokenGenerator()
+
+
+def logUserActivity(request: HttpRequest | None, activity_type: str, details: Optional[str] = None) -> None:
+    if request is None:
+        AuditEntry.create(
+            ip='0.0.0.0',
+            user_agent='-',
+            action=activity_type,
+            username=details
+        )
+    else:
+        AuditEntry.create(
+            ip=getClientIp(request),
+            user_agent=getUserAgent(request),
+            action=activity_type,
+            username=details
+        )

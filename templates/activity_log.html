@@ -26,8 +26,10 @@
                 <td>{{ activity.action_type_ar }}</td>
                 <td>{{ activity.ip }}</td>
                 <td>
-                    {% if activity.isEntry %}
+                    {% if activity.is_entry %}
                     أسم المستخدم المدخل ({{ activity.username }})
+                    {% elif activity.has_details %}
+                    {{ activity.username }}
                     {% endif %}
                 </td>
                 <td>{{ activity.created }}</td>

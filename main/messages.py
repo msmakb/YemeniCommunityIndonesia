@@ -2,6 +2,9 @@ from typing import Callable, Final
 
 from django.contrib import messages
 from django.http import HttpRequest
+from django.urls import reverse
+
+from main.constants import PAGES
 
 BLOCK_WARNING: Final[Callable[[HttpRequest], None]] = lambda request: messages.warning(
     request, "تحذير!! لقد قمت بإرسال العديد من الرسائل "
@@ -52,3 +55,22 @@ DELETE_ATTACHMENT: Final[Callable[[HttpRequest, str], None]] = lambda request: m
 # ==== Parameter App Messages ====
 PAGE_REQUIRE_RE_LOGIN: Final[Callable[[HttpRequest], None]] = lambda request: messages.info(
     request, "الرجاء إعادة تسجيل الدخول لعرض محتوى هذه الصفحة")
+
+# ==== Company User App Messages ====
+ADD_ROLE: Final[Callable[[HttpRequest], None]] = lambda request: messages.success(
+    request, "تم إضافة الوظيفة بنجاح")
+UPDATE_ROLE: Final[Callable[[HttpRequest], None]] = lambda request: messages.success(
+    request, "تم تعديل الوظيفة بنجاح")
+DELETE_ROLE: Final[Callable[[HttpRequest], None]] = lambda request: messages.success(
+    request, "تم حذف الوظيفة بنجاح")
+ADD_USER: Final[Callable[[HttpRequest], None]] = lambda request: messages.success(
+    request, "تم إضافة المستخدم بنجاح")
+UPDATE_USER: Final[Callable[[HttpRequest], None]] = lambda request: messages.success(
+    request, "تم تعديل المستخدم بنجاح")
+DELETE_USER: Final[Callable[[HttpRequest], None]] = lambda request: messages.success(
+    request, "تم إزالة المستخدم بنجاح")
+USER_REGISTRATION_DONE: Final[Callable[[HttpRequest], None]] = lambda request: messages.success(
+    request, f'تم إكمال تسجيلك. يمكنك المضي قدمًا و <a href="{reverse(PAGES.LOGIN_PAGE)}" '
+    + 'style="text-decoration:none;"><b>تسجيل الدخول</b></a> الآن')
+PROTECTED_ROLE: Final[Callable[[HttpRequest], None]] = lambda request: messages.error(
+    request, "تعذر حذف الوظيفة لأنها مرتبطة ببعض العناصر الأخرى في النظام")

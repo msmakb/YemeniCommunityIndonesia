@@ -153,8 +153,8 @@ class BlockedClient(Client):
 class AuditEntry(Client):
 
     action: str = models.CharField(
-        max_length=1, choices=constants.CHOICES.ACTION)
-    username: str = models.CharField(max_length=50, null=True, blank=True)
+        max_length=2, choices=constants.CHOICES.ACTION)
+    username: str = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
         return f'{self.action} - {self.username} - {self.ip}'
@@ -168,10 +168,15 @@ class AuditEntry(Client):
         return constants.ACTION_STR_AR[int(self.action)]
 
     @property
-    def isEntry(self) -> str:
+    def is_entry(self) -> str:
         entry: list[str] = constants.ACTION[1:4]
         return True if self.action in entry else False
-    
+
+    @property
+    def has_details(self) -> str:
+        entry: list[str] = constants.ACTION[10:]
+        return True if self.action in entry else False
+
     @classmethod
     def getLastAuditEntry(self) -> QuerySet[AuditEntry]:
         result: QuerySet[AuditEntry] | None = cache.get(
@@ -183,9 +188,9 @@ class AuditEntry(Client):
                 constants.PARAMETERS.MAGIC_NUMBER)
             result = AuditEntry.filter(
                 id__gte=start_chunk_object_id)
-            cache.set(constants.CACHE.LAST_AUDIT_ENTRY_QUERYSET, result, 
+            cache.set(constants.CACHE.LAST_AUDIT_ENTRY_QUERYSET, result,
                       constants.DEFAULT_CACHE_EXPIRE)
-        
+
         return result
 
     def setAction(self, action: str) -> None:
@@ -200,5 +205,7 @@ class AuditEntry(Client):
         super().save(*args, **kwargs)
         last_audit_entry: QuerySet[AuditEntry] = self.getLastAuditEntry()
         if last_audit_entry is not None:
-            last_audit_entry = last_audit_entry | AuditEntry.objects.filter(pk=self.pk)
-            cache.set(constants.CACHE.LAST_AUDIT_ENTRY_QUERYSET, last_audit_entry, constants.DEFAULT_CACHE_EXPIRE)
+            last_audit_entry = last_audit_entry | AuditEntry.objects.filter(
+                pk=self.pk)
+            cache.set(constants.CACHE.LAST_AUDIT_ENTRY_QUERYSET,
+                      last_audit_entry, constants.DEFAULT_CACHE_EXPIRE)

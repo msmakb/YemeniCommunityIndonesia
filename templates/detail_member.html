@@ -200,7 +200,7 @@
         src="{{ person.residency_photo.url }}" alt="Card image cap">
 </div>
 <a class="col-2 btn btn-lg btn-info my-3 shadow rounded" style="margin-right: 50px;"
-    href="{% url 'Dashboard' 'List' %}">الرجوع إلى القائمة</a>
+    href="{% url 'MembersPage' 'List' %}">الرجوع إلى القائمة</a>
 {% if not person.is_validated %}
 <hr>
 <form method="POST">

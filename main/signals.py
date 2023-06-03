@@ -13,15 +13,23 @@ logger = logging.getLogger(constants.LOGGERS.MAIN)
 
 
 def createGroups(**kwargs) -> None:
-    if not Group.objects.all().exists():
-        for name in constants.GROUPS:
-            group = Group.objects.create(name=name)
-            print(f"  {group} group was created.")
-        logger.info("All default groups was successfully created.")
-        user: User = User.objects.create_superuser(
-            username="admin",
-            password=settings.SP)
-        Group.objects.get(name=constants.GROUPS.MANAGER).user_set.add(user)
+    # if not Group.objects.all().exists():
+    #     user: User = User.objects.create_superuser(
+    #         username="admin",
+    #         password=settings.SP)
+
+    groups: list[str] = Group.objects.all().values_list('name', flat=True)
+    for group in groups:
+        if group not in constants.GROUPS:
+            Group.objects.get(name=group).delete()
+            print(f"  {group} group was deleted.")
+
+    for group in constants.GROUPS:
+        if group not in groups:
+            obj: Group = Group.objects.create(name=group)
+            print(f"  {obj.name} group was created.")
+
+    logger.info("All default groups up to date.")
 
 
 def userLoggedIn(sender: User, request: HttpRequest, user: User, **kwargs):

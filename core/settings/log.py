@@ -1,3 +1,4 @@
+from os import environ
 import sys
 from pathlib import Path
 from logging import Filter
@@ -12,10 +13,11 @@ DEFAULT_EXCLUDE_EXCEPTIONS = [
     DisallowedHost,
 ]
 
+
 class ExceptionFilter(Filter):
     def __init__(self, exclude_exceptions=DEFAULT_EXCLUDE_EXCEPTIONS, **kwargs):
-      super().__init__(**kwargs)
-      self.EXCLUDE_EXCEPTIONS = exclude_exceptions
+        super().__init__(**kwargs)
+        self.EXCLUDE_EXCEPTIONS = exclude_exceptions
 
     def filter(self, record):
         if record.exc_info:
@@ -25,6 +27,7 @@ class ExceptionFilter(Filter):
                     return False
         return True
 
+
 LOGGING_LEVEL = 'INFO'
 
 LOGS_PATH = _base_dir.parent / 'logs'
@@ -33,10 +36,16 @@ Path(LOGS_PATH).mkdir(parents=True, exist_ok=True)
 
 LOG_FILE_NAME = str(timezone.datetime.date(timezone.now())) + '_YCI.log'
 
-HANDLERS = [
-    'console', 
-    'file',
-]
+if environ.get('PRODUCTION') == "TRUE":
+    HANDLERS = [
+        'file',
+        'mail_admins',
+    ]
+else:
+    HANDLERS = [
+        'file',
+        'console',
+    ]
 
 LOGGING = {
     'version': 1,
@@ -75,6 +84,15 @@ LOGGING = {
                 'exception_filter',
             ],
         },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter': 'verbose',
+            'include_html': True,
+            'filters': [
+                'exception_filter',
+            ],
+        }
     },
     'loggers': {
         "django": {
