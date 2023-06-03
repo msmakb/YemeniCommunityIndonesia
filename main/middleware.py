@@ -56,6 +56,9 @@ class AllowedClientMiddleware(object):
             request.POST
             request.FILES
         except TooManyFieldsSent:
+            logger.warning("The client is sending many fields with request")
+            logger.warning("Get: " + request.GET)
+            logger.warning("Post: " + request.POST)
             self.blockClient(indefinitely=True)
             AuditEntry.create(ip=self.requester_ip,
                               user_agent=self.requester_agent,
@@ -63,6 +66,8 @@ class AllowedClientMiddleware(object):
                               username=self.user)
             return redirect(constants.PAGES.LOGOUT)
         except SuspiciousOperation:
+            logger.warning("The client is sending many files with request")
+            logger.warning("Files: " + request.FILES)
             self.blockClient(indefinitely=True)
             AuditEntry.create(ip=self.requester_ip,
                               user_agent=self.requester_agent,
@@ -170,6 +175,8 @@ class AllowedClientMiddleware(object):
             available_attempts -= count_sus
 
             if not available_attempts:
+                logger.warning(
+                    f"The user {self.user} does not have any available attempts")
                 self.blockClient()
                 return redirect(current_path)
 
@@ -275,6 +282,7 @@ class AllowedClientMiddleware(object):
                     "Attacking attempt detected. Attacker information "
                     + f"IP: {self.requester_ip} Username: {self.request.user} "
                     + f"User Agent: {self.requester_agent}")
+                logger.warning("Post: " + self.request.POST)
                 return True
         return False
 

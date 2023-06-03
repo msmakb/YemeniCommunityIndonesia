@@ -7,7 +7,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 
 from main import constants
 from main import messages as MSG
-from main.utils import Pagination
+from main.utils import Pagination, logUserActivity
 
 from member.models import Person
 
@@ -53,6 +53,8 @@ def detailBroadcastPage(request: HttpRequest, pk: str) -> HttpResponse:
                     broadcast.specialBroadcast()
                 else:
                     broadcast.broadcast()
+                logUserActivity(request, constants.ACTION.BROADCAST, f"برودكاست ({broadcast.subject}) "
+                                + f"من قِبل {request.user.get_full_name()}")
             except Exception as e:
                 error_message = str(e.args[0]) if e.args else "Unknown error"
                 MSG.ERROR_MESSAGE(request, error_message)

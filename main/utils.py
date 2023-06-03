@@ -153,12 +153,12 @@ def logUserActivity(request: HttpRequest | None, activity_type: str, details: Op
             ip='0.0.0.0',
             user_agent='-',
             action=activity_type,
-            username=details
+            username=details[:100]
         )
     else:
         AuditEntry.create(
             ip=getClientIp(request),
             user_agent=getUserAgent(request),
             action=activity_type,
-            username=details
+            username=details[:100]
         )

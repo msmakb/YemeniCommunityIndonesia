@@ -3,6 +3,15 @@
 <div class="container">
     <div class="row">
         <h1 class="col m-3">سجل النشاطات</h1>
+        <div class="col-2 my-3 mt-4" style="float: left; margin-left: 35px;">
+            <select class="form-select shadow rounded" name="activity-filter" id="activity-filter"
+                onchange="handleActivityFilterChange(this)">
+                <option value="">--------</option>
+                {% for key, value in activities.items %}
+                <option value="{{ key }}">{{ value }}</option>
+                {% endfor %}
+            </select>
+        </div>
         <a class="col-2 btn btn-lg btn-info my-3 shadow rounded" href="{% url 'MonitorPage' %}"
             style="float: left; margin-left: 35px;">
             رجوع
@@ -39,3 +48,27 @@
     </table>
 </div>
 {% endblock content %}
+{% block scripts %}
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedOption = urlParams.get('activity-filter');
+
+    const selectElement = document.getElementById('activity-filter');
+    if (selectedOption == null) {
+        selectElement.value = "";
+    } else {
+        selectElement.value = selectedOption;
+    }
+
+    function handleActivityFilterChange(selectElement) {
+        const selectedOption = selectElement.value;
+        const url = new URL(window.location);
+        url.searchParams.set('activity-filter', selectedOption || '');
+        window.location.href = url.href;
+    }
+
+    selectElement.addEventListener('change', function () {
+        handleActivityFilterChange(this);
+    });
+</script>
+{% endblock scripts %}
