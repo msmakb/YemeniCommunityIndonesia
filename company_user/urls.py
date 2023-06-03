@@ -16,6 +16,11 @@ urlpatterns = [
         name=PAGES.ADD_COMPANY_USER_PAGE
     ),
     path(
+        'User-Management/Update/<str:pk>/',
+        views.updateUserPage,
+        name=PAGES.UPDATE_COMPANY_USER_PAGE
+    ),
+    path(
         'User-Management/Delete/<str:pk>/',
         views.deleteUserPage,
         name=PAGES.DELETE_COMPANY_USER_PAGE

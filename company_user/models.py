@@ -9,7 +9,7 @@ from main.models import BaseModel
 
 
 class Role(BaseModel):
-    name: str = models.CharField(max_length=100)
+    name: str = models.CharField(max_length=100, unique=True)
     groups: Set[Group] = models.ManyToManyField(Group)
     description = models.TextField()
 

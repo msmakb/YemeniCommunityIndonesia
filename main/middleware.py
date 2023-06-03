@@ -7,7 +7,10 @@ from typing import Callable
 
 from django.conf import settings
 from django.contrib.auth import logout
-from django.core.exceptions import DisallowedHost, ValidationError
+from django.core.exceptions import (DisallowedHost,
+                                    ValidationError,
+                                    TooManyFieldsSent,
+                                    SuspiciousOperation)
 from django.core.cache import cache
 from django.db.models.query import QuerySet
 from django.http import (HttpResponsePermanentRedirect,
@@ -46,6 +49,26 @@ class AllowedClientMiddleware(object):
         self.user = str(request.user)
         self.last_audit_entry: int = AuditEntry.getLastAuditEntry()
         current_path = request.path
+
+        # Security check
+        try:
+            request.GET
+            request.POST
+            request.FILES
+        except TooManyFieldsSent:
+            self.blockClient(indefinitely=True)
+            AuditEntry.create(ip=self.requester_ip,
+                              user_agent=self.requester_agent,
+                              action=constants.ACTION.ATTACK_ATTEMPT,
+                              username=self.user)
+            return redirect(constants.PAGES.LOGOUT)
+        except SuspiciousOperation:
+            self.blockClient(indefinitely=True)
+            AuditEntry.create(ip=self.requester_ip,
+                              user_agent=self.requester_agent,
+                              action=constants.ACTION.ATTACK_ATTEMPT,
+                              username=self.user)
+            return redirect(constants.PAGES.LOGOUT)
 
         # Is new visitor
         if self.isNewVisiter():

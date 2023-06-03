@@ -11,15 +11,16 @@ from django.db.models.query import QuerySet
 from django.http import HttpRequest, HttpResponse, Http404, QueryDict
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
+from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 
 from main import constants
 from main import messages as MSG
-from main.utils import Pagination, generateRandomString, account_activation_token
+from main.utils import Pagination, generateRandomString, logUserActivity, account_activation_token
 
 from .models import CompanyUser, Role
-from .forms import RoleForm, CreateUserForm, SetUsernameAndPasswordForm
+from .forms import ChangeUserDataForm, RoleForm, CreateUserForm, SetUsernameAndPasswordForm
 
 
 def usersPage(request: HttpRequest) -> HttpResponse:
@@ -108,6 +109,9 @@ def addUserPage(request: HttpRequest) -> HttpResponse:
                 )
                 email.send()
 
+            logUserActivity(request, constants.ACTION.ADD_USER,
+                            f"إضافة مستخدم جديد ({user.get_full_name()}) "
+                            + f"من قِبل {request.user.get_full_name()}")
             MSG.ADD_USER(request)
             return redirect(constants.PAGES.COMPANY_USERS_PAGE)
 
@@ -115,8 +119,55 @@ def addUserPage(request: HttpRequest) -> HttpResponse:
     return render(request, constants.TEMPLATES.ADD_UPDATE_COMPANY_USER_PAGE_TEMPLATE, context)
 
 
+def updateUserPage(request: HttpRequest, pk: str) -> HttpResponse:
+    user: User = get_object_or_404(User, pk=pk)
+    user_form: ChangeUserDataForm = ChangeUserDataForm(instance=user)
+
+    if user.username == 'admin' and request.user.username != 'admin':
+        raise Http404
+
+    if request.method == constants.POST_METHOD:
+        user_form: ChangeUserDataForm = ChangeUserDataForm(
+            request.POST, instance=user)
+        if user_form.is_valid():
+            role_id: int = int(request.POST.get('role'))
+            user: User = user_form.save(commit=False)
+
+            if role_id == 0:
+                user.is_superuser = True
+                if not request.user.is_superuser:
+                    MSG.SOMETHING_WRONG(request)
+                    return redirect(constants.PAGES.LOGOUT)
+            else:
+                user.is_superuser = False
+
+            user.save()
+            if user.is_superuser:
+                CompanyUser.filter(user=user).update(role=Role.get(
+                    name='superuser'))
+            else:
+                CompanyUser.filter(user=user).update(role=Role.get(
+                    id=role_id))
+
+            logUserActivity(request, constants.ACTION.UPDATE_USER,
+                            f"تعديل بيانات المستخدم ({user.get_full_name()}) "
+                            + f"من قِبل {request.user.get_full_name()}")
+            MSG.UPDATE_USER(request)
+            return redirect(constants.PAGES.COMPANY_USERS_PAGE)
+
+    context: dict[str, Any] = {'userForm': user_form}
+    return render(request, constants.TEMPLATES.ADD_UPDATE_COMPANY_USER_PAGE_TEMPLATE, context)
+
+
 def deleteUserPage(request: HttpRequest, pk: str) -> HttpResponse:
-    get_object_or_404(User, pk=pk).delete()
+    user: User = get_object_or_404(User, pk=pk)
+    if not user.is_staff or user.username == 'admin':
+        raise Http404
+
+    user.delete()
+    logUserActivity(request, constants.ACTION.DELETE_USER,
+                    f"حذف المستخدم ({user.get_full_name()}) "
+                    + f"من قِبل {request.user.get_full_name()}")
     MSG.DELETE_USER(request)
     return redirect(constants.PAGES.COMPANY_USERS_PAGE)
 
@@ -127,7 +178,10 @@ def addRolePage(request: HttpRequest) -> HttpResponse:
     if request.method == constants.POST_METHOD:
         role_form: RoleForm = RoleForm(request.user.is_superuser, request.POST)
         if role_form.is_valid():
-            role_form.save()
+            role: Role = role_form.save()
+            logUserActivity(request, constants.ACTION.ADD_ROLE,
+                            f"إضافة وظيفة جديدة ({role.name}) "
+                            + f"من قِبل {request.user.get_full_name()}")
 
             MSG.ADD_ROLE(request)
             return redirect(constants.PAGES.ROLES_PAGE)
@@ -146,6 +200,9 @@ def updateRolePage(request: HttpRequest, pk: str) -> HttpResponse:
             request.user.is_superuser, request.POST, instance=role)
         if role_form.is_valid():
             role_form.save()
+            logUserActivity(request, constants.ACTION.UPDATE_ROLE,
+                            f"تعديل الوظيفة ({role.name}) "
+                            + f"من قِبل {request.user.get_full_name()}")
 
             MSG.UPDATE_ROLE(request)
             return redirect(constants.PAGES.ROLES_PAGE)
@@ -157,7 +214,11 @@ def updateRolePage(request: HttpRequest, pk: str) -> HttpResponse:
 
 def deleteRolePage(request: HttpRequest, pk: str) -> HttpResponse:
     try:
-        get_object_or_404(Role, pk=pk).delete()
+        role: Role = get_object_or_404(Role, pk=pk)
+        role.delete()
+        logUserActivity(request, constants.ACTION.DELETE_ROLE,
+                        f"حذف الوظيفة ({role.name}) "
+                        + f"من قِبل {request.user.get_full_name()}")
     except ProtectedError:
         MSG.PROTECTED_ROLE(request)
         return redirect(constants.PAGES.ROLES_PAGE)
@@ -179,7 +240,12 @@ def newCompanyUserRegistrationPage(request: HttpRequest, uid_b64: str, token: st
     if user.is_active:
         raise Http404
 
+    if user.date_joined + timezone.timedelta(hours=1) < timezone.now():
+        user.delete()
+        raise Http404
+
     if not account_activation_token.check_token(user, token):
+        user.delete()
         raise Http404
 
     form = SetUsernameAndPasswordForm(user)
@@ -188,6 +254,8 @@ def newCompanyUserRegistrationPage(request: HttpRequest, uid_b64: str, token: st
         if form.is_valid():
             form.save()
             MSG.USER_REGISTRATION_DONE(request)
+            logUserActivity(request, constants.ACTION.COMPLETE_USER_REGISTRATION,
+                            f"استكمال تسجيل المستخدم ({user.get_full_name})")
             return redirect(constants.PAGES.INDEX_PAGE)
 
     context: dict[str, Any] = {'form': form}

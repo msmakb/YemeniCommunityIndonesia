@@ -3,12 +3,12 @@ from typing import Any
 
 from django import forms
 from django.contrib.auth.models import User, Group
-from django.contrib.auth.forms import UserCreationForm, SetPasswordForm
+from django.contrib.auth.forms import UserCreationForm, SetPasswordForm, UserChangeForm
 from django.contrib.auth.validators import ASCIIUsernameValidator
 
 from main import constants
 
-from .models import Role
+from .models import CompanyUser, Role
 
 form_classes: str = 'form-control shadow-sm rounded'
 
@@ -195,6 +195,7 @@ class SetUsernameAndPasswordForm(SetPasswordForm):
                 'required': True,
                 'class': form_classes,
                 'placeholder': 'اسم المستخدم',
+                "autocomplete": "off"
             }
         )
     )
@@ -213,6 +214,7 @@ class SetUsernameAndPasswordForm(SetPasswordForm):
                 'required': True,
                 'class': 'form-control form-control-lg',
                 'placeholder': 'كلمة المرور',
+                "autocomplete": "new-password"
             }
         )
 
@@ -231,3 +233,112 @@ class SetUsernameAndPasswordForm(SetPasswordForm):
         self.user.username = self.cleaned_data['username']
         self.user.is_active = True
         return super().save(commit)
+
+
+class ChangeUserDataForm(UserChangeForm):
+
+    role = forms.ChoiceField(
+        label='الوظيفة',
+        choices=[
+            ('', '---------'),
+            *[(role.pk, role)
+              for role in Role.getAll().exclude(name='superuser')],
+            (0, 'مستخدم متميز'),
+        ],
+        widget=forms.Select(
+            attrs={
+                'required': True,
+                'class': 'form-select shadow-sm rounded',
+            }
+        )
+    )
+
+    field_order = ['first_name', 'last_name', 'email', 'role', 'is_active']
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        del self.fields['is_active'].widget.choices[0]
+        del self.fields['password']
+
+        role_id: int = -1
+        if self.instance.is_superuser:
+            role_id = 0
+        else:
+            role_id = CompanyUser.get(user=self.instance).role.pk
+        self.fields['role'].initial = role_id
+
+        if self.instance.username == 'admin':
+            self.fields['role'].choices = self.fields['role'].choices[-1:]
+            self.fields['role'].widget.choices = self.fields['role'].choices[-1:]
+            del self.fields['is_active'].widget.choices[-1]
+
+    class Meta:
+        model = User
+        fields = [
+            'first_name',
+            'last_name',
+            'email',
+            'is_active'
+        ]
+        widgets = {
+            'first_name': forms.TextInput(
+                attrs={
+                    'required': True,
+                    'class': form_classes,
+                    'placeholder': 'الاسم الأول',
+                }
+            ),
+            'last_name': forms.TextInput(
+                attrs={
+                    'required': True,
+                    'class': form_classes,
+                    'placeholder': 'الاسم الأخير',
+                }
+            ),
+            'email': forms.TextInput(
+                attrs={
+                    'required': True,
+                    'class': form_classes,
+                    'placeholder': 'عنوان البريد الإلكتروني',
+                }
+            ),
+            'is_active': forms.NullBooleanSelect(
+                attrs={
+                    'required': True,
+                    'class': 'form-select shadow-sm rounded',
+                }
+            ),
+        }
+
+    def clean_first_name(self):
+        data = self.cleaned_data["first_name"]
+        pattern = re.compile(r'^[\u0600-\u06FF\s]+$')
+        if not pattern.match(data):
+            raise forms.ValidationError(
+                "يجب أن يحتوي هذا الحقل على أحرف عربية فقط")
+        if len(data) < 3:
+            raise forms.ValidationError(
+                "يجب أن يحتوي الاسم الأول على 3 أحرف على الأقل")
+        return data
+
+    def clean_last_name(self):
+        data = self.cleaned_data["last_name"]
+        pattern = re.compile(r'^[\u0600-\u06FF\s]+$')
+        if not pattern.match(data):
+            raise forms.ValidationError(
+                "يجب أن يحتوي هذا الحقل على أحرف عربية فقط")
+        if len(data) < 3:
+            raise forms.ValidationError(
+                "يجب أن يحتوي الاسم الأول على 3 أحرف على الأقل")
+        return data
+
+    def clean_email(self):
+        data = self.cleaned_data["email"]
+        if not data:
+            raise forms.ValidationError("هذا الحقل مطلوب.")
+
+        if User.objects.filter(email=data).exists():
+            raise forms.ValidationError(
+                "عنوان البريد الإلكتروني هذا موجود بالفعل")
+
+        return data

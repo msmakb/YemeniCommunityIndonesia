@@ -13,7 +13,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import datetime
 
 from . import constants
-from .models import BaseModel
+from .models import AuditEntry, BaseModel
 
 logger = logging.getLogger(constants.LOGGERS.MAIN)
 logger_models = logging.getLogger(constants.LOGGERS.MODELS)
@@ -145,3 +145,20 @@ class AccountActivationTokenGenerator(PasswordResetTokenGenerator):
 
 
 account_activation_token = AccountActivationTokenGenerator()
+
+
+def logUserActivity(request: HttpRequest | None, activity_type: str, details: Optional[str] = None) -> None:
+    if request is None:
+        AuditEntry.create(
+            ip='0.0.0.0',
+            user_agent='-',
+            action=activity_type,
+            username=details
+        )
+    else:
+        AuditEntry.create(
+            ip=getClientIp(request),
+            user_agent=getUserAgent(request),
+            action=activity_type,
+            username=details
+        )
