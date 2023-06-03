@@ -1,3 +1,4 @@
+{% load main_tags %}
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <a class="navbar-brand" href="{% url 'Index' %}">الجالية اليمنية في إندونيسيا</a>
   <div style="float: left;">
@@ -10,22 +11,19 @@
     <ul class="navbar-nav mr-auto">
       <li class="nav-item">
         {% url 'Index' as index %}
-        <a class="nav-link {% if request.path == index %}active{% endif %}" href="{% url 'Index' %}">الصفحة
+        <a class="nav-link {% if request.path == index or "Dashboard" in request.path %}active{% endif %}"
+          href="{% url 'Index' %}">الصفحة
           الرئيسية</a>
       </li>
-      {% if request.user.is_authenticated and request.user.groups.all.0.name == "Manager" %}
+      {% if request.user.is_staff %}
+      {% getUserMenus request as userMenus %}
+      {% for menuItem in userMenus %}
       <li class="nav-item">
-        <a class="nav-link {% if "Broadcast" in request.path %}active{% endif %}" href="{% url 'BroadcastPage' %}">برودكاست</a>
+        <a class="nav-link {% if menuItem.is_active %}active{% endif %}"
+          href="{% if menuItem.arg %}{% url menuItem.page menuItem.arg %}{% else %}{% url menuItem.page %}{% endif %}">
+          {{ menuItem.name }}</a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link {% if "Monitor" in request.path %}active{% endif %}" href="{% url 'MonitorPage' %}">مراقبة</a>
-      </li>
-      {% endif %}
-      {% if request.user.is_authenticated and request.user.is_superuser %}
-      <li class="nav-item">
-        {% url 'SettingsPage' as settingsPage %}
-        <a class="nav-link {% if request.path == settingsPage %}active{% endif %}" href="{% url 'SettingsPage' %}">اعدادات النظام</a>
-      </li>
+      {% endfor %}
       {% endif %}
       <li class="nav-item">
         {% url 'MembershipTerms' as membershipTerms %}

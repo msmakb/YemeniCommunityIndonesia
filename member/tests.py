@@ -218,16 +218,16 @@ class UrlTest(TestCase):
             period_of_residence="1",
         )
 
-    def test_dashboard_is_resolved(self):
-        url = reverse(constants.PAGES.DASHBOARD, args=['currentPage'])
+    def test_members_page_is_resolved(self):
+        url = reverse(constants.PAGES.MEMBERS_PAGE, args=['currentPage'])
         self.assertEquals(resolve(url).func, views.dashboard)
 
     def test_detail_member_is_resolved(self):
         url = reverse(constants.PAGES.DETAIL_MEMBER_PAGE, args=['pk'])
         self.assertEquals(resolve(url).func, views.detailMember)
 
-    def test_member_page_is_resolved(self):
-        url = reverse(constants.PAGES.MEMBER_PAGE)
+    def test_member_dashboard_is_resolved(self):
+        url = reverse(constants.PAGES.MEMBER_DASHBOARD)
         self.assertEquals(resolve(url).func, views.memberPage)
 
     def test_member_form_page_is_resolved(self):

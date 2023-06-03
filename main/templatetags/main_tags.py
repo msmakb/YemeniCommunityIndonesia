@@ -2,8 +2,12 @@ import uuid
 
 from django import template
 from django.conf import settings
-from django.template.context import RenderContext
+from django.http import HttpRequest
 from django.forms import ModelForm
+from django.template.context import RenderContext
+
+from main import menu_manager
+from main.menu_manager import MenuItem
 
 # Register template library
 register = template.Library()
@@ -15,6 +19,11 @@ def getFieldErrors(form: ModelForm, filed_name: str) -> list[str] | None:
         return form.errors.get(filed_name)
     else:
         return None
+
+
+@register.simple_tag
+def getUserMenus(request: HttpRequest) -> list[MenuItem]:
+    return menu_manager.getUserMenus(request)
 
 
 @register.filter(name="rng")

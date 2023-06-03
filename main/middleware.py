@@ -7,7 +7,10 @@ from typing import Callable
 
 from django.conf import settings
 from django.contrib.auth import logout
-from django.core.exceptions import DisallowedHost, ValidationError
+from django.core.exceptions import (DisallowedHost,
+                                    ValidationError,
+                                    TooManyFieldsSent,
+                                    SuspiciousOperation)
 from django.core.cache import cache
 from django.db.models.query import QuerySet
 from django.http import (HttpResponsePermanentRedirect,
@@ -46,6 +49,26 @@ class AllowedClientMiddleware(object):
         self.user = str(request.user)
         self.last_audit_entry: int = AuditEntry.getLastAuditEntry()
         current_path = request.path
+
+        # Security check
+        try:
+            request.GET
+            request.POST
+            request.FILES
+        except TooManyFieldsSent:
+            self.blockClient(indefinitely=True)
+            AuditEntry.create(ip=self.requester_ip,
+                              user_agent=self.requester_agent,
+                              action=constants.ACTION.ATTACK_ATTEMPT,
+                              username=self.user)
+            return redirect(constants.PAGES.LOGOUT)
+        except SuspiciousOperation:
+            self.blockClient(indefinitely=True)
+            AuditEntry.create(ip=self.requester_ip,
+                              user_agent=self.requester_agent,
+                              action=constants.ACTION.ATTACK_ATTEMPT,
+                              username=self.user)
+            return redirect(constants.PAGES.LOGOUT)
 
         # Is new visitor
         if self.isNewVisiter():
@@ -285,53 +308,6 @@ class LoginRequiredMiddleware:
         return None
 
 
-class AllowedUserMiddleware:
-    def __init__(self, get_response) -> None:
-        self.get_response: Callable[[HttpRequest], HttpResponse] = get_response
-        self.request: HttpRequest = None
-
-    def __call__(self, request: HttpRequest) -> HttpResponse:
-        self.request = request
-        response: HttpResponse = self.get_response(request)
-        # Media allowed for staff only
-        if request.path.startswith('/media/') and (not request.user.is_authenticated or not request.user.is_staff):
-            return HttpResponseForbidden()
-
-        return response
-
-    def process_view(self, request: HttpRequest, *args, **kwargs) -> HttpResponsePermanentRedirect | None:
-        if request.user.is_authenticated:
-            path_name: str = resolve(request.path_info).url_name
-            # Is requesting admin dashboard
-            if not self.isAllowedToAccessAdmin(request):
-                raise Http404
-
-            # The requester in THE unauthorized page
-            elif path_name == constants.PAGES.UNAUTHORIZED_PAGE:
-                return None
-            elif request.user.groups.exists():
-                group: str = getUserGroupe(request)
-                if path_name in constants.RESTRICTED_PAGES and path_name not in constants.PERMISSIONS[group]:
-                    return redirect(constants.PAGES.UNAUTHORIZED_PAGE)
-            else:
-                MSG.SOMETHING_WRONG(request)
-                logger.warning(f"The user [{request.user}] has no groups!!")
-                return redirect(constants.PAGES.LOGOUT)
-
-        return None
-
-    def isAllowedToAccessAdmin(self, request: HttpRequest) -> bool:
-        if request.path.startswith(reverse('admin:index')):
-            if request.user.is_superuser:
-                return True
-            else:
-                logger.warning(f'Non-allowed user [{request.user}] attempted '
-                               + f'to access admin site at "{request.get_full_path()}".'
-                               + f' IP: {getClientIp(request)}')
-                return False
-        return True
-
-
 class SiteUnderMaintenanceMiddleware:
     def __init__(self, get_response) -> None:
         self.get_response: Callable[[HttpRequest], HttpResponse] = get_response
@@ -356,21 +332,24 @@ class ErrorHandlerMiddleware:
         response: HttpResponse = self.get_response(request)
 
         return response
-    
+
     def process_exception(self, request: HttpRequest, exception: Exception) -> HttpResponse:
         if settings.DEBUG:
             return
-        
-        if isinstance(exception, ValidationError): return None
-        if isinstance(exception, DisallowedHost): return None
-        if isinstance(exception, Http404): return None
-        
+
+        if isinstance(exception, ValidationError):
+            return None
+        if isinstance(exception, DisallowedHost):
+            return None
+        if isinstance(exception, Http404):
+            return None
+
         if cache.get('ERROR_' + getClientIp(request)) == type(exception):
             cache.delete('ERROR_' + getClientIp(request))
             if request.user.is_authenticated:
                 logout(request)
             return redirect(constants.PAGES.INDEX_PAGE)
-        
+
         MSG.SOMETHING_WRONG(request)
         logger.error(traceback.format_exc())
         if request.user.is_authenticated and request.user.is_staff:
