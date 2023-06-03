@@ -21,6 +21,37 @@
         {% if errors %}<span class="text-danger">{{ errors }}</span>{% endif %}
     </div>
     {% endfor %}
+    <div id="notes" class="text-danger mt-3" style="display: none;">
+        <p>لتضمين قيمة متغير محدد، يرجى وضعه بين الأقواس المتجانسة في النص البريدي. على سبيل المثال، إذا قمت بإضافة
+            "مرحبا، {name_ar}" وكان اسم المستلم محمد، ستظهر الرسالة بالشكل التالي "مرحبا، محمد".</p>
+        <hr>
+        <div class="row">
+            <div class="col-4">
+                <p>بيانات عامة:</p>
+                <p>{name_ar} : الاسم بالعربي</p>
+                <p>{name_en} : الاسم بالإنجليزي</p>
+                <p>{date_of_birth} : تاريخ الميلاد</p>
+                <p>{call_number} : رقم الإتصال</p>
+                <p>{whatsapp_number} : رقم الواتساب</p>
+                <p>{email} : البريد الإلكتروني</p>
+            </div>
+            <dv class="col-4">
+                <p>بيانات الإقامة:</p>
+                <p>{address__street_address} : عنوان الشارع</p>
+                <p>{address__district} : المنطقة</p>
+                <p>{address__city} : المدينة</p>
+                <p>{address__province} : الولاية</p>
+                <p>{address__postal_code} : الرمز البريدي</p>
+            </dv>
+            <div class="col-4">
+                <p>بيانات العضوية:</p>
+                <p>{membership__card_number} : رقم العضوية</p>
+                <p>{membership__membership_type} : نوع العضوية</p>
+                <p>{membership__issue_date} : تاريخ الإصدار</p>
+                <p>{membership__expire_date} : تاريخ الإنتهاء</p>
+            </div>
+        </div>
+    </div>
     <div>
         <button type="submit" class="btn btn-lg btn-info mt-4 mb-5 shadow rounded">
             {% if "Add" in request.path %}إضافة{% else %}تعديل{% endif %}
@@ -30,3 +61,20 @@
     </div>
 </form>
 {% endblock %}
+{% block scripts %}
+<script>
+    let notes = document.getElementById('notes');
+    let is_special_email_broadcast = document.getElementById('id_is_special_email_broadcast');
+    if (is_special_email_broadcast.checked) {
+        notes.style.display = 'block';
+    }
+
+    is_special_email_broadcast.addEventListener("change", function () {
+        if (is_special_email_broadcast.checked) {
+            notes.style.display = 'block';
+        } else {
+            notes.style.display = "none";
+        }
+    });
+</script>
+{% endblock scripts %}

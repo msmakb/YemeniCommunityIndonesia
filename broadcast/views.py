@@ -14,6 +14,7 @@ from member.models import Person
 from .models import Attachment, EmailBroadcast
 from .forms import AttachmentForm, EmailBroadcastForm
 
+
 def emailBroadcastPage(request: HttpRequest) -> HttpResponse:
     queryset: QuerySet[EmailBroadcast] = EmailBroadcast.getAllOrdered(
         'created',
@@ -24,7 +25,8 @@ def emailBroadcastPage(request: HttpRequest) -> HttpResponse:
     page_obj: QuerySet[Person] = pagination.getPageObject()
     is_paginated: bool = pagination.isPaginated
 
-    context: dict[str, Any] = {'page_obj': page_obj, 'is_paginated': is_paginated,}
+    context: dict[str, Any] = {
+        'page_obj': page_obj, 'is_paginated': is_paginated, }
     return render(request, constants.TEMPLATES.BROADCAST_PAGE_TEMPLATE, context)
 
 
@@ -38,25 +40,32 @@ def detailBroadcastPage(request: HttpRequest, pk: str) -> HttpResponse:
         if "test-broadcast" in request.POST:
             email: str = request.POST.get('email')
             try:
-                broadcast.testBroadcast(email)
+                if broadcast.is_special_email_broadcast:
+                    broadcast.testSpecialBroadcast(email)
+                else:
+                    broadcast.testBroadcast(email)
             except Exception as e:
                 error_message = str(e.args[0]) if e.args else "Unknown error"
                 MSG.ERROR_MESSAGE(request, error_message)
         elif "push-broadcast" in request.POST:
             try:
-                broadcast.broadcast()
+                if broadcast.is_special_email_broadcast:
+                    broadcast.specialBroadcast()
+                else:
+                    broadcast.broadcast()
             except Exception as e:
                 error_message = str(e.args[0]) if e.args else "Unknown error"
                 MSG.ERROR_MESSAGE(request, error_message)
 
-    context: dict[str, Any] = {'broadcast': broadcast, 'attachments': attachments}
+    context: dict[str, Any] = {
+        'broadcast': broadcast, 'attachments': attachments}
     return render(request, constants.TEMPLATES.DETAIL_BROADCAST_PAGE_TEMPLATE, context)
 
 
 def addBroadcastPage(request: HttpRequest) -> HttpResponse:
     broadcastForm = EmailBroadcastForm()
     if request.method == constants.POST_METHOD:
-        
+
         filter_data: dict[str, Any] = {
             'is_validated': True
         }
@@ -88,7 +97,7 @@ def updateBroadcastPage(request: HttpRequest, pk: str) -> HttpResponse:
     broadcast.email_list = None
     broadcastForm = EmailBroadcastForm(instance=broadcast)
     if request.method == constants.POST_METHOD:
-        
+
         filter_data: dict[str, Any] = {
             'is_validated': True
         }
@@ -111,7 +120,8 @@ def updateBroadcastPage(request: HttpRequest, pk: str) -> HttpResponse:
             MSG.UPDATE_BROADCAST(request)
             return redirect(constants.PAGES.DETAIL_BROADCAST_PAGE, broadcast.id)
 
-    context: dict[str, Any] = {'broadcastForm': broadcastForm, 'broadcastId': broadcast.id}
+    context: dict[str, Any] = {
+        'broadcastForm': broadcastForm, 'broadcastId': broadcast.id}
     return render(request, constants.TEMPLATES.ADD_UPDATE_BROADCAST_PAGE_TEMPLATE, context)
 
 
@@ -130,7 +140,8 @@ def addAttachmentPage(request: HttpRequest, pk: str) -> HttpResponse:
             for messages in attachmentForm.errors.get('__all__'):
                 MSG.ERROR_MESSAGE(request, messages)
 
-    context: dict[str, Any] = {'attachmentForm': attachmentForm, 'broadcastId': pk}
+    context: dict[str, Any] = {
+        'attachmentForm': attachmentForm, 'broadcastId': pk}
     return render(request, constants.TEMPLATES.ADD_ATTACHMENT_PAGE_TEMPLATE, context)
 
 
@@ -144,3 +155,12 @@ def deleteAttachment(request: HttpRequest, pk: str) -> HttpResponse:
 
     MSG.DELETE_ATTACHMENT(request)
     return redirect(constants.PAGES.DETAIL_BROADCAST_PAGE, broadcastId)
+
+
+def updateSpecialBroadcastEmailAttacheMembershipCard(request: HttpRequest, pk: str, status: str) -> HttpResponse:
+    if status == 'D':
+        EmailBroadcast.filter(pk=pk).update(attache_membership_card=False)
+    elif status == 'A':
+        EmailBroadcast.filter(pk=pk).update(attache_membership_card=True)
+
+    return redirect(constants.PAGES.DETAIL_BROADCAST_PAGE, pk)
