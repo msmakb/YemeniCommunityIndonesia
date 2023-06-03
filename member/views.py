@@ -19,7 +19,7 @@ from main import messages as MSG
 from main.image_processing import ImageProcessor, ImageProcessingError
 from main.models import AuditEntry
 from parameter.service import getParameterValue
-from main.utils import Pagination, getClientIp, getUserAgent, exportAsCsv
+from main.utils import Pagination, getClientIp, getUserAgent, exportAsCsv, logUserActivity
 
 from .models import (Academic, Address, Membership,
                      FamilyMembers, FamilyMembersChild,
@@ -408,8 +408,6 @@ def detailMember(request: HttpRequest, pk: str) -> HttpResponse:
                     first_name=person.name_ar.split(' ')[0],
                     last_name=person.name_ar.split(' ')[-1])
                 person.save()
-                Group.objects.get(name=constants.GROUPS.MEMBER).user_set.add(
-                    person.account)
 
                 if settings.MAILING_IS_ACTIVE:
                     email: EmailMessage = EmailMessage(
@@ -438,6 +436,9 @@ def detailMember(request: HttpRequest, pk: str) -> HttpResponse:
                     except Exception:
                         pass
 
+                    logUserActivity(request, constants.ACTION.DENY_MEMBER,
+                                    f"اعتماد سجل العضو ({person.name_ar}) "
+                                    + f"من قِبل {request.user.get_full_name()}")
                 return redirect(constants.PAGES.MEMBERS_PAGE, "Approve")
             else:
                 MSG.PASSPORT_NUMBER_ERROR(request)
@@ -451,6 +452,9 @@ def detailMember(request: HttpRequest, pk: str) -> HttpResponse:
 
             if int(passport_number) == person.id:
                 person.delete()
+                logUserActivity(request, constants.ACTION.ACCEPT_MEMBER,
+                                f"رفض وحذف سجل العضو ({person.name_ar}) "
+                                + f"من قِبل {request.user.get_full_name()}")
                 return redirect(constants.PAGES.MEMBERS_PAGE, "Approve")
             else:
                 MSG.PASSPORT_NUMBER_ERROR(request)

@@ -80,14 +80,30 @@ def activityLogPage(request: HttpRequest) -> HttpResponse:
             constants.ACTION.SUSPICIOUS_POST
         ]
     ).order_by('-created')
+
+    activity_filter: str = request.GET.get('activity-filter')
+    if request.GET.get('activity-filter'):
+        if activity_filter == '5':
+            queryset = queryset.filter(action__in=[activity_filter, '6'])
+        else:
+            queryset = queryset.filter(action=activity_filter)
+
     page: str = request.GET.get('page')
     pagination = Pagination(queryset, int(page) if page is not None else 1,
                             paginate_by=15)
     page_obj: QuerySet[AuditEntry] = pagination.getPageObject()
     is_paginated: bool = pagination.isPaginated
 
-    context: dict[str, Any] = {
-        'page_obj': page_obj, 'is_paginated': is_paginated}
+    activities: dict[str, str] = {
+        k: constants.ACTION_STR_AR[int(k)] for k in constants.ACTION}
+
+    del activities['4']
+    del activities['6']
+    del activities['8']
+    del activities['9']
+
+    context: dict[str, Any] = {'activities': activities, 'page_obj': page_obj,
+                               'is_paginated': is_paginated}
     return render(request, constants.TEMPLATES.ACTIVITY_LOG_PAGE_TEMPLATE, context)
 
 

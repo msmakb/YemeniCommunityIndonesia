@@ -48,6 +48,10 @@ ACTION = _NT('str', [
     'ADD_USER',
     'COMPLETE_USER_REGISTRATION',
     'UPDATE_USER',
+    'BROADCAST',
+    'ACCEPT_MEMBER',
+    'DENY_MEMBER',
+    'SETTINGS_CHANGE',
 ])(
     '0',
     '1',
@@ -66,6 +70,10 @@ ACTION = _NT('str', [
     '14',
     '15',
     '16',
+    '17',
+    '18',
+    '19',
+    '20',
 )
 ACTION_STR: tuple[str, ...] = (
     'FIRST_VISIT',
@@ -85,6 +93,10 @@ ACTION_STR: tuple[str, ...] = (
     'ADD_USER',
     'COMPLETE_USER_REGISTRATION',
     'UPDATE_USER',
+    'BROADCAST',
+    'ACCEPT_MEMBER',
+    'DENY_MEMBER',
+    'SETTINGS_CHANGE',
 )
 ACTION_STR_AR: tuple[str, ...] = (
     'زيارة أولى',
@@ -104,6 +116,10 @@ ACTION_STR_AR: tuple[str, ...] = (
     'إضافة مستخدم جديدة',
     'استكمال تسجيل المستخدم',
     'تعديل بيانات المستخدم',
+    'برودكاست',
+    'قبول السجل',
+    'رفض السجل',
+    'تغير الإعدادات',
 )
 BLOCK_TYPES = _NT('str', [
     'UNBLOCKED',
