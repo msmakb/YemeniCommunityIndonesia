@@ -3,21 +3,21 @@
 {% if var_exists and is_paginated %}
 <div class="p-3">
     {% if page_obj.has_previous %}
-    <a class="btn btn-sm btn-outline-info" href="?page=1">الأول</a>
-    <a class="btn btn-sm btn-outline-info" href="?page={{ page_obj.previous_page_number }}">السابق</a>
+    <a class="btn btn-sm btn-outline-info" href="{% setPage request.get_full_path 1 %}">الأول</a>
+    <a class="btn btn-sm btn-outline-info" href="{% setPage request.get_full_path page_obj.previous_page_number %}">السابق</a>
     {% endif %}
 
     {% for num in page_obj.paginator.page_range %}
     {% if page_obj.number == num %}
-    <a class="btn btn-sm btn-info" href="?page={{ num }}">{{ num }}</a>
+    <a class="btn btn-sm btn-info" href="{% setPage request.get_full_path num %}">{{ num }}</a>
     {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-    <a class="btn btn-sm btn-outline-info" href="?page={{ num }}">{{ num }}</a>
+    <a class="btn btn-sm btn-outline-info" href="{% setPage request.get_full_path num %}">{{ num }}</a>
     {% endif %}
     {% endfor %}
 
     {% if page_obj.has_next %}
-    <a class="btn btn-sm btn-outline-info" href="?page={{ page_obj.next_page_number }}">التالي</a>
-    <a class="btn btn-sm btn-outline-info" href="?page={{ page_obj.paginator.num_pages }}">الاخير</a>
+    <a class="btn btn-sm btn-outline-info" href="{% setPage request.get_full_path page_obj.next_page_number %}">التالي</a>
+    <a class="btn btn-sm btn-outline-info" href="{% setPage request.get_full_path page_obj.paginator.num_pages %}">الاخير</a>
     {% endif %}
 </div>
 {% endif %}
