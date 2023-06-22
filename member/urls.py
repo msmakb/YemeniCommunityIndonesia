@@ -24,7 +24,12 @@ urlpatterns = [
         name=PAGES.MEMBER_DASHBOARD
     ),
     path(
-        'Member/Membership-Card/<str:pk>',
+        'Membership-Card/',
+        views.membershipCardPage,
+        name=PAGES.MEMBERSHIP_CARD_PAGE
+    ),
+    path(
+        'Membership-Card/Download/',
         views.downloadMembershipCard,
         name=PAGES.DOWNLOAD_MEMBERSHIP_PAGE
     ),

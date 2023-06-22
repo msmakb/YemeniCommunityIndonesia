@@ -3,7 +3,7 @@ from django.db.models.query import QuerySet
 from django.http import HttpRequest
 
 from main.constants import BASE_MODEL_FIELDS, ROWS_PER_PAGE, ACCESS_TYPE
-from .models import Parameter
+from .models import Parameter, ImageParameter
 
 
 @register(Parameter)
@@ -29,3 +29,13 @@ class ParameterAdmin(ModelAdmin):
     def has_delete_permission(self, *args, **kwargs) -> bool:
         return False
 
+
+@register(ImageParameter)
+class ImageParameterAdmin(ModelAdmin):
+    list_display: tuple[str, ...] = ('file_name', 'content',
+                                     *BASE_MODEL_FIELDS)
+    list_filter: tuple[str, ...] = ('updated',)
+    search_fields: tuple[str, ...] = ('file_name',)
+    ordering: tuple[str, ...] = ('-updated',)
+    list_per_page: int = ROWS_PER_PAGE
+    exclude: tuple[str, ...] = BASE_MODEL_FIELDS

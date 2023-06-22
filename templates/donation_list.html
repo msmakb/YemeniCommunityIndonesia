@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="row">
+    <h1 class="col m-3">قائمة التبرعات</h1>
+</div>
+
+{% if page_obj %}
+<div class="container-fluid">
+    <table class="table text-center">
+        <thead>
+            <tr>
+                <th scope="col">رقم</th>
+                <th scope="col">اسم المتبرع</th>
+                <th scope="col">المبلغ</th>
+                <th scope="col">تاريخ التبرع</th>
+                <th scope="col">تاريخ التحقق</th>
+                <th scope="col">مؤكدة</th>
+                <th scope="col">الفاتورة</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for donation in page_obj %}
+            <tr>
+                <td>{{ page_obj.start_index|add:forloop.counter0 }}</td>
+                <td>{{ donation.name }}</td>
+                <td class="amount">{{ donation.amount }}</td>
+                <td>{{ donation.created }}</td>
+                <td>
+                    {% if donation.created != donation.updated %}
+                    {{ donation.updated }}
+                    {% else %}
+                    لم يتم التحقق بعد
+                    {% endif %}
+                </td>
+                <td>
+                    {% if donation.created != donation.updated %}
+                    {% if donation.is_valid_donation %}
+                    <img style="width: 20px; height:auto;" src="{% static 'admin/img/icon-yes.svg' %}" alt="Treu">
+                    {% else %}
+                    <img style="width: 20px; height:auto;" src="{% static 'admin/img/icon-no.svg' %}" alt="Treu">
+                    {% endif %}
+                    {% else %}
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="ID-{{ donation.pk }}">
+                        <button type="submit" name="approve" class="btn btn-md btn-outline-success"
+                            onclick="return confirm('هل أنت متأكد من تصديق هذا التبرع؟\n{{donation}}')">
+                            تصديق</button>
+                        <button type="submit" name="reject" class="btn btn-md btn-outline-warning"
+                            onclick="return confirm('هل أنت متأكد من إلغاء هذا التبرع؟\n{{donation}}')">
+                            إِبطال</button>
+                    </form>
+                    {% endif %}
+                </td>
+                <td>
+                    <a class="btn btn-md btn-info" data-toggle="modal" data-target="#{{ donation.id }}">عرض</a>
+                    <div class="modal fade" id="{{ donation.id }}" tabindex="-1" role="dialog"
+                        aria-labelledby="{{ donation.id }}Title" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLongTitle">الرقم التعريفي:
+                                        {{ donation.id }}
+                                    </h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body m-0 p-0">
+                                    <div class="card">
+                                        <img class="card-img-top" src="{{ donation.receipt.url }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<h2 class="text-center text-warning">لا يوجد</h2>
+{% endif %}
+
+{% endblock %}
+{% block scripts %}
+<script>
+    const amounts = document.querySelectorAll('.amount');
+    for (let amount of amounts) {
+        amount.innerHTML = (Number(amount.textContent.trim().replace(/,/g, '.'))).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+</script>
+{% endblock scripts %}

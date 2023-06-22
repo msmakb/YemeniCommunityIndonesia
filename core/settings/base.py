@@ -16,6 +16,7 @@ INSTALLED_APPS = [
     'parameter.apps.ParameterConfig',
     'monitor.apps.MonitorConfig',
     'company_user.apps.CompanyUserConfig',
+    'payment.apps.PaymentConfig',
 
     # Third party apps
     'django_crontab',
@@ -28,6 +29,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'company_user.middleware.CacheUserMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
