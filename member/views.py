@@ -2,7 +2,7 @@ import os
 from typing import Any, Callable
 
 from django.conf import settings
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import User
 from django.core.exceptions import EmptyResultSet
 from django.core.files.base import ContentFile
 from django.core.mail import EmailMessage
@@ -19,7 +19,8 @@ from main import messages as MSG
 from main.image_processing import ImageProcessor, ImageProcessingError
 from main.models import AuditEntry
 from parameter.service import getParameterValue
-from main.utils import Pagination, getClientIp, getUserAgent, exportAsCsv, logUserActivity
+from main.utils import (Pagination, getClientIp, getUserAgent,
+                        exportAsCsvExcel, logUserActivity, sendEmail)
 
 from .models import (Academic, Address, Membership,
                      FamilyMembers, FamilyMembersChild,
@@ -50,9 +51,12 @@ def membersPage(request: HttpRequest, currentPage: str) -> HttpResponse:
         case _:
             raise Http404
 
-    queryset: QuerySet[Person] = Person.filter(is_validated=is_validated)
+    queryset: QuerySet[Person] = Person.objects.select_related(
+        'address', 'membership').filter(is_validated=is_validated)
+
     personFilter: PersonFilter = PersonFilter(request.GET, queryset=queryset)
     queryset = personFilter.qs
+
     page: str = request.GET.get('page')
     pagination = Pagination(queryset, int(page) if page is not None else 1)
     page_obj: QuerySet[Person] = pagination.getPageObject()
@@ -123,11 +127,12 @@ def membersPage(request: HttpRequest, currentPage: str) -> HttpResponse:
             'membership__membership_type': lambda membership_type: constants.MEMBERSHIP_TYPE_AR[int(membership_type)],
         }
         try:
-            file: HttpResponse = exportAsCsv(
+            file: HttpResponse = exportAsCsvExcel(
                 queryset=queryset,
                 fields=fields,
                 labels_to_change=labels_to_change,
-                values_to_change=values_to_change
+                values_to_change=values_to_change,
+                sheet_type=request.POST.get('export_type')
             )
             return file
         except EmptyResultSet:
@@ -159,10 +164,11 @@ def memberPage(request: HttpRequest) -> HttpResponse:
     return render(request, constants.TEMPLATES.MEMBER_PAGE_TEMPLATE, context)
 
 
-def downloadMembershipCard(request: HttpRequest, pk: str) -> HttpResponse:
+def downloadMembershipCard(request: HttpRequest) -> HttpResponse:
     if not request.user.is_authenticated:
         return redirect(constants.PAGES.UNAUTHORIZED_PAGE)
     try:
+        pk: int = Person.getUserData(request.user).get('membership_id')
         membership: Membership = Membership.get(id=pk)
         person: Person = Person.get(account=request.user)
     except (Membership.DoesNotExist, Person.DoesNotExist):
@@ -293,7 +299,7 @@ def memberFormPage(request: HttpRequest) -> HttpResponse:
                         [person.email]
                     )
                     email.fail_silently = False
-                    email.send()
+                    sendEmail(email)
                 except Exception:
                     pass
 
@@ -431,11 +437,8 @@ def detailMember(request: HttpRequest, pk: str) -> HttpResponse:
                             person.membership.membership_card.file.read(),
                             'image/jpeg'
                         )
-                    try:
-                        email.send()
-                    except Exception:
-                        pass
-
+                    sendEmail(email)
+                    MSG.APPROVE_RECORD(request)
                     logUserActivity(request, constants.ACTION.DENY_MEMBER,
                                     f"اعتماد سجل العضو ({person.name_ar}) "
                                     + f"من قِبل {request.user.get_full_name()}")
@@ -455,6 +458,7 @@ def detailMember(request: HttpRequest, pk: str) -> HttpResponse:
                 logUserActivity(request, constants.ACTION.ACCEPT_MEMBER,
                                 f"رفض وحذف سجل العضو ({person.name_ar}) "
                                 + f"من قِبل {request.user.get_full_name()}")
+                MSG.REJECT_RECORD(request)
                 return redirect(constants.PAGES.MEMBERS_PAGE, "Approve")
             else:
                 MSG.PASSPORT_NUMBER_ERROR(request)
@@ -479,3 +483,8 @@ def thankYou(request: HttpRequest) -> HttpResponse:
     except AuditEntry.DoesNotExist:
         return redirect(constants.PAGES.INDEX_PAGE)
     return render(request, constants.TEMPLATES.THANK_YOU_TEMPLATE,)
+
+
+def membershipCardPage(request: HttpRequest) -> HttpResponse:
+    context: dict[str, Any] = {}
+    return render(request, constants.TEMPLATES.MEMBERSHIP_CARD_PAGE_TEMPLATE, context)

@@ -1,18 +1,21 @@
 import logging
 from logging import Logger
 from typing import Any
+
+from django.core.cache import cache
+from django.core.exceptions import ValidationError
 from django.contrib import auth
 from django.contrib.auth.models import User
+from django.db.models.query import QuerySet
 from django.http import HttpResponse, HttpRequest
 from django.shortcuts import render, redirect
-from django.utils import timezone
 
 from . import constants
 from . import messages as MSG
 from .decorators import isAuthenticatedUser
-from .models import AuditEntry
+from .models import AuditEntry, Donation
 from parameter.service import getParameterValue
-from .utils import getClientIp
+from .utils import Pagination, getClientIp, logUserActivity
 
 logger: Logger = logging.getLogger(constants.LOGGERS.MAIN)
 
@@ -35,7 +38,8 @@ def loginPage(request: HttpRequest) -> HttpResponse:
             return redirect(constants.PAGES.INDEX_PAGE)
         else:
             MSG.INCORRECT_INFO(request)
-            allowed_attempts: int = getParameterValue(constants.PARAMETERS.ALLOWED_LOGGED_IN_ATTEMPTS)
+            allowed_attempts: int = getParameterValue(
+                constants.PARAMETERS.ALLOWED_LOGGED_IN_ATTEMPTS)
             failed_login_count: int = AuditEntry.getLastAuditEntry().filter(
                 action=constants.ACTION.LOGGED_FAILED,
                 ip=getClientIp(request)
@@ -66,3 +70,68 @@ def unauthorized(request: HttpRequest) -> HttpResponse:
     logger.warning(
         f"The user [{request.user}] is unauthorized to view this page")
     return render(request, constants.TEMPLATES.UNAUTHORIZED_TEMPLATE)
+
+
+def donation(request: HttpRequest) -> HttpResponse:
+    errors: dict[str, str] = {}
+    head_img_url: str = getParameterValue(
+        constants.PARAMETERS.MEMBERSHIP_TRANSFER_INFO_IMAGE)
+
+    if request.method == constants.POST_METHOD:
+        try:
+            donation: Donation = Donation()
+            donation.name = request.POST.get(
+                "name") if request.POST.get("name") else 'فاعل خير'
+            donation.amount = request.POST.get(
+                "amount") if request.POST.get("amount") else None
+            donation.receipt = request.FILES.get(
+                "receipt") if request.FILES.get("receipt") else None
+            donation.clean_fields()
+            donation.save()
+
+            cache.set('DONATION_FROM_IP:' + getClientIp(request), '', 300)
+            logUserActivity(request, constants.ACTION.DONATION,
+                            f"تبرع من '{donation.name}'")
+            return redirect(constants.PAGES.THANKS_FOR_DONATION_PAGE)
+
+        except ValidationError as e:
+            errors = e.message_dict
+
+    context: dict[str, Any] = {'head_img_url': head_img_url, 'errors': errors}
+    return render(request, constants.TEMPLATES.DONATION_TEMPLATE, context)
+
+
+def thanksForDonation(request: HttpRequest) -> HttpResponse:
+    if 'DONATION_FROM_IP:' + getClientIp(request) not in cache:
+        return redirect(constants.PAGES.INDEX_PAGE)
+
+    return render(request, constants.TEMPLATES.THANKS_FOR_DONATION_TEMPLATE)
+
+
+def donationListPage(request: HttpRequest) -> HttpResponse:
+    queryset: QuerySet[Donation] = Donation.getAllOrdered(
+        'created', reverse=True)
+
+    if request.method == constants.POST_METHOD:
+        print(request.POST)
+        approved: bool | None = None
+        if "approve" in request.POST:
+            approved = True
+        elif "reject" in request.POST:
+            approved = False
+
+        for donation in queryset:
+            if f"ID-{donation.pk}" in request.POST and approved is not None:
+                donation.is_valid_donation = approved
+                donation.save()
+                logUserActivity(request, constants.ACTION.VALIDATE_DONATION,
+                                f"التحقق من فاتورة التبرع رقم '{donation.pk}'"
+                                f" من قِبل {request.user.get_full_name()}")
+
+    page: str = request.GET.get('page')
+    pagination = Pagination(queryset, int(page) if page is not None else 1)
+    page_obj: QuerySet[Donation] = pagination.getPageObject()
+    is_paginated: bool = pagination.isPaginated
+    context: dict[str, Any] = {'is_paginated': is_paginated,
+                               'page_obj': page_obj}
+    return render(request, constants.TEMPLATES.DONATION_LIST_PAGE_TEMPLATE, context)

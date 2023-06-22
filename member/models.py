@@ -1,13 +1,17 @@
+from __future__ import annotations
 from io import BytesIO
 from os import path
+from typing import Any
 from uuid import uuid4
 
+from django.core.cache import cache
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.db import models
+from django.db.models import Case, When
 from django.db.models.fields.files import ImageFieldFile
 from django.utils.timezone import datetime
 
@@ -82,6 +86,8 @@ class Membership(BaseModel):
     expire_date: datetime = models.DateField()
     membership_card: ImageFieldFile = models.ImageField(
         upload_to=membershipImagesDir, max_length=255, null=True, blank=True)
+    last_month_paid: str = models.CharField(max_length=7, blank=True,
+                                            null=True)
 
     def __str__(self) -> str:
         return self.card_number
@@ -93,6 +99,24 @@ class Membership(BaseModel):
     @property
     def getMembershipTypeEnglish(self):
         return constants.MEMBERSHIP_TYPE_EN[int(self.membership_type)]
+
+    def hasPendingPayment(self) -> bool:
+        return self.payments.filter(status=constants.PAYMENT_STATUS.PENDING).exists()
+
+    def getNextPaymentStartMonth(self) -> str:
+        last_month_paid: str = self.last_month_paid
+        if last_month_paid is None:
+            last_month_paid = datetime.strftime(
+                self.issue_date, '%m/%Y')
+
+        if last_month_paid[:2] == '12':
+            from_month: datetime = datetime.strptime(
+                f'01/{int(last_month_paid[3:])+1}', '%m/%Y')
+        else:
+            from_month: datetime = datetime.strptime(
+                f'{int(last_month_paid[:2])+1}{last_month_paid[2:]}', '%m/%Y')
+
+        return datetime.strftime(from_month, '%m/%Y')
 
 
 class FamilyMembers(BaseModel):
@@ -163,6 +187,56 @@ class Person(BaseModel):
     @property
     def periodOfResidence(self) -> str:
         return constants.PERIOD_OF_RESIDENCE_AR[int(self.period_of_residence)]
+
+    @classmethod
+    def getUserData(cls, user: User) -> dict[str, Any]:
+        user_data: dict[str, Any] = cache.get('USER_DATA_' + str(user.id))
+        changed: bool = True
+        person: Person | None = None
+
+        if not user_data:
+            person = Person.get(account=user)
+            user_data = {}
+            changed = True
+
+        if not user_data.get('has_membership'):
+            changed = True
+            user_data['has_membership'] = Person.objects.annotate(
+                has_membership=Case(
+                    When(membership__isnull=False, then=True),
+                    default=False,
+                    output_field=models.BooleanField())
+            ).filter(account=user).values_list(
+                'has_membership', flat=True).get()
+
+        if user_data.get('has_membership') and not user_data.get('membership_id'):
+            changed = True
+            if person:
+                user_data['membership_id'] = person.membership.id
+            else:
+                user_data['membership_id'] = Person.filter(
+                    account=user).values_list('membership', flat=True).get()
+
+        if not user_data.get('name_ar'):
+            changed = True
+            if person:
+                user_data['name_ar'] = person.name_ar
+            else:
+                user_data['name_ar'] = Person.filter(
+                    account=user).values_list('name_ar', flat=True).get()
+
+        if not user_data.get('email'):
+            changed = True
+            if person:
+                user_data['email'] = person.email
+            else:
+                user_data['email'] = Person.filter(
+                    account=user).values_list('email', flat=True).get()
+
+        if changed:
+            cache.set('USER_DATA_' + str(user.id), user_data, None)
+
+        return user_data
 
     def clean(self) -> None:
         if self.pk and self.__class__.get(pk=self.pk).photograph.name == self.photograph.name:

@@ -144,6 +144,24 @@ def _getDefaultParam() -> list[_DefaultParameter]:
     )
     default_parameters.append(
         _DefaultParameter(
+            name="MEMBERSHIP_TRANSFER_INFO_IMAGE",
+            value="None",
+            description="The image showing in the payment page for the members, displaying the bank account info to received membership payments. THIS IMAGE MUST BE 1150X270.",
+            access_type=ACCESS_TYPE.ADMIN_ACCESS,
+            parameter_type=DATA_TYPE.IMAGE_FILE
+        )
+    )
+    default_parameters.append(
+        _DefaultParameter(
+            name="REQUEST_MAX_LIMIT_PER_SECOND",
+            value="50",
+            description="The requests count allowed per second.",
+            access_type=ACCESS_TYPE.No_ACCESS,
+            parameter_type=DATA_TYPE.INTEGER
+        )
+    )
+    default_parameters.append(
+        _DefaultParameter(
             name="TEST",
             value="TEST_PARAMETER",
             description="Just for testing propose.",

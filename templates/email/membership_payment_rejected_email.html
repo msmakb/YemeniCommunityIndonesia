@@ -1,0 +1,34 @@
+{% extends 'email/base_email.html' %}
+{% block content %}
+<h4>مرحبًا {{ name }}،</h4>
+<p>نأسف لإبلاغكم بأن دفع اشتراك الجالية اليمنية في إندونيسيا الخاص بك لفترة <b>({{ period }})</b>، قد تم رفضه.</p>
+<p>يُرجى مراجعة التفاصيل والتأكد من صحة المعلومات المقدمة. في حالة وجود أي استفسارات أو لمزيد من التفاصيل حول سبب الرفض، يرجى التواصل مع فريق دعم للجالية.</p>
+<p>نشكركم على تفهمكم، ونحن نتطلع إلى استمرار مشاركتكم ودعمكم المستمر للجالية اليمنية في إندونيسيا.</p>
+<table>
+    <thead>
+        <tr>
+            <th colspan="3"><b>تفاصيل الدفع</b></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="2">رقم المرجع</td>:
+            <td>{{ reference_number }}</td>
+        </tr>
+        <tr>
+            <td colspan="2">المبلغ</td>:
+            <td>{{ amount }}</td>
+        </tr>
+        <tr>
+            <td colspan="2">التاريخ</td>:
+            <td>{{ payment_date }}</td>
+        </tr>
+        {% if note and note != '-' %}
+        <tr>
+            <td colspan="2">ملاحظات</td>:
+            <td>{{ note }}</td>
+        </tr>
+        {% endif %}
+    </tbody>
+</table>
+{% endblock content %}

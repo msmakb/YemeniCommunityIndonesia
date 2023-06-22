@@ -1,0 +1,33 @@
+{% extends 'email/base_email.html' %}
+{% block content %}
+<h4>مرحبًا {{ name }}،</h4>
+<p>يسعدنا ان نبلغكم بأنه تم تأكيد دفع اشتراك عضوية الجالية اليمنية الخاص بك.</p>
+<p>نشكرك على تعاونكم ودعمكم المستمر للجالية.</p>
+<table>
+    <thead>
+        <tr>
+            <th colspan="3"><b>تفاصيل الدفع</b></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="2">رقم المرجع</td>:
+            <td>{{ reference_number }}</td>
+        </tr>
+        <tr>
+            <td colspan="2">المبلغ</td>:
+            <td>{{ amount }}</td>
+        </tr>
+        <tr>
+            <td colspan="2">التاريخ</td>:
+            <td>{{ payment_date }}</td>
+        </tr>
+        {% if note and note != '-' %}
+        <tr>
+            <td colspan="2">ملاحظات</td>:
+            <td>{{ note }}</td>
+        </tr>
+        {% endif %}
+    </tbody>
+</table>
+{% endblock content %}

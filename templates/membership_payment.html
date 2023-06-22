@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load main_tags %}
+{% load static %}
+{% load humanize %}
+{% block content %}
+<span id="period-api" data-url="{% url 'GetPaymentPeriodApi' 'Period' 'number_of_months' %}"></span>
+<form method="POST" enctype="multipart/form-data" class="col-lg-8 col-xl-8 p-3 mx-auto mt-3">
+    {% csrf_token %}
+
+    <div class="card shadow rounded">
+        <img class="card-img-top" src="{{ head_img_url }}" alt="Card image cap">
+        <div class="card-body">
+            <h2 class="card-title">سداد العضوية</h2>
+            <p class="lead text-center mt-4">إن تسديد الاشتراكات الشهرية واجب على كل عضو في الجالية اليمنية في
+                اندونيسيا، لذلك نرجو منكم المبادرة بالتسديد وشكراً لكم تجاوبكم.
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12 col-md-6 col-lg-6">
+            {% for field in form.visible_fields %}
+            <div class="form-group">
+                <label class="mt-3 lead" for="{{ field.auto_id }}">
+                    {{ field.label }}
+                    {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                </label>
+                {% getFieldErrors form field.name as errors %}
+                <div class="{% if errors %}border border-danger{% endif %}">{{ field }}</div>
+                {% if errors %}<span class="text-danger">{{ errors }}</span>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="col-sm-12 col-md-6 col-lg-6 mt-3">
+            <table class="table shadow rounded mt-4">
+                <tbody>
+                    <tr>
+                        <th class="col-6" scope="row">قيمة الاشتراك الشهري</th>
+                        <td class="col-6">50,000.00</td>
+                    </tr>
+                    <tr>
+                        <th class="col-6" scope="row">عدد الأشهر</th>
+                        <td class="col-6" id="number_of_months_static">0</td>
+                    </tr>
+                    <tr>
+                        <th class="col-6" scope="row">الفترة</th>
+                        <td class="col-6" id="period_static">-</td>
+                    </tr>
+                    <tr>
+                        <th class="col-6" scope="row">المبلغ المستحق</th>
+                        <td class="col-6" id="amount_static">0</td>
+                    </tr>
+                    <tr>
+                        <th class="col-6" scope="row">المبلغ بالكلمات</th>
+                        <td class="col-6" id="amount_words_static">صفر</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <button type="submit" id="submit-button" class="btn btn-lg btn-info mb-5 shadow rounded" disabled>إرسال</button>
+</form>
+{% endblock  %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/number-to-arabic-words@latest/dist/index.js"></script>
+
+<script>
+    const numberOfMonthsInput = document.getElementById('id_number_of_months');
+    const receiptInput = document.getElementById('id_receipt');
+    const submitButton = document.getElementById('submit-button');
+    const numberOfMonthsStatic = document.getElementById('number_of_months_static');
+    const amountStatic = document.getElementById('amount_static');
+    const amountWordsStatic = document.getElementById('amount_words_static');
+    const periodStatic = document.getElementById('period_static');
+
+    function updateAmount() {
+        let month = "";
+        if (numberOfMonthsInput.value == "" || numberOfMonthsInput.value === "0") {
+            month = "0"
+        } else if (numberOfMonthsInput.value === "1") {
+            month = "شهر"
+        } else if (numberOfMonthsInput.value === "2") {
+            month = "شهرين"
+        } else if (Number(numberOfMonthsInput.value) <= 10) {
+            month = numberOfMonthsInput.value + " أشهر"
+        } else {
+            month = numberOfMonthsInput.value + " شهر"
+
+        }
+        numberOfMonthsStatic.innerHTML = month;
+
+        amountStatic.innerHTML = (Number(numberOfMonthsInput.value) * 50000).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
+        amountWordsStatic.innerHTML = toArabicWord(Number(numberOfMonthsInput.value) * 50000);
+        if (amountWordsStatic.innerHTML != "صفر") {
+            amountWordsStatic.innerHTML += " روبية"
+        }
+
+        if (numberOfMonthsInput.value == "" || numberOfMonthsInput.value === "0") {
+            periodStatic.innerHTML = "-";
+        } else {
+            let period_api_url = document.getElementById('period-api')
+                .getAttribute('data-url')
+                .replace('number_of_months', numberOfMonthsInput.value);
+
+            periodStatic.innerHTML = "قيد المعالجة ... ";
+            fetch(period_api_url)
+                .then(response => response.json())
+                .then(data => {
+                    periodStatic.innerHTML = data.period;
+                });
+
+        }
+    }
+
+    function updateReceiptStatus() {
+        if (Number(numberOfMonthsInput.value) > 0) {
+            receiptInput.disabled = false;
+            submitButton.disabled = false;
+        } else {
+            receiptInput.disabled = true;
+            submitButton.disabled = true;
+        }
+    }
+
+    numberOfMonthsInput.addEventListener('change', function () {
+        updateAmount();
+        updateReceiptStatus();
+    });
+</script>
+{% endblock scripts %}
