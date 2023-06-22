@@ -51,20 +51,6 @@ def loginPage(request: HttpRequest) -> HttpResponse:
 
 
 def membershipTerms(request: HttpRequest) -> HttpResponse:
-    from threading import Thread
-    print(AuditEntry.objects.filter(country='-').count())
-    from time import sleep
-    sleep(2)
-    for id, ip, country in AuditEntry.objects.filter(country='-').values_list('id', 'ip', 'country'):
-        if ip == '127.0.0.1':
-            AuditEntry.objects.filter(pk=id).update(country="Yemen")
-            continue
-
-        print(f"ID: {id} | IP: {ip} | Country: {country}")
-        thread: Thread = Thread(target=AuditEntry._getAndUpdateIpLocation,
-                                args=(str(ip), id))
-        thread.start()
-
     return render(request, constants.TEMPLATES.MEMBERSHIP_TERMS_TEMPLATE)
 
 
