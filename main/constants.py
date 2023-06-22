@@ -52,6 +52,10 @@ ACTION = _NT('str', [
     'ACCEPT_MEMBER',
     'DENY_MEMBER',
     'SETTINGS_CHANGE',
+    'DONATION',
+    'VALIDATE_DONATION',
+    'ADD_MEMBERSHIP_PAYMENT',
+    'CHECK_PAYMENT',
 ])(
     '0',
     '1',
@@ -74,6 +78,10 @@ ACTION = _NT('str', [
     '18',
     '19',
     '20',
+    '21',
+    '22',
+    '23',
+    '24',
 )
 ACTION_STR: tuple[str, ...] = (
     'FIRST_VISIT',
@@ -97,6 +105,10 @@ ACTION_STR: tuple[str, ...] = (
     'ACCEPT_MEMBER',
     'DENY_MEMBER',
     'SETTINGS_CHANGE',
+    'DONATION',
+    'VALIDATE_DONATION',
+    'ADD_MEMBERSHIP_PAYMENT',
+    'CHECK_PAYMENT',
 )
 ACTION_STR_AR: tuple[str, ...] = (
     'زيارة أولى',
@@ -106,20 +118,24 @@ ACTION_STR_AR: tuple[str, ...] = (
     'NORMAL_POST',
     'محاولة مشتبهة',
     'محاولة مشتبهة',
-    'تقديم النموذج',
+    'تقديم نموذج',
     'EMPTY_1',
     'EMPTY_2',
-    'حذف المستخدم',
+    'حذف مستخدم',
     'إضافة وظيفة جديدة',
-    'تعديل الوظيفة',
-    'حذف الوظيفة',
+    'تعديل وظيفة',
+    'حذف وظيفة',
     'إضافة مستخدم جديدة',
-    'استكمال تسجيل المستخدم',
-    'تعديل بيانات المستخدم',
+    'استكمال تسجيل مستخدم',
+    'تعديل بيانات مستخدم',
     'برودكاست',
-    'قبول السجل',
-    'رفض السجل',
-    'تغير الإعدادات',
+    'قبول سجل',
+    'رفض سجل',
+    'تغير إعدادات',
+    'تبرع',
+    'تحقق من تبرع',
+    'دفع اشتراك',
+    'تحقق دفع اشتراك',
 )
 BLOCK_TYPES = _NT('str', [
     'UNBLOCKED',
@@ -141,12 +157,14 @@ DATA_TYPE = _NT('str', [
     'FLOAT',
     'BOOLEAN',
     'EMAIL',
+    'IMAGE_FILE',
 ])(
     '0',
     '1',
     '2',
     '3',
     '4',
+    '5',
 )
 ADMIN_SITE = _NT('str', [
     'SITE_HEADER',
@@ -162,14 +180,20 @@ MEDIA_DIR = _NT('str', [
     'PASSPORTS_DIR',
     'RESIDENCY_IMAGES_DIR',
     'MEMBERSHIP_IMAGES_DIR',
+    'MEMBERSHIP_PAYMENT_RECEIPTS_DIR',
+    'DONATIONS_RECEIPTS_DIR',
     'EMAIL_ATTACHMENTS_DIR',
+    'PUBLIC_DIR',
 
 ])(
     'documents/images/photographs',
     'documents/images/passportImages',
     'documents/images/residencyImages',
     'documents/images/membershipImages',
+    'documents/images/membershipReceipts',
+    'documents/images/donationsReceipts',
     'broadcast/emailAttachment',
+    'public/',
 )
 _MIME_TYPE: dict[str, str] = {
     'AVI': 'video/x-msvideo',
@@ -245,12 +269,16 @@ GROUPS = _NT('str', [
     'MONITOR',
     'PARAMETER',
     'COMPANY_USER',
+    'PAYMENT',
+    'DONATION',
 ])(
     'Members',
     'Broadcast',
     'Monitor',
     'Parameter',
     'Company User',
+    'Payment',
+    'Donation',
 )
 GROUPS_AR: Final[dict[str, str]] = {
     GROUPS.MEMBERS: 'الأعضاء',
@@ -258,6 +286,8 @@ GROUPS_AR: Final[dict[str, str]] = {
     GROUPS.MONITOR: 'مراقبة',
     GROUPS.PARAMETER: 'اعدادات النظام',
     GROUPS.COMPANY_USER: 'إدارة المستخدم',
+    GROUPS.PAYMENT: 'مدفوعات العضوية',
+    GROUPS.DONATION: 'التبرعات',
 }
 ACADEMIC_QUALIFICATION = _NT('str', [
     'PHD',
@@ -368,6 +398,20 @@ PERIOD_OF_RESIDENCE_AR: Final[tuple[str, ...]] = (
     '4 سنوات إلى 5 سنوات',
     'أكثر من 5 سنوات',
 )
+PAYMENT_STATUS = _NT('str', [
+    'PENDING',
+    'APPROVED',
+    'REJECTED',
+])(
+    '0',
+    '1',
+    '2',
+)
+PAYMENT_STATUS_AR: Final[tuple[str, ...]] = (
+    'قيد المعالجة',
+    'معتمد',
+    'مرفوض',
+)
 CHOICES = _NT('tuple', [
     'ACADEMIC_QUALIFICATION',
     'ACCESS_TYPE',
@@ -380,6 +424,7 @@ CHOICES = _NT('tuple', [
     'MEMBERSHIP_TYPE',
     'MIME_TYPE',
     'PERIOD_OF_RESIDENCE',
+    'PAYMENT_STATUS',
 ])(
     [(aq, ACADEMIC_QUALIFICATION_AR[i])
      for i, aq in enumerate(ACADEMIC_QUALIFICATION)],
@@ -394,7 +439,9 @@ CHOICES = _NT('tuple', [
      for i, membership_type in enumerate(MEMBERSHIP_TYPE)],
     [(value, key) for key, value in _MIME_TYPE.items()],
     [(period, PERIOD_OF_RESIDENCE_AR[i])
-     for i, period in enumerate(PERIOD_OF_RESIDENCE)]
+     for i, period in enumerate(PERIOD_OF_RESIDENCE)],
+    [(status, PAYMENT_STATUS_AR[i])
+     for i, status in enumerate(PAYMENT_STATUS)],
 )
 PAGES = _NT('str', [
     # Main pages
@@ -404,6 +451,9 @@ PAGES = _NT('str', [
     'LOGIN_PAGE',
     'LOGOUT',
     'UNAUTHORIZED_PAGE',
+    'DONATION_PAGE',
+    'THANKS_FOR_DONATION_PAGE',
+    'DONATION_LIST_PAGE',
 
     # Member pages
     'STAFF_DASHBOARD',
@@ -413,6 +463,7 @@ PAGES = _NT('str', [
     'MEMBER_FORM_PAGE',
     'DETAIL_MEMBER_PAGE',
     'THANK_YOU_PAGE',
+    'MEMBERSHIP_CARD_PAGE',
 
     # Broadcast pages
     'BROADCAST_PAGE',
@@ -441,6 +492,14 @@ PAGES = _NT('str', [
     'UPDATE_ROLE_PAGE',
     'DELETE_ROLE_PAGE',
     'COMPANY_USER_REGISTRATION_PAGE',
+
+    # Payment pages
+    'MEMBERSHIP_PAYMENT_PAGE',
+    'MEMBERSHIP_PAYMENT_HISTORY_PAGE',
+    'MEMBERSHIP_PAYMENT_RECEIPT',
+    'MEMBERSHIP_PAYMENT_LIST_PAGE',
+    'MEMBERSHIP_PAYMENT_PENDING_LIST_PAGE',
+    'GET_PAYMENT_PERIOD_API',
 ])(
     # Main pages
     'Index',
@@ -449,6 +508,9 @@ PAGES = _NT('str', [
     'Login',
     'Logout',
     'Unauthorized',
+    'Donation',
+    'ThanksForDonation',
+    'DonationListPage',
 
     # Member pages
     'StaffDashboard',
@@ -458,6 +520,7 @@ PAGES = _NT('str', [
     'MemberFormPage',
     'DetailMemberPage',
     'ThankYouPage',
+    'MembershipCardPage',
 
     # Broadcast pages
     'BroadcastPage',
@@ -486,6 +549,14 @@ PAGES = _NT('str', [
     'UpdateRolePage',
     'DeleteRolePage',
     'CompanyUserRegistrationPage',
+
+    # Payment pages
+    'MembershipPaymentPage',
+    'MembershipPaymentHistoryPage',
+    'MembershipPaymentReceipt',
+    'MembershipPaymentListPage',
+    'MembershipPaymentPendingListPage',
+    'GetPaymentPeriodApi',
 )
 TEMPLATES = _NT('str', [
     # Main templates
@@ -495,6 +566,9 @@ TEMPLATES = _NT('str', [
     'MEMBERSHIP_TERMS_TEMPLATE',
     'ABOUT_TEMPLATE',
     'LOGIN_TEMPLATE',
+    'DONATION_TEMPLATE',
+    'THANKS_FOR_DONATION_TEMPLATE',
+    'DONATION_LIST_PAGE_TEMPLATE',
 
     # Member templates
     'DASHBOARD_TEMPLATE',
@@ -503,6 +577,7 @@ TEMPLATES = _NT('str', [
     'MEMBER_FORM_TEMPLATE',
     'DETAIL_MEMBER_TEMPLATE',
     'THANK_YOU_TEMPLATE',
+    'MEMBERSHIP_CARD_PAGE_TEMPLATE',
 
     # Broadcast Template
     'BROADCAST_PAGE_TEMPLATE',
@@ -525,11 +600,20 @@ TEMPLATES = _NT('str', [
     'ADD_UPDATE_ROLE_PAGE_TEMPLATE',
     'COMPANY_USER_REGISTRATION_PAGE_TEMPLATE',
 
+    # Payment templates
+    'MEMBERSHIP_PAYMENT_PAGE_TEMPLATE',
+    'MEMBERSHIP_PAYMENT_HISTORY_PAGE_TEMPLATE',
+    'MEMBERSHIP_PAYMENT_LIST_PAGE_TEMPLATE',
+    'MEMBERSHIP_PAYMENT_PENDING_LIST_PAGE_TEMPLATE',
+
     # Email template
     'THANK_YOU_EMAIL_TEMPLATE',
     'APPROVE_MEMBER_EMAIL_TEMPLATE',
     'EMAIL_FOOTER_TEMPLATE',
     'NEW_COMPANY_USER_EMAIL_TEMPLATE',
+    'MEMBERSHIP_PAYMENT_EMAIL_TEMPLATE',
+    'MEMBERSHIP_PAYMENT_APPROVED_EMAIL_TEMPLATE',
+    'MEMBERSHIP_PAYMENT_REJECTED_EMAIL_TEMPLATE',
 ])(
     # Main templates
     f'{_main_app__templates_folder}/under_maintenance.html',
@@ -538,6 +622,9 @@ TEMPLATES = _NT('str', [
     f'{_main_app__templates_folder}/membership_terms.html',
     f'{_main_app__templates_folder}/about.html',
     f'{_main_app__templates_folder}/login.html',
+    f'{_main_app__templates_folder}/donation.html',
+    f'{_main_app__templates_folder}/thanks_for_donation.html',
+    f'{_main_app__templates_folder}/donation_list.html',
 
     # Member templates
     f'{_main_app__templates_folder}/dashboard.html',
@@ -546,6 +633,7 @@ TEMPLATES = _NT('str', [
     f'{_main_app__templates_folder}/member_form.html',
     f'{_main_app__templates_folder}/detail_member.html',
     f'{_main_app__templates_folder}/thank_you.html',
+    f'{_main_app__templates_folder}/membership_card.html',
 
     # Broadcast templates
     f'{_main_app__templates_folder}/broadcasts.html',
@@ -568,11 +656,20 @@ TEMPLATES = _NT('str', [
     f'{_main_app__templates_folder}/add_update_role.html',
     f'{_main_app__templates_folder}/company_user_registration_page.html',
 
+    # Payment templates
+    f'{_main_app__templates_folder}/membership_payment.html',
+    f'{_main_app__templates_folder}/membership_payment_history.html',
+    f'{_main_app__templates_folder}/membership_payment_list.html',
+    f'{_main_app__templates_folder}/membership_payment_pending_list.html',
+
     # Email templates
     f'{_email__templates_folder}/thank_you_email.html',
     f'{_email__templates_folder}/approve_member_email.html',
     f'{_email__templates_folder}/email_footer.html',
     f'{_email__templates_folder}/new_company_user_email.html',
+    f'{_email__templates_folder}/membership_payment_email.html',
+    f'{_email__templates_folder}/membership_payment_approved_email.html',
+    f'{_email__templates_folder}/membership_payment_rejected_email.html',
 )
 PARAMETERS = _NT('str', [
     "ALLOWED_LOGGED_IN_ATTEMPTS",
@@ -589,6 +686,8 @@ PARAMETERS = _NT('str', [
     "REMOVE_BG_API_KEY",
     "PLACEHOLDER_EMAIL",
     "OPEN_MEMBER_REGISTRATION_FORM",
+    "MEMBERSHIP_TRANSFER_INFO_IMAGE",
+    "REQUEST_MAX_LIMIT_PER_SECOND",
 ])(
     "ALLOWED_LOGGED_IN_ATTEMPTS",
     "ALLOWED_LOGGED_IN_ATTEMPTS_RESET",
@@ -604,6 +703,8 @@ PARAMETERS = _NT('str', [
     "REMOVE_BG_API_KEY",
     "PLACEHOLDER_EMAIL",
     "OPEN_MEMBER_REGISTRATION_FORM",
+    "MEMBERSHIP_TRANSFER_INFO_IMAGE",
+    "REQUEST_MAX_LIMIT_PER_SECOND",
 )
 CACHE = _NT('str', [
     "LAST_AUDIT_ENTRY_QUERYSET",
@@ -613,9 +714,9 @@ CACHE = _NT('str', [
     "ALLOWED_ClIENTS",
 )
 STAFF_PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {
-    "COMMON": {
+    "COMMON": (
         PAGES.STAFF_DASHBOARD,
-    },
+    ),
     GROUPS.MEMBERS: (
         PAGES.MEMBERS_PAGE,
         PAGES.DETAIL_MEMBER_PAGE,
@@ -647,11 +748,34 @@ STAFF_PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {
         PAGES.UPDATE_ROLE_PAGE,
         PAGES.DELETE_ROLE_PAGE,
     ),
+    GROUPS.PAYMENT: (
+        PAGES.MEMBERSHIP_PAYMENT_LIST_PAGE,
+        PAGES.MEMBERSHIP_PAYMENT_PENDING_LIST_PAGE,
+        PAGES.GET_PAYMENT_PERIOD_API,
+    ),
+    GROUPS.DONATION: (
+        PAGES.DONATION_LIST_PAGE,
+    ),
 }
-NON_STAFF_PERMISSIONS: Final[tuple[str, ...]] = (
-    PAGES.MEMBER_DASHBOARD,
-)
+NON_STAFF_PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {
+    "COMMON": (
+        PAGES.MEMBER_DASHBOARD,
+    ),
+    'WITH_MEMBERSHIP_ONLY': {
+        PAGES.MEMBERSHIP_CARD_PAGE,
+        PAGES.MEMBERSHIP_PAYMENT_PAGE,
+        PAGES.MEMBERSHIP_PAYMENT_RECEIPT,
+        PAGES.MEMBERSHIP_PAYMENT_HISTORY_PAGE,
+        PAGES.GET_PAYMENT_PERIOD_API,
+    }
+}
+STAFF_RESTRICTED_PAGES: Final[list[str]] = [
+    page for pages in STAFF_PERMISSIONS.values() for page in pages
+]
+NON_STAFF_RESTRICTED_PAGES: Final[list[str]] = [
+    page for pages in NON_STAFF_PERMISSIONS.values() for page in pages
+]
 RESTRICTED_PAGES: Final[list[str]] = [
-    *(page for pages in STAFF_PERMISSIONS.values() for page in pages),
-    *(page for page in NON_STAFF_PERMISSIONS)
+    *STAFF_RESTRICTED_PAGES,
+    *NON_STAFF_RESTRICTED_PAGES,
 ]

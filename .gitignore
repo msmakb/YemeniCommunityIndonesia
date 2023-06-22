@@ -1,8 +1,8 @@
 /logs/
 .vscode/
 __pycache__/
-accounting_manager/__pycache__/
-accounting_manager/migrations/__pycache__/
+payment/__pycache__/
+payment/migrations/__pycache__/
 core/__pycache__/
 core/settings/__pycache__/
 main/__pycache__/
@@ -20,6 +20,7 @@ monitor/migrations/__pycache__/
 monitor/__pycache__/
 static/static_collection/
 db.sqlite3
+payment/migrations/0*.py
 main/migrations/0*.py
 member/migrations/0*.py
 broadcast/migrations/0*.py

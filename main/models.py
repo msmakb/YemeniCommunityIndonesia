@@ -1,8 +1,15 @@
 from __future__ import annotations
+from os import path
+from threading import Thread
+from uuid import uuid4
+import requests
 import logging
 from typing import Optional
 
 from django.db import models
+from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import TemporaryUploadedFile
+from django.db.models.fields.files import ImageFieldFile
 from django.db.models.query import QuerySet
 from django.utils import timezone
 from django.core.cache import cache
@@ -10,6 +17,23 @@ from django.core.cache import cache
 from . import constants
 
 logger = logging.getLogger(constants.LOGGERS.MODELS)
+
+
+def validateImageSize(image: ImageFieldFile):
+    try:
+        file: TemporaryUploadedFile = image.file
+        file_size: int = file.size
+        max_size: int = 4
+        if file_size > 1_048_576 * max_size:
+            raise ValidationError(
+                f"حجم الصورة كبير جدا، يجب ألا يتجاوز حجم الصورة {max_size} ميقا بايت")
+    except FileNotFoundError:
+        # Do noting (This case will not happened by the user, the file is required)
+        pass
+
+
+def donationsPaymentReceiptsDir(instance, filename):
+    return path.join(constants.MEDIA_DIR.DONATIONS_RECEIPTS_DIR, f"{uuid4().hex}.{filename.split('.')[-1]}")
 
 
 class BaseModel(models.Model):
@@ -118,6 +142,7 @@ class Client(BaseModel):
 
     user_agent: str = models.CharField(max_length=256, null=True, blank=True)
     ip: str = models.GenericIPAddressField()
+    country: str = models.CharField(max_length=30, default='-')
 
     def setUserAgent(self, user_agent: str) -> None:
         self.user_agent = user_agent
@@ -127,8 +152,33 @@ class Client(BaseModel):
         self.ip = ip
         self.save()
 
+    @classmethod
+    def _getAndUpdateIpLocation(cls, ip: str, audit_pk: int) -> None:
+        url = f"https://api.iplocation.net/?ip={ip}"
+        response = requests.get(url)
+        if response.status_code == requests.codes.ok:
+            country: str = response.json().get('country_name')
+            if country == '-':
+                country = 'unknown'
+            AuditEntry.objects.filter(pk=audit_pk).update(country=country)
+            logger.info("Country: " + country)
+
+    def save(self, *args, **kwargs) -> None:
+        if len(self.user_agent) > 256:
+            self.user_agent = self.user_agent[:256]
+        super().save(*args, **kwargs)
+
+        thread: Thread = Thread(target=self._getAndUpdateIpLocation,
+                                args=(str(self.ip), self.pk))
+        thread.start()
+
 
 class BlockedClient(Client):
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['ip']),
+        ]
 
     block_type: str = models.CharField(max_length=1,
                                        choices=constants.CHOICES.BLOCK_TYPE)
@@ -151,6 +201,11 @@ class BlockedClient(Client):
 
 
 class AuditEntry(Client):
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['ip']),
+        ]
 
     action: str = models.CharField(
         max_length=2, choices=constants.CHOICES.ACTION)
@@ -209,3 +264,14 @@ class AuditEntry(Client):
                 pk=self.pk)
             cache.set(constants.CACHE.LAST_AUDIT_ENTRY_QUERYSET,
                       last_audit_entry, constants.DEFAULT_CACHE_EXPIRE)
+
+
+class Donation(BaseModel):
+    name: str = models.CharField(max_length=100, default='فاعل خير')
+    amount: float = models.DecimalField(max_digits=10, decimal_places=2)
+    receipt: ImageFieldFile = models.ImageField(upload_to=donationsPaymentReceiptsDir,
+                                                validators=[validateImageSize], max_length=255)
+    is_valid_donation: bool = models.BooleanField(default=True)
+
+    def __str__(self) -> str:
+        return f"أسم المتبرع: {self.name} - المبلغ: {self.amount} - تاريخ التبرع: {self.created}"

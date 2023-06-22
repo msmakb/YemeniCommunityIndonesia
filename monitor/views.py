@@ -1,5 +1,6 @@
 from typing import Any
 
+from django.core.cache import cache
 from django.db.models.query import QuerySet, Q
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
@@ -11,6 +12,10 @@ from main.utils import Pagination
 
 
 def monitorPage(request: HttpRequest) -> HttpResponse:
+    context: dict[str, Any] | None = cache.get("CACHED_PAGE_CONTEXT:MONITOR")
+    if context:
+        return render(request, constants.TEMPLATES.MONITOR_PAGE_TEMPLATE, context)
+
     months_filter: list[str] = []
     months_labels: list[str] = []
 
@@ -55,7 +60,7 @@ def monitorPage(request: HttpRequest) -> HttpResponse:
         ~Q(block_type=constants.BLOCK_TYPES.UNBLOCKED)
     )
 
-    context: dict[str: Any] = {
+    context = {
         'sus_count': sus_count,
         'months_labels': months_labels,
         'submit_form_data': submit_form_data,
@@ -63,6 +68,9 @@ def monitorPage(request: HttpRequest) -> HttpResponse:
         'failed_login_attempt_count': failed_login_attempt_count,
         'blocked_devices_count': blocked_devices_count,
     }
+
+    cache.set("CACHED_PAGE_CONTEXT:MONITOR", context,
+              constants.DEFAULT_CACHE_EXPIRE)
     return render(request, constants.TEMPLATES.MONITOR_PAGE_TEMPLATE, context)
 
 

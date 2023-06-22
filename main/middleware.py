@@ -27,7 +27,7 @@ from . import constants
 from . import messages as MSG
 from .models import AuditEntry, BlockedClient
 from parameter.service import getParameterValue
-from .utils import getClientIp, getUserAgent, getUserGroupe
+from .utils import getClientIp, getUserAgent
 
 logger: Logger = logging.getLogger(constants.LOGGERS.MIDDLEWARE)
 
@@ -74,6 +74,16 @@ class AllowedClientMiddleware(object):
                               action=constants.ACTION.ATTACK_ATTEMPT,
                               username=self.user)
             return redirect(constants.PAGES.LOGOUT)
+
+        ip_key = f'IP:{self.requester_ip}'
+        if ip_key in cache:
+            request_count = cache.incr(ip_key)
+        else:
+            cache.add(ip_key, 1)
+            cache.expire(ip_key, 1)
+            request_count = 1
+        if request_count > getParameterValue(constants.PARAMETERS.REQUEST_MAX_LIMIT_PER_SECOND):
+            self.blockClient()
 
         # Is new visitor
         if self.isNewVisiter():

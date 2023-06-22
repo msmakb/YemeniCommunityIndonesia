@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th colspan="2">
+                    <h1 class="text-center shadow rounded p-2 border border-dark">سجل مدفوعات العضوية</h1>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in page_obj %}
+            <tr>
+                <td>
+                    <div
+                        class="card {% if payment.status == '0' %}bg-secondary{% elif payment.status == '1' %}bg-success{% else %}bg-danger{% endif %}">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item p-0">
+                                <table class="table table-borderless" style="margin: 0px; padding:0px;">
+                                    <tbody style="margin: 0px; padding:0px;">
+                                        <tr>
+                                            <td class="col-6" style="padding-right: 20px;">
+                                                المرجع
+                                            </td>
+                                            <td class="col-6">
+                                                {{ payment.reference_number }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </li>
+                            <li class="list-group-item p-0">
+                                <table class="table table-borderless" style="margin: 0px; padding:0px;">
+                                    <tbody style="margin: 0px; padding:0px;">
+                                        <tr>
+                                            <td class="col-6" style="padding-right: 20px;">
+                                                التاريخ
+                                            </td>
+                                            <td class="col-6">
+                                                {{ payment.created|date:"j M Y" }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </li>
+                            <li class="list-group-item p-0">
+                                <table class="table table-borderless" style="margin: 0px; padding:0px;">
+                                    <tbody style="margin: 0px; padding:0px;">
+                                        <tr>
+                                            <td class="col-6" style="padding-right: 20px;">
+                                                الحالة
+                                            </td>
+                                            <td class="col-6">
+                                                {{ payment.status_ar }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </li>
+                            <li class="list-group-item p-0">
+                                <table class="table table-borderless" style="margin: 0px; padding:0px;">
+                                    <tbody style="margin: 0px; padding:0px;">
+                                        <tr>
+                                            <td class="col-6" style="padding-right: 20px;">
+                                                الفترة
+                                            </td>
+                                            <td class="col-6">
+                                                {{ payment.period }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </li>
+                            <li class="list-group-item p-0">
+                                <table class="table table-borderless" style="margin: 0px; padding:0px;">
+                                    <tbody style="margin: 0px; padding:0px;">
+                                        <tr>
+                                            <td class="col-6" style="padding-right: 20px;">
+                                                المبلغ
+                                            </td>
+                                            <td class="col-6 amount">
+                                                {{ payment.amount }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </li>
+                            <li class="list-group-item p-0">
+                                <table class="table table-borderless" style="margin: 0px; padding:0px;">
+                                    <tbody style="margin: 0px; padding:0px;">
+                                        <tr>
+                                            <td class="col-6" style="padding-right: 20px;">
+                                                المبلغ بالكلمات
+                                            </td>
+                                            <td class="col-6 amount-in-words"
+                                                data-number-of-months="{{ payment.number_of_months }}">
+                                                صفر
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </li>
+                            <li class="list-group-item p-0">
+                                <table class="table table-borderless" style="margin: 0px; padding:0px;">
+                                    <tbody style="margin: 0px; padding:0px;">
+                                        <tr>
+                                            <td class="col-6" style="padding-right: 20px;">
+                                                الفاتورة
+                                            </td>
+                                            <td class="col-6">
+                                                <a href="#"
+                                                    class="link-info link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"
+                                                    data-toggle="modal" data-target="#{{ payment.reference_number }}">
+                                                    عرض
+                                                </a>
+                                                <div class="modal fade" id="{{ payment.reference_number }}"
+                                                    tabindex="-1" role="dialog"
+                                                    aria-labelledby="{{ payment.reference_number }}Title"
+                                                    aria-hidden="true">
+                                                    <div class="modal-dialog modal-dialog-centered" role="document">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="exampleModalLongTitle">رقم
+                                                                    المرجع:
+                                                                    {{ payment.reference_number }}
+                                                                </h5>
+                                                                <button type="button" class="close" data-dismiss="modal"
+                                                                    aria-label="Close">
+                                                                    <span aria-hidden="true">&times;</span>
+                                                                </button>
+                                                            </div>
+                                                            <div class="modal-body m-0 p-0">
+                                                                <div class="card">
+                                                                    <img class="card-img-top"
+                                                                        src="{% url 'MembershipPaymentReceipt' payment.reference_number %}">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            {% if not page_obj.has_next and "last" not in request.get_full_path %}
+            <tr>
+                <td colspan="2">
+                    <div class="card bg-success">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item text-center">تاريخ إصدار العضوية:
+                                {{ membership_issue_date }}
+                            </li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+</div>
+{% endblock  %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/number-to-arabic-words@latest/dist/index.js"></script>
+
+<script>
+    function formatAmount(amount) {
+        return (Number(amount)).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    $(window).on("load", function () {
+        // const numberOfMonthsList = document.querySelectorAll('.months');
+        // for (let numberOfMonths of numberOfMonthsList) {
+        //     numberOfMonths.innerHTML = formatMonth(numberOfMonths.textContent.trim());
+        // }
+
+        const amounts = document.querySelectorAll('.amount');
+        for (let amount of amounts) {
+            amount.innerHTML = formatAmount(amount.textContent.trim().replace(/,/g, '.'));
+        }
+
+        const amountWordsList = document.querySelectorAll('.amount-in-words');
+        for (let amountWords of amountWordsList) {
+            number_of_months = amountWords.getAttribute('data-number-of-months');
+            console.log(number_of_months);
+            amountWords.innerHTML = toArabicWord(Number(number_of_months) * 50000) + " روبية";
+        }
+    });
+</script>
+{% endblock scripts %}
