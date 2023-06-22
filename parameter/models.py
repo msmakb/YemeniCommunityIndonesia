@@ -1,6 +1,7 @@
 import logging
 
 from django.db import models
+from django.db.models.fields.files import ImageFieldFile
 from django.core.exceptions import ValidationError
 from django.core.cache import cache
 from django.core.validators import validate_email
@@ -9,6 +10,18 @@ from main.models import BaseModel
 from main import constants
 
 logger = logging.getLogger(constants.LOGGERS.MODELS)
+
+
+class ImageParameter(BaseModel):
+    content: ImageFieldFile = models.ImageField(
+        upload_to=constants.MEDIA_DIR.PUBLIC_DIR)
+    file_name: str = models.CharField(max_length=50)
+
+    def save(self, *args, **kwargs) -> None:
+        self.content.name = self.file_name + \
+            '.' + self.content.name.split('.')[-1]
+        super().save(*args, **kwargs)
+        cache.set(f"IMAGE_PARAMETER:{self.pk}", self, None)
 
 
 class Parameter(BaseModel):
@@ -40,7 +53,7 @@ class Parameter(BaseModel):
     def __str__(self) -> str:
         name: str = self.name
         return name.replace('_', ' ').capitalize()
-    
+
     @property
     def getDescription(self) -> str:
         if self.description.endswith("."):
@@ -66,9 +79,11 @@ class Parameter(BaseModel):
                 return "checkbox"
             case constants.DATA_TYPE.EMAIL:
                 return "email"
+            case constants.DATA_TYPE.IMAGE_FILE:
+                return "file"
             case _:
                 return "text"
-    
+
     @property
     def getCheckboxValue(self) -> str:
         if self.getParameterType == constants.DATA_TYPE.BOOLEAN:
@@ -116,10 +131,19 @@ class Parameter(BaseModel):
                                           + "('true' or 'false', 'yes' or 'no', '1' or '0')")
             case constants.DATA_TYPE.EMAIL:
                 validate_email(val)
+            case constants.DATA_TYPE.IMAGE_FILE:
+                if val != "None":
+                    try:
+                        val = int(val)
+                    except ValueError:
+                        raise ValidationError("Must be an image id.")
+                    if not ImageParameter.isExists(pk=val):
+                        raise ValidationError(
+                            "Image is not exists in the database")
 
         return super().clean()
 
     def save(self, *args, **kwargs) -> None:
         super().save(*args, **kwargs)
         logger.info(f"Saving parameter '{self.name}' in cache")
-        cache.set(self.name, self, constants.DEFAULT_CACHE_EXPIRE)
+        cache.set(self.name, self, None)

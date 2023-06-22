@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card text-center">
+    <div class="card-header">
+        <h3 class="card-title">شكرًا لك على سخائك المبذول لصالح الجالية اليمنية في إندونيسيا</h3>
+    </div>
+    <div class="card-body blockquote">
+        <p class="card-text">
+            نشكرك على دعمك الكريم وسخاءك لصالح الجالية اليمنية في إندونيسيا. تبرعك يعني الكثير لنا وسيساهم في تحقيق
+            أهدافنا وخدمة المجتمع. نحن ممتنون لك على سخائك وندعو الله أن يكتبه في ميزان حسناتك.
+        </p>
+    </div>
+    <div class="card-footer text-muted">
+        <a href="{% url 'Index' %}" class="btn btn-outline-info">الصفحة الرئيسية</a>
+    </div>
+</div>
+{% endblock content %}
