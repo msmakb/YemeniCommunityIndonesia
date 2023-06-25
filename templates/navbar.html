@@ -23,10 +23,12 @@
           {{ menuItem.name }}</a>
       </li>
       {% endfor %}
+      {% if not request.user.is_authenticated %}
       <li class="nav-item">
         {% url 'Donation' as donation %}
         <a class="nav-link {% if request.path == donation %}active{% endif %}" href="{% url 'Donation' %}">ادعمنا</a>
       </li>
+      {% endif %}
       <li class="nav-item">
         {% url 'MembershipTerms' as membershipTerms %}
         <a class="nav-link {% if request.path == membershipTerms %}active{% endif %}"
