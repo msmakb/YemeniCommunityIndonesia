@@ -439,7 +439,7 @@ def detailMember(request: HttpRequest, pk: str) -> HttpResponse:
                         )
                     sendEmail(email)
                     MSG.APPROVE_RECORD(request)
-                    logUserActivity(request, constants.ACTION.DENY_MEMBER,
+                    logUserActivity(request, constants.ACTION.ACCEPT_MEMBER,
                                     f"اعتماد سجل العضو ({person.name_ar}) "
                                     + f"من قِبل {request.user.get_full_name()}")
                 return redirect(constants.PAGES.MEMBERS_PAGE, "Approve")
@@ -455,7 +455,7 @@ def detailMember(request: HttpRequest, pk: str) -> HttpResponse:
 
             if int(passport_number) == person.id:
                 person.delete()
-                logUserActivity(request, constants.ACTION.ACCEPT_MEMBER,
+                logUserActivity(request, constants.ACTION.DENY_MEMBER,
                                 f"رفض وحذف سجل العضو ({person.name_ar}) "
                                 + f"من قِبل {request.user.get_full_name()}")
                 MSG.REJECT_RECORD(request)

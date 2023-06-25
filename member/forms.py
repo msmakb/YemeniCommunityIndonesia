@@ -380,6 +380,14 @@ class AddPersonForm(ModelForm):
 
         return whatsapp_number
 
+    def clean_email(self):
+        data = self.cleaned_data["email"]
+        if Person.isExists(email=data):
+            raise forms.ValidationError(
+                "عنوان البريد الإلكتروني هذا موجود بالفعل ، يرجى إدخال بريد إلكتروني آخر")
+
+        return data
+
     def clean(self) -> dict[str, Any]:
         cleaned_data: dict[str, Any] = super().clean()
         cleaned_data['call_number'] = f"(+{cleaned_data.get('country_code1')}) {cleaned_data.get('call_number')}"

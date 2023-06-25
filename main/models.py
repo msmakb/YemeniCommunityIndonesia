@@ -161,7 +161,10 @@ class Client(BaseModel):
             if country == '-':
                 country = 'unknown'
             AuditEntry.objects.filter(pk=audit_pk).update(country=country)
-            logger.info("Country: " + country)
+            logger.info("IP: [" + ip + "] | Country: " + country)
+        else:
+            logger.error("Response Code: [" + response.status_code
+                         + "] | Response: " + response.text)
 
     def save(self, *args, **kwargs) -> None:
         if len(self.user_agent) > 256:

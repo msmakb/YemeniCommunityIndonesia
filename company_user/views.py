@@ -121,7 +121,10 @@ def addUserPage(request: HttpRequest) -> HttpResponse:
 
 def updateUserPage(request: HttpRequest, pk: str) -> HttpResponse:
     user: User = get_object_or_404(User, pk=pk)
-    user_form: ChangeUserDataForm = ChangeUserDataForm(instance=user)
+    try:
+        user_form: ChangeUserDataForm = ChangeUserDataForm(instance=user)
+    except CompanyUser.DoesNotExist:
+        raise Http404
 
     if user.username == 'admin' and request.user.username != 'admin':
         raise Http404
