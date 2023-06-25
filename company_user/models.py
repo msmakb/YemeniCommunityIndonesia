@@ -54,7 +54,7 @@ class CompanyUser(BaseModel):
 
     @classmethod
     def getCompanyUserByUserObject(cls, user: User):
-        CACHED_COMPANY_USER_KEY = "COMPANY_USER:" + str(User.id)
+        CACHED_COMPANY_USER_KEY = "COMPANY_USER:" + str(user.pk)
         if cache.get(CACHED_COMPANY_USER_KEY):
             return cache.get(CACHED_COMPANY_USER_KEY)
 

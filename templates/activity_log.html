@@ -25,6 +25,7 @@
                 <th scope="col">نوع النشاط</th>
                 <th scope="col">عنوان الآي بي (IP)</th>
                 <th scope="col">التفاصيل</th>
+                <th scope="col">البلد</th>
                 <th scope="col">التاريخ</th>
             </tr>
         </thead>
@@ -41,6 +42,7 @@
                     {{ activity.username }}
                     {% endif %}
                 </td>
+                <td>{{ activity.country }}</td>
                 <td>{{ activity.created }}</td>
             </tr>
             {% endfor %}
