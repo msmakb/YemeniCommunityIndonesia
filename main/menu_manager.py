@@ -118,7 +118,7 @@ def getUserMenus(request: HttpRequest) -> list[MenuItem]:
             userMenu.append(menu_item)
 
             menu_item: MenuItem = MenuItem(
-                name="قم بالدفع",
+                name="دفع الإشتراك",
                 page=constants.PAGES.MEMBERSHIP_PAYMENT_PAGE,
                 is_active=True if "Membership-Payment" in request.path else False,
                 icon="svg/pay.svg",
@@ -130,6 +130,14 @@ def getUserMenus(request: HttpRequest) -> list[MenuItem]:
                 page=constants.PAGES.MEMBERSHIP_PAYMENT_HISTORY_PAGE,
                 is_active=True if "Payment-History" in request.path else False,
                 icon="svg/payment_history.svg",
+            )
+            userMenu.append(menu_item)
+
+            menu_item: MenuItem = MenuItem(
+                name="ادعمنا",
+                page=constants.PAGES.DONATION_PAGE,
+                is_active=True if "/Donation/" in request.path else False,
+                icon="svg/donation.svg",
             )
             userMenu.append(menu_item)
 
