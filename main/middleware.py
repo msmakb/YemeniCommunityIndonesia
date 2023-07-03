@@ -6,7 +6,7 @@ import traceback
 from typing import Callable
 
 from django.conf import settings
-from django.contrib.auth import logout
+from django.contrib.auth import logout, SESSION_KEY
 from django.core.exceptions import (DisallowedHost,
                                     ValidationError,
                                     TooManyFieldsSent,
@@ -77,7 +77,10 @@ class AllowedClientMiddleware(object):
 
         ip_key = f'IP:{self.requester_ip}'
         if ip_key in cache:
-            request_count = cache.incr(ip_key)
+            try:
+                request_count = cache.incr(ip_key)
+            except ValueError:
+                request_count = 1
         else:
             cache.add(ip_key, 1)
             cache.expire(ip_key, 1)
@@ -320,6 +323,8 @@ class LoginRequiredMiddleware:
             else:
                 return None
         elif request.user.last_login < timezone.now() - timedelta(minutes=time_out):
+            CACHED_USER_KEY = "USER:" + request.session[SESSION_KEY]
+            cache.delete(CACHED_USER_KEY)
             MSG.TIME_OUT(request)
             logout(request)
             return redirect(constants.PAGES.INDEX_PAGE)

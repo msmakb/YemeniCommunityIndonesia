@@ -89,6 +89,7 @@ def systemSettings(request: HttpRequest) -> HttpResponse:
                         parameter.value = image.pk
                         parameter.clean()
                         parameter.save()
+                        changed_parameter_list.append(str(parameter))
             else:
                 value: str = request.POST.get(parameter.name)
                 if value and value != parameter.getValue:
