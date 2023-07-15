@@ -46,7 +46,7 @@
                     <span class="text-danger">*</span>
                 </label>
                 <input type="file" name="receipt" id="id_receipt" class="form-control shadow rounded" maxlength="100"
-                    placeholder="سند التحويل" required>
+                    placeholder="سند التحويل" accept=".png, .jpeg, .jpg" required>
                 {% if 'receipt' in errors %}
                 {% for error in errors.receipt %}
                 <span class="text-danger">{{ error }}</span>

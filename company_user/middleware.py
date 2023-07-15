@@ -92,9 +92,10 @@ class CacheUserMiddleware(MiddlewareMixin):
         if not hasattr(request, 'session') or not request.session.get(SESSION_KEY):
             return
 
-        CACHED_USER_KEY = "USER:" + request.session[SESSION_KEY]
-        if cache.get(CACHED_USER_KEY):
-            request._cached_user = cache.get(CACHED_USER_KEY)
+        CACHED_USER_KEY = "USER:%s" % request.session[SESSION_KEY]
+        request._cached_user = cache.get(CACHED_USER_KEY)
+        if request._cached_user:
+            cache.touch(CACHED_USER_KEY)
             return
 
         request._cached_user = get_user(request)

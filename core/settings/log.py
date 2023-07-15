@@ -28,7 +28,7 @@ class ExceptionFilter(Filter):
         return True
 
 
-LOGGING_LEVEL = 'INFO'
+LOGGING_LEVEL = 'INFO' if environ.get('PRODUCTION') == 'TRUE' else 'DEBUG'
 
 LOGS_PATH = _base_dir.parent / 'logs'
 
@@ -80,6 +80,7 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': LOGS_PATH / LOG_FILE_NAME,
             'formatter': 'verbose',
+            'encoding': 'utf-8',
             'filters': [
                 'exception_filter',
             ],
