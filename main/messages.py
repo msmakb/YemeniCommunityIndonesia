@@ -45,6 +45,8 @@ APPROVE_RECORD: Final[Callable[[HttpRequest], None]] = lambda request: messages.
     request, "تم قبول السجل بنجاح")
 REJECT_RECORD: Final[Callable[[HttpRequest], None]] = lambda request: messages.success(
     request, "تم رفض السجل بنجاح")
+DONATION_LIMIT: Final[Callable[[HttpRequest], None]] = lambda request: messages.error(
+    request, "لأسباب أمنية، نقيد عدد التبرعات التي يمكنك إرسالها بحد أقصى 5 تبرعات في اليوم")
 
 # ==== Broadcast App Messages ====
 ADD_BROADCAST: Final[Callable[[HttpRequest, str], None]] = lambda request: messages.success(

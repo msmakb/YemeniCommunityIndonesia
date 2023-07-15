@@ -59,7 +59,6 @@ def setMagicNumber() -> None:
     pram.save()
     # Reset the last audit entry cache
     cache.delete(constants.CACHE.LAST_AUDIT_ENTRY_QUERYSET)
-    AuditEntry.getLastAuditEntry()
     logger.info(f'Magic Number Updated to [{magic_number}].')
     logger.info('=========== CRON FINISH SETTING MAGIC NUMBER ===========')
 

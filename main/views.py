@@ -13,9 +13,10 @@ from django.shortcuts import render, redirect
 from . import constants
 from . import messages as MSG
 from .decorators import isAuthenticatedUser
-from .models import AuditEntry, Donation
-from parameter.service import getParameterValue
+from .models import Donation
 from .utils import Pagination, getClientIp, logUserActivity
+
+from parameter.service import getParameterValue
 
 logger: Logger = logging.getLogger(constants.LOGGERS.MAIN)
 
@@ -38,13 +39,14 @@ def loginPage(request: HttpRequest) -> HttpResponse:
             return redirect(constants.PAGES.INDEX_PAGE)
         else:
             MSG.INCORRECT_INFO(request)
-            allowed_attempts: int = getParameterValue(
+            max_allowed_attempts: int = getParameterValue(
                 constants.PARAMETERS.ALLOWED_LOGGED_IN_ATTEMPTS)
-            failed_login_count: int = AuditEntry.getLastAuditEntry().filter(
-                action=constants.ACTION.LOGGED_FAILED,
-                ip=getClientIp(request)
-            ).count()
-            if failed_login_count > abs(allowed_attempts / failed_login_count):
+            failed_login_attempts: int | None = cache.get(
+                "FAIL_LOGIN:%s" % getClientIp(request))
+            if not failed_login_attempts:
+                failed_login_attempts = 0
+
+            if failed_login_attempts > abs(max_allowed_attempts / 2):
                 MSG.MANY_FAILED_LOGIN_WARNING(request)
 
     return render(request, constants.TEMPLATES.LOGIN_TEMPLATE)
