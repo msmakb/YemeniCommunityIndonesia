@@ -8,7 +8,7 @@
 * 
 * Created by: Mohammed Ba Karman
 * E-Mail: msmabk11@gmail.com
-* Version: 1.0.0
+* Version: 1.0.1
 """
 import json
 from pathlib import Path
@@ -20,9 +20,9 @@ from os.path import isfile as isFileLocallyExist
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 from googleapiclient.discovery import Resource
 from googleapiclient.http import MediaFileUpload
-
 
 FILE_TYPE = namedtuple('str', [
     'AUDIO',
@@ -100,7 +100,6 @@ class GoogleDriveService:
             self._driveService.close()
 
     def authenticate(self, auth_file_path: str):
-        authenticationError: GoogleAuthenticationError = None
 
         if not isFileLocallyExist(auth_file_path):
             raise FileNotFoundError(
@@ -216,8 +215,12 @@ class GoogleDriveService:
                 response: dict[str, Any] = self.fileService.get(
                     **metadata).execute()
                 return FileResources(**response)
-            except:
-                return None
+            except HttpError as error:
+                error_content = json.loads(error.content)
+                if error_content['error']['code'] == 404:
+                    return None
+                else:
+                    raise error
 
         def createFolderIfDoesNotExists(self, folder_name: str, parent_folder_id: Optional[str | None] = None) -> FileResources:
             metadata: dict[str, Any] = {
@@ -275,12 +278,17 @@ class GoogleDriveService:
             if mime_type:
                 metadata['q'] += f" and mimeType='{mime_type}' "
 
-            response: dict[str, Any] = self.fileService.list(
-                **metadata).execute()
-
+            next_page_token: str = "Start"
             file_list: list[FileResources] = []
-            for file_data in response.get('files'):
-                file_list.append(FileResources(**file_data))
+            while next_page_token:
+                response: dict[str, Any] = self.fileService.list(
+                    **metadata).execute()
+
+                next_page_token = response.get('nextPageToken')
+                metadata['pageToken'] = next_page_token
+
+                for file_data in response.get('files'):
+                    file_list.append(FileResources(**file_data))
 
             return file_list
 

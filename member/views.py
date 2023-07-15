@@ -3,6 +3,7 @@ from typing import Any, Callable
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.core.exceptions import EmptyResultSet
 from django.core.files.base import ContentFile
 from django.core.mail import EmailMessage
@@ -283,6 +284,17 @@ def memberFormPage(request: HttpRequest) -> HttpResponse:
                               user_agent=getUserAgent(request),
                               action=constants.ACTION.MEMBER_FORM_POST,
                               username=request.user)
+
+            MEMBER_POST_COUNT_CACHED_KEY: str = "MEMBER_FORM:%s" % getClientIp(
+                request)
+            membership_form_posts_count: int = cache.get(
+                MEMBER_POST_COUNT_CACHED_KEY, 0)
+            cache.set(
+                MEMBER_POST_COUNT_CACHED_KEY,
+                membership_form_posts_count + 1,
+                constants.DEFAULT_CACHE_EXPIRE * getParameterValue(
+                    constants.PARAMETERS.ALLOWED_LOGGED_IN_ATTEMPTS_RESET)
+            )
 
             if settings.MAILING_IS_ACTIVE:
                 try:
