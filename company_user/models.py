@@ -41,6 +41,8 @@ class Role(BaseModel):
         return self.name
 
     def save(self, *args, **kwargs) -> None:
+        if self.pk:
+            cache.delete_pattern("COMPANY_USER:*")
         super().save(*args, **kwargs)
         cache.delete(f'ROLE_{self.id}')
 
@@ -54,11 +56,13 @@ class CompanyUser(BaseModel):
 
     @classmethod
     def getCompanyUserByUserObject(cls, user: User):
-        CACHED_COMPANY_USER_KEY = "COMPANY_USER:" + str(user.pk)
-        if cache.get(CACHED_COMPANY_USER_KEY):
-            return cache.get(CACHED_COMPANY_USER_KEY)
+        CACHED_COMPANY_USER_KEY = "COMPANY_USER:%d" % user.pk
+        company_user: CompanyUser | None = cache.get(CACHED_COMPANY_USER_KEY)
+        if company_user:
+            cache.touch(CACHED_COMPANY_USER_KEY)
+            return company_user
 
-        company_user: CompanyUser = CompanyUser.objects.select_related(
+        company_user = CompanyUser.objects.select_related(
             'user', 'role').prefetch_related(
             'role__groups').get(
             user=user)

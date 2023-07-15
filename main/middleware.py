@@ -12,16 +12,17 @@ from django.core.exceptions import (DisallowedHost,
                                     TooManyFieldsSent,
                                     SuspiciousOperation)
 from django.core.cache import cache
-from django.db.models.query import QuerySet
-from django.http import (HttpResponsePermanentRedirect,
+from django.db.models import F, Q
+from django.http import (HttpResponseBadRequest,
+                         HttpResponsePermanentRedirect,
                          HttpResponseForbidden,
                          HttpRequest,
                          HttpResponse,
-                         Http404)
+                         Http404,
+                         UnreadablePostError)
 from django.shortcuts import redirect, render
 from django.urls import reverse, resolve
 from django.utils import timezone
-from django.utils.timezone import datetime
 
 from . import constants
 from . import messages as MSG
@@ -40,21 +41,25 @@ class AllowedClientMiddleware(object):
         self.requester_ip: str = None
         self.requester_agent: str = None
         self.user: str = None
-        self.last_audit_entry: QuerySet[AuditEntry] = None
 
     def __call__(self, request: HttpRequest) -> HttpResponse | HttpResponsePermanentRedirect | HttpResponseForbidden:
         self.request = request
         self.requester_ip = getClientIp(request)
         self.requester_agent = getUserAgent(request)
         self.user = str(request.user)
-        self.last_audit_entry: int = AuditEntry.getLastAuditEntry()
-        current_path = request.path
+        current_path: str = request.path
+        current_page_name: str = resolve(request.path_info).url_name
 
         # Security check
         try:
             request.GET
             request.POST
             request.FILES
+        except UnreadablePostError:
+            # Do Nothing and Return Bad Request Error
+            # This error will occurred when the user stop posting
+            # due to the slow internet or any reason
+            return HttpResponseBadRequest()
         except TooManyFieldsSent:
             logger.warning("The client is sending many fields with request")
             logger.warning("Get: " + request.GET)
@@ -98,36 +103,52 @@ class AllowedClientMiddleware(object):
         # If the requester posting
         if request.method == constants.POST_METHOD:
 
+            # Donation Limit
+            if current_page_name == constants.PAGES.DONATION_PAGE:
+                DONATION_LIMIT_CACHE_KEY = 'DONATION:%s' % self.requester_ip
+                if cache.has_key(DONATION_LIMIT_CACHE_KEY):
+                    donation_count = cache.incr(DONATION_LIMIT_CACHE_KEY)
+                else:
+                    cache.add(DONATION_LIMIT_CACHE_KEY, 1)
+                    cache.expire(DONATION_LIMIT_CACHE_KEY,
+                                 constants.DEFAULT_CACHE_EXPIRE)
+                    donation_count = 1
+
+                logger.info("DONATION COUNT: %s" % donation_count)
+                if donation_count > 5:
+                    MSG.DONATION_LIMIT(request)
+                    return redirect(constants.PAGES.DONATION_PAGE)
+
+            # Member Form Limit
+            if current_page_name == constants.PAGES.MEMBER_FORM_PAGE:
+                MEMBER_POST_COUNT_CACHED_KEY: str = "MEMBER_FORM:%s" % self.requester_ip
+                membership_form_posts_count: int | None = cache.get(
+                    MEMBER_POST_COUNT_CACHED_KEY)
+
+                if not membership_form_posts_count:
+                    membership_form_posts_count = 0
+
+                membership_post_limit: int = getParameterValue(
+                    constants.PARAMETERS.MEMBER_FORM_POST_LIMIT)
+                if membership_form_posts_count >= membership_post_limit:
+                    MSG.MEMBERSHIP_FORM_POST_LIMIT(request)
+                    return redirect(current_path)
+
             # Is posting an HTML for attack
             if self.isThereHtmlInPost():
                 self.blockClient(indefinitely=True)
                 return redirect(constants.PAGES.LOGOUT)
 
-            # Create normal post to save the client last post request
-            AuditEntry.create(ip=self.requester_ip,
-                              user_agent=self.requester_agent,
-                              action=constants.ACTION.NORMAL_POST,
-                              username=self.user)
+            POST_REQUEST_COUNT: str = "POST:%s" % self.requester_ip
+            last_posts_count: int = cache.get(POST_REQUEST_COUNT)
 
-            time: datetime = timezone.now() - timedelta(
-                milliseconds=getParameterValue(
-                    constants.PARAMETERS.BETWEEN_POST_REQUESTS_TIME))
+            if last_posts_count:
+                last_posts_count += 1
+            else:
+                last_posts_count = 1
 
-            membership_form_posts_count: int = self.last_audit_entry.filter(
-                ip=self.requester_ip,
-                action=constants.ACTION.MEMBER_FORM_POST).count()
-
-            membership_post_limit: int = getParameterValue(
-                constants.PARAMETERS.MEMBER_FORM_POST_LIMIT)
-            if resolve(request.path_info).url_name == constants.PAGES.MEMBER_FORM_PAGE:
-                if membership_form_posts_count >= membership_post_limit:
-                    MSG.MEMBERSHIP_FORM_POST_LIMIT(request)
-                    return redirect(current_path)
-
-            last_posts_count: int = self.last_audit_entry.filter(
-                ip=self.requester_ip,
-                action=constants.ACTION.NORMAL_POST,
-                created__gte=time).count()
+            cache.set(POST_REQUEST_COUNT, last_posts_count, getParameterValue(
+                constants.PARAMETERS.BETWEEN_POST_REQUESTS_TIME) / 1000)
 
             # If the requester spams 2 posts
             if 1 < last_posts_count <= 3:
@@ -139,6 +160,7 @@ class AllowedClientMiddleware(object):
 
             # If the requester spams 3-5 posts
             elif 3 < last_posts_count <= 5:
+                self.blockClient()
                 AuditEntry.create(ip=self.requester_ip,
                                   user_agent=self.requester_agent,
                                   action=constants.ACTION.SUSPICIOUS_POST,
@@ -146,20 +168,19 @@ class AllowedClientMiddleware(object):
                 logger.warning(
                     f"The system cut suspicious post requests from "
                     + f"username: {self.user}, IP: {self.requester_ip}")
-                self.blockClient()
                 return redirect(current_path)
 
             # If the requester spam more than 5 posts
             elif last_posts_count > 5:
                 self.blockClient(indefinitely=True)
+                AuditEntry.create(ip=self.requester_ip,
+                                  user_agent=self.requester_agent,
+                                  action=constants.ACTION.SUSPICIOUS_POST,
+                                  username=self.user)
                 logger.warning(
                     f"The system cut suspicious post requests from "
                     + f"username: {self.user}, IP: {self.requester_ip}")
                 return redirect(current_path)
-
-            # If it's normal post, then cleanup
-            else:
-                self.cleanupUnsuspiciousPostRequests()
 
         # ------------------------------------------------------------------- #
         #       Up this point executed before the response have been set      #
@@ -171,21 +192,14 @@ class AllowedClientMiddleware(object):
 
         # If not blocked requester, check the action
         if not self.isBlockedClient():
-            allowed_logged_in_attempts: int = getParameterValue(
+            # Failed Login Limit
+            available_attempts: int = getParameterValue(
                 constants.PARAMETERS.ALLOWED_LOGGED_IN_ATTEMPTS)
-            requester_attempts: int = self.getRequesterFailedAttempts()
-            available_attempts: int = allowed_logged_in_attempts
-
-            if BlockedClient.isExists(ip=self.requester_ip):
-                blocked_client: BlockedClient = BlockedClient.get(
-                    ip=self.requester_ip)
-                available_attempts = allowed_logged_in_attempts * \
-                    (blocked_client.blocked_times + 1)
-            count_sus: int = self.last_audit_entry.filter(
-                ip=self.requester_ip,
-                action=constants.ACTION.SUSPICIOUS_POST).count() * 5
-            available_attempts -= requester_attempts
-            available_attempts -= count_sus
+            CLIENT_FAILED_LOGIN_ATTEMPT_CACHE_KEY: str = "FAIL_LOGIN:%s" % self.requester_ip
+            failed_login_attempts: int | None = cache.get(
+                CLIENT_FAILED_LOGIN_ATTEMPT_CACHE_KEY)
+            if failed_login_attempts:
+                available_attempts -= failed_login_attempts
 
             if not available_attempts:
                 logger.warning(
@@ -204,9 +218,8 @@ class AllowedClientMiddleware(object):
 
         # If blocked requester, send HttpResponseForbidden
         else:
-            blocked_client: BlockedClient = BlockedClient.get(
-                ip=self.requester_ip)
-            logger.warning("Blocked Client attempts to get to the site.")
+            logger.warning(
+                "Blocked Client attempts to get to the site. IP: %s" % self.requester_ip)
             return HttpResponseForbidden(f'<center><h1 style="margin-top: 50px;">لقد تم حظرك من هذا الموقع</h1></center>')
         return response
 
@@ -234,51 +247,59 @@ class AllowedClientMiddleware(object):
                                  user_agent=self.requester_agent,
                                  block_type=block_type
                                  )
+        BLACKLISTED_KEY: str = "BLACKLISTED:%s" % self.requester_ip
+        WHITELISTED_KEY: str = "WHITELISTED:%s" % self.requester_ip
+        cache.delete(WHITELISTED_KEY)
+        cache.set(BLACKLISTED_KEY, block_type, None)
         logger.warning(f"Client at IP address [{self.requester_ip}] "
                        + f"was {block_type} blocked")
 
-    def cleanupUnsuspiciousPostRequests(self) -> None:
-        last_posts: QuerySet[AuditEntry] = self.last_audit_entry.filter(
-            ip=self.requester_ip,
-            action=constants.ACTION.NORMAL_POST)
-        for index, post in enumerate(last_posts):
-            if index == last_posts.count() - 1:
-                break
-            else:
-                post.delete()
-
-    def getRequesterFailedAttempts(self) -> int:
-        failed_attempts: QuerySet[AuditEntry] = self.last_audit_entry.filter(
-            ip=self.requester_ip,
-            action=constants.ACTION.LOGGED_FAILED)
-
-        return failed_attempts.count()
-
     def isAllowedToUnblocked(self) -> bool:
-        blocked_client: BlockedClient = BlockedClient.get(ip=self.requester_ip)
-        block_type: str = blocked_client.block_type
-        if block_type == constants.BLOCK_TYPES.TEMPORARY:
-            blocked_time: datetime = blocked_client.updated
-            time_to_unblocked: datetime = blocked_time + timedelta(
-                days=getParameterValue(
-                    constants.PARAMETERS.TEMPORARY_BLOCK_PERIOD))
-            if time_to_unblocked <= timezone.now():
-                return True
+        if BlockedClient.objects.annotate(
+                time_to_unblocked=F('updated') + timedelta(
+                    days=getParameterValue(
+                        constants.PARAMETERS.TEMPORARY_BLOCK_PERIOD))
+            ).filter(
+                ip=self.requester_ip,
+                block_type=constants.BLOCK_TYPES.TEMPORARY,
+                time_to_unblocked__lte=timezone.now()
+        ).exists():
+            cache.delete("BLACKLISTED:%s" % self.requester_ip)
+            return True
+
         return False
 
     def isBlockedClient(self) -> bool:
-        if BlockedClient.isExists(ip=self.requester_ip):
-            blocked_client: BlockedClient = BlockedClient.get(
-                ip=self.requester_ip)
-            if blocked_client.block_type is not constants.BLOCK_TYPES.UNBLOCKED:
-                return True
+        BLACKLISTED_KEY: str = "BLACKLISTED:%s" % self.requester_ip
+        WHITELISTED_KEY: str = "WHITELISTED:%s" % self.requester_ip
+
+        if not cache.has_key(BLACKLISTED_KEY) and cache.has_key(WHITELISTED_KEY):
+            return False
+
+        if BlockedClient.objects.filter(
+            ~Q(block_type=constants.BLOCK_TYPES.UNBLOCKED),
+            ip=self.requester_ip,
+        ).exists():
+            cache.set(BLACKLISTED_KEY, None, None)
+            return True
+
+        cache.set(WHITELISTED_KEY, None, constants.DEFAULT_CACHE_EXPIRE)
         return False
 
     def isNewVisiter(self) -> bool:
         # Check first in the last audit entry, if not: check for all
-        if self.last_audit_entry.filter(ip=self.requester_ip).exists():
+        VISITOR_KEY: str = "VST:%s" % self.requester_ip
+        if cache.has_key(VISITOR_KEY):
             return False
-        elif AuditEntry.isExists(ip=self.requester_ip):
+
+        cache.set(VISITOR_KEY, None, constants.DEFAULT_CACHE_EXPIRE)
+        if any((
+            AuditEntry.filter(
+                id__gte=getParameterValue(
+                constants.PARAMETERS.MAGIC_NUMBER),
+                ip=self.requester_ip).exists(),
+            AuditEntry.isExists(ip=self.requester_ip)
+        )):
             return False
         else:
             return True

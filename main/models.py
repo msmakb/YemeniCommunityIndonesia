@@ -261,12 +261,7 @@ class AuditEntry(Client):
 
     def save(self, *args, **kwargs) -> None:
         super().save(*args, **kwargs)
-        last_audit_entry: QuerySet[AuditEntry] = self.getLastAuditEntry()
-        if last_audit_entry is not None:
-            last_audit_entry = last_audit_entry | AuditEntry.objects.filter(
-                pk=self.pk)
-            cache.set(constants.CACHE.LAST_AUDIT_ENTRY_QUERYSET,
-                      last_audit_entry, constants.DEFAULT_CACHE_EXPIRE)
+        cache.delete(constants.CACHE.LAST_AUDIT_ENTRY_QUERYSET)
 
 
 class Donation(BaseModel):
