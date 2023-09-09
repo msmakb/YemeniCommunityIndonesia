@@ -1,10 +1,11 @@
 from typing import Any
-
 from django.contrib import auth
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models.query import QuerySet
+from django.db.transaction import atomic
 from django.http import HttpRequest, HttpResponse, Http404
 from django.shortcuts import render, redirect
 from django.utils import timezone
@@ -13,7 +14,7 @@ from main import constants
 from main import messages as MSG
 from main.utils import getClientIp, logUserActivity
 
-from .models import Parameter
+from .models import Parameter, ImageParameter
 from .service import getParameterValue
 
 
@@ -75,6 +76,20 @@ def systemSettings(request: HttpRequest) -> HttpResponse:
                     parameter.value = "true"
                     parameter.save()
                     changed_parameter_list.append(str(parameter))
+            elif parameter.getParameterType == constants.DATA_TYPE.IMAGE_FILE:
+                if parameter.name in request.FILES:
+                    file: InMemoryUploadedFile = request.FILES.get(
+                        parameter.name)
+                    image: ImageParameter = ImageParameter()
+                    image.content = file
+                    if parameter.name == constants.PARAMETERS.MEMBERSHIP_TRANSFER_INFO_IMAGE:
+                        image.file_name = "Payment-Account-Info"
+                    with atomic():
+                        image.save()
+                        parameter.value = image.pk
+                        parameter.clean()
+                        parameter.save()
+                        changed_parameter_list.append(str(parameter))
             else:
                 value: str = request.POST.get(parameter.name)
                 if value and value != parameter.getValue:

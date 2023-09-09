@@ -1,4 +1,6 @@
 {% extends 'base.html' %}
+{% load main_tags %}
+{% load static %}
 {% block content %}
 <div class="container">
     <h1 class="text-center display-3 p-5">مرحبًا, {{ person.name_ar }}</h1>
@@ -7,15 +9,16 @@
         سيتم إضافة المزيد من الميزات لاحقًا للأعضاء وغير الأعضاء
         المسجلين رسميًا على موقع الجالية اليمنية في إندونيسيا.
     </h4>
-    {% if person.membership %}
-    <div class="text-center">
-        <h5 class="lead mt-5">يمكنك تنزيل بطاقة عضويتك أدناه</h5>
-        <a href="{% url 'Download-Membership' person.membership.id %}" class="btn btn-md btn-success mt-2"
-            download>تحميل بطاقة العضوية</a>
-        <div class="col col-md-6 d-block center">
-            <img class="my-4 w-100" src="{% url 'Download-Membership' person.membership.id %}">
-        </div>
+    <div class="row text-center m-auto justify-content-center">
+        {% getUserMenus request as userMenus %}
+        {% for menuItem in userMenus %}
+        <a class="col-1 btn btn-outline-secondary shadow rounded-circle p-5 m-4" style="width: 200px; height: 200px"
+            href="{% if menuItem.arg %}{% url menuItem.page menuItem.arg %}{% else %}{% url menuItem.page %}{% endif %}">
+            <img src="{% static menuItem.icon %}" alt="{{ menuItem.name }}"
+                style="width: 100px; height: 100px; margin-top: -30px;" />
+            <h4 class="mt-2">{{ menuItem.name }}</h4>
+        </a>
+        {% endfor %}
     </div>
 </div>
-{% endif %}
 {% endblock content %}

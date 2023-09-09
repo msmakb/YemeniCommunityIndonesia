@@ -41,6 +41,12 @@ ERROR_MESSAGE: Final[Callable[[HttpRequest, str], None]] = lambda request, messa
     request, message)
 MEMBER_FORM_CLOSE: Final[Callable[[HttpRequest], None]] = lambda request: messages.info(
     request, "رابط التسجيل للعضوية مغلق في الوقت الحالي. يرجى العودة لاحقاً")
+APPROVE_RECORD: Final[Callable[[HttpRequest], None]] = lambda request: messages.success(
+    request, "تم قبول السجل بنجاح")
+REJECT_RECORD: Final[Callable[[HttpRequest], None]] = lambda request: messages.success(
+    request, "تم رفض السجل بنجاح")
+DONATION_LIMIT: Final[Callable[[HttpRequest], None]] = lambda request: messages.error(
+    request, "لأسباب أمنية، نقيد عدد التبرعات التي يمكنك إرسالها بحد أقصى 5 تبرعات في اليوم")
 
 # ==== Broadcast App Messages ====
 ADD_BROADCAST: Final[Callable[[HttpRequest, str], None]] = lambda request: messages.success(
@@ -74,3 +80,13 @@ USER_REGISTRATION_DONE: Final[Callable[[HttpRequest], None]] = lambda request: m
     + 'style="text-decoration:none;"><b>تسجيل الدخول</b></a> الآن')
 PROTECTED_ROLE: Final[Callable[[HttpRequest], None]] = lambda request: messages.error(
     request, "تعذر حذف الوظيفة لأنها مرتبطة ببعض العناصر الأخرى في النظام")
+
+# ==== Company User App Messages ====
+HAS_PENDING_PAYMENT: Final[Callable[[HttpRequest], None]] = lambda request: messages.error(
+    request, "يوجد لديك دفع معلقة. يرجى الانتظار حتى يتم معالجتها أولاً")
+PAYMENT_SENT: Final[Callable[[HttpRequest], None]] = lambda request: messages.success(
+    request, "شكرا لكم على دفع رسوم العضوية. ستتم معالجة مدفوعات الاشتراك المرسلة وإخطارها لاحقًا")
+PAYMENT_APPROVED: Final[Callable[[HttpRequest], None]] = lambda request: messages.success(
+    request, "تم قبول الدفع بنجاح")
+PAYMENT_REJECTED: Final[Callable[[HttpRequest], None]] = lambda request: messages.success(
+    request, "تم رفض الدفع بنجاح")

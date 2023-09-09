@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+    <h1 class="col m-3">قائمة مدفوعات العضوية</h1>
+    <a class="col-2 btn btn-lg {% if is_pending_list_empty %}btn-secondary{% else %}btn-success{% endif %} my-3 shadow rounded"
+        href="{% url 'MembershipPaymentPendingListPage' %}" style="float: left; margin-left: 35px;">
+        المدفوعات المعلقة
+    </a>
+</div>
+
+<form method="GET">
+    <div class="container shadow p-3 mb-4 bg-white rounded w-50">
+        <div class="row">
+            <div class="col form-group">
+                <label class="" for="{{ paymentFilter.form.membership__card_number.auto_id }}">
+                    {{ paymentFilter.form.membership__card_number.label }}
+                </label>
+                {{ paymentFilter.form.membership__card_number }}
+            </div>
+            <div class="col form-group">
+                <label class="" for="{{ paymentFilter.form.reference_number.auto_id }}">
+                    {{ paymentFilter.form.reference_number.label }}
+                </label>
+                {{ paymentFilter.form.reference_number }}
+            </div>
+            <div class="col form-group">
+                <label class="" for="{{ paymentFilter.form.status.auto_id }}">
+                    {{ paymentFilter.form.status.label }}
+                </label>
+                {{ paymentFilter.form.status }}
+            </div>
+            <div class="col text-center mt-1">
+                <button class="btn btn-md btn-outline-dark mt-3 mx-auto px-5 shadow rounded"
+                    type="submit">تصفية</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+{% if page_obj %}
+<div class="container-fluid">
+    <table class="table text-center">
+        <thead>
+            <tr>
+                <th scope="col">رقم</th>
+                <th scope="col">أسم العضو</th>
+                <th scope="col">رقم البطاقة</th>
+                <th scope="col">رقم المرجع</th>
+                <th scope="col">عدد الأشهر</th>
+                <th scope="col">المبلغ</th>
+                <th scope="col">الفترة</th>
+                <th scope="col">الحالة</th>
+                <th scope="col">تاريخ رفع الفاتوره</th>
+                <th scope="col">تاريخ الإعتماد/الرفض</th>
+                <th scope="col">الملاحظات</th>
+                <th scope="col">الفاتورة</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in page_obj %}
+            <tr>
+                <td>{{ page_obj.start_index|add:forloop.counter0 }}</td>
+                <td>{{ payment.member_name }}</td>
+                <td>{{ payment.membership.card_number }}</td>
+                <td>{{ payment.reference_number }}</td>
+                <td class="months">{{ payment.number_of_months }}</td>
+                <td class="amount">{{ payment.amount }}</td>
+                <td>{{ payment.period }}</td>
+                <td>
+                    <div class="text-white d-block p-1 rounded"
+                        style="background-color: {% if payment.status == "1" %}rgba(40, 167, 69, 0.75){% else %}rgba(220, 53, 69, 0.75){% endif %};">
+                        {{ payment.status_ar }}
+                    </div>
+                </td>
+                <td>{{ payment.created }}</td>
+                <td>{{ payment.updated }}</td>
+                <td>
+                    {% if payment.note and payment.note != '-' %}
+                    {{ payment.note }}
+                    {% else %}
+                    لايوجد
+                    {% endif %}
+                </td>
+                <td>
+                    <a class="btn btn-md btn-info" data-toggle="modal"
+                        data-target="#{{ payment.reference_number }}">عرض</a>
+                    <div class="modal fade" id="{{ payment.reference_number }}" tabindex="-1" role="dialog"
+                        aria-labelledby="{{ payment.reference_number }}Title" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLongTitle">رقم المرجع:
+                                        {{ payment.reference_number }}
+                                    </h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body m-0 p-0">
+                                    <div class="card">
+                                        <img class="card-img-top" src="{{ payment.receipt.url }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<h2 class="text-center text-warning">لا توجد مدفوعات</h2>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+    const numberOfMonthsList = document.querySelectorAll('.months');
+    const amounts = document.querySelectorAll('.amount');
+    let month = "";
+    for (let numberOfMonths of numberOfMonthsList) {
+        if (numberOfMonths.textContent.trim() == "" || numberOfMonths.textContent.trim() === "0") {
+            month = "0"
+        } else if (numberOfMonths.textContent.trim() === "1") {
+            month = "شهر"
+        } else if (numberOfMonths.textContent.trim() === "2") {
+            month = "شهرين"
+        } else if (Number(numberOfMonths.textContent.trim()) <= 10) {
+            month = numberOfMonths.textContent.trim() + " أشهر"
+        } else {
+            month = numberOfMonths.textContent.trim() + " شهر"
+
+        }
+        numberOfMonths.innerHTML = month;
+    }
+
+    for (let amount of amounts) {
+        amount.innerHTML = (Number(amount.textContent.trim().replace(/,/g, '.'))).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+</script>
+{% endblock scripts %}

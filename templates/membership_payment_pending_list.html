@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% block content %}
+<span id="period-api" data-url="{% url 'GetPaymentPeriodApi' 'pk' 'number_of_months' %}"></span>
+<div class="row">
+    <h1 class="col m-3">قائمة المدفوعات المعلقة</h1>
+    <a class="col-2 btn btn-lg btn-info my-3 shadow rounded" href="{% url 'MembershipPaymentListPage' %}"
+        style="float: left; margin-left: 35px;">
+        رجوع
+    </a>
+</div>
+
+{% if page_obj %}
+<div class="container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th colspan="3">
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in page_obj %}
+            <form method="POST">
+                {% csrf_token %}
+                <tr>
+                    <td class="col-4">
+                        <div class="card bg-light">
+                            <input type="hidden" name="pk" value="{{ payment.id }}">
+                            <img class="card-img-top" src="{{ payment.receipt.url }}" alt="Card image cap">
+                        </div>
+                    </td>
+                    <td class="col-8">
+                        <table class="table table-striped border mt-2">
+                            <tbody>
+                                <tr>
+                                    <th class="col-6">أسم العضو</th>
+                                    <td>{{ payment.member_name }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="col-6">رقم البطاقة</th>
+                                    <td class="col-6">{{ payment.membership.card_number }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="col-6">رقم المرجع</th>
+                                    <td class="col-6">{{ payment.reference_number }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="col-6">المبلغ</th>
+                                    <td id="amount-{{ payment.id }}" class="col-6 amount">{{ payment.amount }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="col-6">عدد الأشهر</th>
+                                    <td class="col-6">
+                                        <div id="number-of-months-static-{{ payment.id }}">
+                                            <span class="months" data-member-value="{{ payment.number_of_months }}">
+                                                {{ payment.number_of_months }}
+                                            </span>
+                                            <span class="p-2">
+                                                [
+                                                <a onclick="editNumberOfMonths({{ payment.id }})" type="button"
+                                                    class="link-danger link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+                                                    تعديل</a>]
+                                            </span>
+                                        </div>
+                                        <div id="number-of-months-input-{{ payment.id }}" style="display: none;">
+                                            <input type="number" name="number_of_months" id="number_of_months" min="1"
+                                                max="24" placeholder="عدد الأشهر المدفوعة" class="form-control"
+                                                value="{{ payment.number_of_months }}" required>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="col-6">الفترة</th>
+                                    <td class="col-6" id="period-{{ payment.id }}">{{ payment.period }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="col-6">الملاحظات</th>
+                                    <td class="col-6"><input type="text" name="note" id="note" class="form-control"
+                                            maxlength="100" value="-" placeholder="الملاحظات">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-6">
+                                        <div class="row p-3">
+                                            <button type="submit" name="approve"
+                                                class="btn btn-block btn-success btn-block">إعتماد</button>
+                                        </div>
+                                    </td>
+                                    <td class="col-6">
+                                        <div class="row p-3">
+                                            <button type="submit" name="reject"
+                                                onclick="return confirm('هل أنت متأكد من رفض هذه الدفعة؟\nرقم المرجع: {{ payment.reference_number }}')"
+                                                class="btn btn-block btn-danger btn-block">رفض</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </form>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<h2 class="text-center text-success">لا يوجد أي مدفوعات معلقة</h2>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+    var updated_values = [];
+
+    function formatAmount(amount) {
+        return (Number(amount)).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    function formatMonth(numberOfMonths) {
+        let month = "";
+        if (numberOfMonths == "" || numberOfMonths === "0") {
+            month = "0"
+        } else if (numberOfMonths === "1") {
+            month = "شهر"
+        } else if (numberOfMonths === "2") {
+            month = "شهرين"
+        } else if (Number(numberOfMonths) <= 10) {
+            month = numberOfMonths + " أشهر"
+        } else {
+            month = numberOfMonths + " شهر"
+
+        }
+        return month;
+    }
+
+    function editNumberOfMonths(id) {
+        const number_of_months_static = document.getElementById(`number-of-months-static-${id}`);
+        const number_of_months_input = document.getElementById(`number-of-months-input-${id}`);
+        const period_static = document.getElementById(`period-${id}`);
+        const amount = document.getElementById(`amount-${id}`);
+        const months_input = number_of_months_input.querySelector('input')
+        const months_static = number_of_months_static.querySelector(".months");
+
+        number_of_months_static.style.display = "none";
+        number_of_months_input.style.display = "block";
+        months_input.focus();
+
+        months_input.addEventListener('blur', function () {
+            number_of_months_static.style.display = "block";
+            number_of_months_input.style.display = "none";
+
+            if (months_static.getAttribute("data-member-value") != months_input.value &&
+                !updated_values.includes(id)) {
+                updated_values.push(id)
+            }
+
+            months_static.innerHTML = formatMonth(months_input.value);
+            let updated_amount = (Number(months_input.value) * 50000).toString();
+            amount.innerHTML = formatAmount(updated_amount);
+
+            if (updated_values.includes(id)) {
+                const period_api_url = document.getElementById('period-api')
+                    .getAttribute('data-url')
+                    .replace('pk', id)
+                    .replace('number_of_months', months_input.value);
+
+                console.log(period_api_url);
+
+                period_static.innerHTML = "قيد المعالجة ... ";
+                fetch(period_api_url)
+                    .then(response => response.json())
+                    .then(data => {
+                        period_static.innerHTML = data.period;
+                    });
+
+            }
+
+        });
+
+        console.log(updated_values)
+    }
+
+    $(window).on("load", function () {
+        const numberOfMonthsList = document.querySelectorAll('.months');
+        for (let numberOfMonths of numberOfMonthsList) {
+            numberOfMonths.innerHTML = formatMonth(numberOfMonths.textContent.trim());
+        }
+
+        const amounts = document.querySelectorAll('.amount');
+        for (let amount of amounts) {
+            amount.innerHTML = formatAmount(amount.textContent.trim().replace(/,/g, '.'));
+        }
+    });
+</script>
+{% endblock scripts %}

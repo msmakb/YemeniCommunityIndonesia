@@ -1,10 +1,12 @@
 from dataclasses import dataclass
-from typing import Set, Optional
+from typing import Any, Set, Optional
 
+from django.core.cache import cache
 from django.http import HttpRequest
 
 from main import constants
 from company_user.models import CompanyUser
+from member.models import Person
 
 
 @dataclass
@@ -17,10 +19,17 @@ class MenuItem:
 
 
 def getUserMenus(request: HttpRequest) -> list[MenuItem]:
+    userMenu: list[MenuItem] = []
+
+    if not request.user.is_authenticated:
+        return userMenu
+
+    # Company User Menu
     if request.user.is_staff:
         company_user: CompanyUser | None = None
         try:
-            company_user = CompanyUser.get(user=request.user)
+            company_user = CompanyUser.getCompanyUserByUserObject(
+                request.user)
         except CompanyUser.DoesNotExist:
             pass
 
@@ -30,8 +39,6 @@ def getUserMenus(request: HttpRequest) -> list[MenuItem]:
 
         if request.user.is_superuser:
             groups = constants.GROUPS
-
-        userMenu: list[MenuItem] = []
 
         if constants.GROUPS.MEMBERS in groups:
             menu_item: MenuItem = MenuItem(
@@ -70,12 +77,67 @@ def getUserMenus(request: HttpRequest) -> list[MenuItem]:
             )
             userMenu.append(menu_item)
 
+        if constants.GROUPS.PAYMENT in groups:
+            menu_item: MenuItem = MenuItem(
+                name=constants.GROUPS_AR[constants.GROUPS.PAYMENT],
+                page=constants.PAGES.MEMBERSHIP_PAYMENT_LIST_PAGE,
+                is_active=True if "/Payment/" in request.path else False,
+                icon="svg/payment_history.svg",
+            )
+            userMenu.append(menu_item)
+
+        if constants.GROUPS.DONATION in groups:
+            menu_item: MenuItem = MenuItem(
+                name=constants.GROUPS_AR[constants.GROUPS.DONATION],
+                page=constants.PAGES.DONATION_LIST_PAGE,
+                is_active=True if "/Donation-List/" in request.path else False,
+                icon="svg/donation.svg",
+            )
+            userMenu.append(menu_item)
+
         if constants.GROUPS.PARAMETER in groups:
             menu_item: MenuItem = MenuItem(
                 name=constants.GROUPS_AR[constants.GROUPS.PARAMETER],
                 page=constants.PAGES.SETTINGS_PAGE,
                 is_active=True if "Settings" in request.path else False,
                 icon="svg/settings.svg",
+            )
+            userMenu.append(menu_item)
+
+    # Members Menus
+    elif not request.user.is_staff:
+        user_data: dict[str, Any] = Person.getUserData(request.user)
+        if user_data.get('has_membership'):
+
+            menu_item: MenuItem = MenuItem(
+                name="بطاقة العضوية",
+                page=constants.PAGES.MEMBERSHIP_CARD_PAGE,
+                is_active=True if "Membership-Card" in request.path else False,
+                icon="svg/membership_card.svg",
+            )
+            userMenu.append(menu_item)
+
+            menu_item: MenuItem = MenuItem(
+                name="دفع الإشتراك",
+                page=constants.PAGES.MEMBERSHIP_PAYMENT_PAGE,
+                is_active=True if "Membership-Payment" in request.path else False,
+                icon="svg/pay.svg",
+            )
+            userMenu.append(menu_item)
+
+            menu_item: MenuItem = MenuItem(
+                name="مدفوعات العضوية",
+                page=constants.PAGES.MEMBERSHIP_PAYMENT_HISTORY_PAGE,
+                is_active=True if "Payment-History" in request.path else False,
+                icon="svg/payment_history.svg",
+            )
+            userMenu.append(menu_item)
+
+            menu_item: MenuItem = MenuItem(
+                name="ادعمنا",
+                page=constants.PAGES.DONATION_PAGE,
+                is_active=True if "/Donation/" in request.path else False,
+                icon="svg/donation.svg",
             )
             userMenu.append(menu_item)
 
