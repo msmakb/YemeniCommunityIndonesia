@@ -5,6 +5,7 @@ from django import forms
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.forms import UserCreationForm, SetPasswordForm, UserChangeForm
 from django.contrib.auth.validators import ASCIIUsernameValidator
+from django.db.utils import OperationalError
 
 from main import constants
 
@@ -84,22 +85,24 @@ class RoleForm(forms.ModelForm):
 
 
 class CreateUserForm(UserCreationForm):
-
-    role = forms.ChoiceField(
-        label='الوظيفة',
-        choices=[
-            ('', '---------'),
-            *[(role.pk, role)
-              for role in Role.getAll().exclude(name='superuser')],
-            (0, 'مستخدم متميز'),
-        ],
-        widget=forms.Select(
-            attrs={
-                'required': True,
-                'class': 'form-select shadow-sm rounded',
-            }
+    try:
+        role = forms.ChoiceField(
+            label='الوظيفة',
+            choices=[
+                ('', '---------'),
+                *[(role.pk, role)
+                  for role in Role.getAll().exclude(name='superuser')],
+                (0, 'مستخدم متميز'),
+            ],
+            widget=forms.Select(
+                attrs={
+                    'required': True,
+                    'class': 'form-select shadow-sm rounded',
+                }
+            )
         )
-    )
+    except OperationalError:
+        pass
 
     def __init__(self, is_superuser: bool, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -236,22 +239,24 @@ class SetUsernameAndPasswordForm(SetPasswordForm):
 
 
 class ChangeUserDataForm(UserChangeForm):
-
-    role = forms.ChoiceField(
-        label='الوظيفة',
-        choices=[
-            ('', '---------'),
-            *[(role.pk, role)
-              for role in Role.getAll().exclude(name='superuser')],
-            (0, 'مستخدم متميز'),
-        ],
-        widget=forms.Select(
-            attrs={
-                'required': True,
-                'class': 'form-select shadow-sm rounded',
-            }
+    try:
+        role = forms.ChoiceField(
+            label='الوظيفة',
+            choices=[
+                ('', '---------'),
+                *[(role.pk, role)
+                  for role in Role.getAll().exclude(name='superuser')],
+                (0, 'مستخدم متميز'),
+            ],
+            widget=forms.Select(
+                attrs={
+                    'required': True,
+                    'class': 'form-select shadow-sm rounded',
+                }
+            )
         )
-    )
+    except OperationalError:
+        pass
 
     field_order = ['first_name', 'last_name', 'email', 'role', 'is_active']
 
