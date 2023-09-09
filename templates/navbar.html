@@ -15,7 +15,6 @@
           href="{% url 'Index' %}">الصفحة
           الرئيسية</a>
       </li>
-      {% if request.user.is_staff %}
       {% getUserMenus request as userMenus %}
       {% for menuItem in userMenus %}
       <li class="nav-item">
@@ -24,6 +23,11 @@
           {{ menuItem.name }}</a>
       </li>
       {% endfor %}
+      {% if not request.user.is_authenticated %}
+      <li class="nav-item">
+        {% url 'Donation' as donation %}
+        <a class="nav-link {% if request.path == donation %}active{% endif %}" href="{% url 'Donation' %}">ادعمنا</a>
+      </li>
       {% endif %}
       <li class="nav-item">
         {% url 'MembershipTerms' as membershipTerms %}

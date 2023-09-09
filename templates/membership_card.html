@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block content %}
+{% comment %} <div class="container">
+    <div class="text-center">
+        <h5 class="lead mt-5">يمكنك تنزيل بطاقة عضويتك أدناه</h5>
+        <a href="{% url 'Download-Membership' %}" class="btn btn-md btn-success mt-2" download>تحميل
+            بطاقة العضوية</a>
+        <div class="col col-md-6 d-block center">
+            <img class="my-4 w-100" src="{% url 'Download-Membership' %}">
+        </div>
+    </div>
+</div> {% endcomment %}
+
+<div class="container mt-4">
+    <div id="Membership-card" class="card shadow rounded mx-auto">
+        <img class=" card-img-top border-bottom" src="{% url 'Download-Membership' %}">
+        <div class="card-body">
+            <h5 class="card-title">بطاقة العضوية</h5>
+            <p class="card-text">يمكنك تنزيل بطاقة عضويتك أدناه</p>
+            <p class="card-text">{{ request.responsive_width }}</p>
+            <a href="{% url 'Download-Membership' %}" class="btn btn-md btn-success mt-2" download>تحميل</a>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+{% block scripts %}
+<script>
+    function updateCardize() {
+        let width =
+            window.innerWidth ||
+            document.documentElement.clientWidth ||
+            document.body.clientWidth;
+
+        let card = document.getElementById("Membership-card");
+        if (width <= 767) {
+            card.classList.remove("w-50");
+            card.classList.add("w-100");
+        } else {
+            card.classList.remove("w-100");
+            card.classList.add("w-50");
+        }
+    }
+
+    updateCardize();
+    $(window).resize(function () {
+        updateCardize();
+    });
+</script>
+{% endblock scripts %}

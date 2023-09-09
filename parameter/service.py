@@ -8,6 +8,7 @@ from django.core.cache import cache
 from main.constants import DATA_TYPE, LOGGERS, DEFAULT_CACHE_EXPIRE
 
 from .models import Parameter as _parameter
+from .models import ImageParameter as _ImageParameter
 from .default_parameters import _getDefaultParam
 
 logger: Logger = logging.getLogger(LOGGERS.PARAMETER)
@@ -31,7 +32,8 @@ def getParameterValue(key: str) -> Union[str, int, float, bool]:
     try:
         param: _parameter | None = cache.get(key)
         if not param:
-            logger.info(f"Parameter '{key}' is not cached, trying to retrieve it form database")
+            logger.info(
+                f"Parameter '{key}' is not cached, trying to retrieve it form database")
             param = _parameter.get(name=key)
             cache.set(key, param, DEFAULT_CACHE_EXPIRE)
         match param.getParameterType:
@@ -59,6 +61,16 @@ def getParameterValue(key: str) -> Union[str, int, float, bool]:
                     return False
                 else:
                     raise ValueError("Non boolean value")
+            case DATA_TYPE.IMAGE_FILE:
+                val: str = param.getValue
+                if val == "None":
+                    return ""
+                img_url: _ImageParameter | None = cache.get(
+                    f'IMAGE_PARAMETER:{val}')
+                if not img_url:
+                    img_url = _ImageParameter.get(pk=int(val))
+                    cache.set(f'IMAGE_PARAMETER:{val}', img_url, None)
+                return img_url.content.url
             case _:
                 return param.getValue
     except _parameter.DoesNotExist:
@@ -92,6 +104,12 @@ def getParameterValue(key: str) -> Union[str, int, float, bool]:
                             return False
                         else:
                             raise ValueError
+                    case DATA_TYPE.IMAGE_FILE:
+                        if pram.value == "None":
+                            return ""
+                        img_url: _ImageParameter = _ImageParameter.get(
+                            pk=int(pram.value))
+                        return img_url.content.url
                     case _:
                         return pram.value
         raise KeyError("The parameter does not exist in the database "

@@ -33,4 +33,19 @@ urlpatterns = [
         views.logoutUser,
         name=PAGES.LOGOUT
     ),
+    path(
+        'Donation/',
+        views.donation,
+        name=PAGES.DONATION_PAGE
+    ),
+    path(
+        'Donation/Thank-You/',
+        views.thanksForDonation,
+        name=PAGES.THANKS_FOR_DONATION_PAGE
+    ),
+    path(
+        'Donation-List/',
+        views.donationListPage,
+        name=PAGES.DONATION_LIST_PAGE
+    ),
 ]

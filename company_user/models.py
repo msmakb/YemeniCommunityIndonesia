@@ -3,6 +3,7 @@ from typing import Set
 from django.contrib.auth.models import Group, User
 from django.core.cache import cache
 from django.db import models
+from django.db.models.query import QuerySet
 
 from main import constants
 from main.models import BaseModel
@@ -30,9 +31,9 @@ class Role(BaseModel):
 
     def getArStrPermissions(self) -> str:
         permissions: Set[str] = set()
-        groups: Set[str] = self.groups.all().values_list('name', flat=True)
+        groups: QuerySet[Group] = self.groups.all()
         for group in groups:
-            permissions.add(constants.GROUPS_AR[group])
+            permissions.add(constants.GROUPS_AR[group.name])
 
         return " - ".join(permissions)
 
@@ -40,6 +41,8 @@ class Role(BaseModel):
         return self.name
 
     def save(self, *args, **kwargs) -> None:
+        if self.pk:
+            cache.delete_pattern("COMPANY_USER:*")
         super().save(*args, **kwargs)
         cache.delete(f'ROLE_{self.id}')
 
@@ -50,3 +53,18 @@ class CompanyUser(BaseModel):
 
     def __str__(self):
         return self.user.username
+
+    @classmethod
+    def getCompanyUserByUserObject(cls, user: User):
+        CACHED_COMPANY_USER_KEY = "COMPANY_USER:%d" % user.pk
+        company_user: CompanyUser | None = cache.get(CACHED_COMPANY_USER_KEY)
+        if company_user:
+            cache.touch(CACHED_COMPANY_USER_KEY)
+            return company_user
+
+        company_user = CompanyUser.objects.select_related(
+            'user', 'role').prefetch_related(
+            'role__groups').get(
+            user=user)
+        cache.set(CACHED_COMPANY_USER_KEY, company_user, 300)
+        return company_user

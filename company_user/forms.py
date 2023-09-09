@@ -342,6 +342,9 @@ class ChangeUserDataForm(UserChangeForm):
         if not data:
             raise forms.ValidationError("هذا الحقل مطلوب.")
 
+        if self.instance.email == data:
+            return data
+
         if User.objects.filter(email=data).exists():
             raise forms.ValidationError(
                 "عنوان البريد الإلكتروني هذا موجود بالفعل")

@@ -5,7 +5,7 @@
     <div class="row">
         <h1 class="col m-3">اعدادات النظام</h1>
     </div>
-    <form id="form" method="post">
+    <form id="form" method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <table class="table table-striped text-left m-auto shadow rounded">
             <tbody id="parameter-table-body">
@@ -16,7 +16,8 @@
                     <td class="input-value" style="display: none;">
                         <input type="{{ parameter.getInputType }}" name="{{ parameter.name }}"
                             value="{{ parameter.value }}" {% if parameter.getCheckboxValue == True %}checked{% endif %}
-                            class="{% if parameter.getInputType == "checkbox" %}form-check-input{% else %}form-control bg-transparent{% endif %} shadow-sm rounded">
+                            class="{% if parameter.getInputType == "checkbox" %}form-check-input{% else %}form-control bg-transparent{% endif %} shadow-sm rounded"
+                            {% if parameter.getParameterType == '5' %}accept=".png, .jpeg, .jpg"{% endif %}> <!-- Parameter Type 5 is image type-->
                     </td>
                     <td class="static-value col-2">
                         {% if parameter.getCheckboxValue != "" %}
@@ -25,6 +26,8 @@
                         {% else %}
                         <img style="width: 20px; height:auto;" src="{% static 'admin/img/icon-no.svg' %}" alt="Treu">
                         {% endif %}
+                        {% elif parameter.getInputType == 'file' %}
+                        File ID ({{ parameter.value }})
                         {% else %}
                         {{ parameter.value }}
                         {% endif %}
@@ -70,6 +73,8 @@
 
         if (inputElement.type === "checkbox") {
             staticValueCell.checked = inputElement.checked;
+        } else if (inputElement.type === "file") {
+            // Do nothing 
         } else {
             inputElement.value = staticValueCell.textContent.trim();;
         }
@@ -87,6 +92,8 @@
                     image.src = image.src.replace("yes", "no");
                     inputElement.value = "false";
                 }
+            } else if (inputElement.type === "file") {
+                // Do nothing 
             } else {
                 orignalValue = staticValueCell.textContent.trim();
                 staticValueCell.textContent = inputElement.value;
@@ -100,6 +107,15 @@
                     inputElement.setAttribute("data-changed", true);
                     isEdited = true;
                 }
+            } else if (inputElement.type === "file") {
+                inputElement.addEventListener('change', function () {
+                    if (inputElement.value) {
+                        staticValueCell.textContent = "Updating";
+                        inputElement.setAttribute("data-changed", true);
+                        row.style.backgroundColor = 'rgba(255, 193, 7, 0.5)';
+                        document.getElementById('submit').disabled = false;
+                    }
+                });
             } else {
                 if ((orignalValue !== inputElement.value)) {
                     inputElement.setAttribute("data-changed", true);

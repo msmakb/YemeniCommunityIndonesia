@@ -25,7 +25,7 @@ from .forms import ChangeUserDataForm, RoleForm, CreateUserForm, SetUsernameAndP
 
 def usersPage(request: HttpRequest) -> HttpResponse:
     queryset: QuerySet[CompanyUser] = CompanyUser.getAllOrdered(
-        'user__first_name')
+        'user__first_name').select_related('user')
     page: str = request.GET.get('page')
     pagination = Pagination(queryset, int(page) if page is not None else 1,
                             paginate_by=15)
@@ -39,7 +39,7 @@ def usersPage(request: HttpRequest) -> HttpResponse:
 
 def rolesPage(request: HttpRequest) -> HttpResponse:
     queryset: QuerySet[Role] = Role.getAllOrdered(
-        'name').exclude(name='superuser')
+        'name').exclude(name='superuser').prefetch_related('groups')
     page: str = request.GET.get('page')
     pagination = Pagination(queryset, int(page) if page is not None else 1,
                             paginate_by=15)
@@ -121,7 +121,10 @@ def addUserPage(request: HttpRequest) -> HttpResponse:
 
 def updateUserPage(request: HttpRequest, pk: str) -> HttpResponse:
     user: User = get_object_or_404(User, pk=pk)
-    user_form: ChangeUserDataForm = ChangeUserDataForm(instance=user)
+    try:
+        user_form: ChangeUserDataForm = ChangeUserDataForm(instance=user)
+    except CompanyUser.DoesNotExist:
+        raise Http404
 
     if user.username == 'admin' and request.user.username != 'admin':
         raise Http404
@@ -255,7 +258,7 @@ def newCompanyUserRegistrationPage(request: HttpRequest, uid_b64: str, token: st
             form.save()
             MSG.USER_REGISTRATION_DONE(request)
             logUserActivity(request, constants.ACTION.COMPLETE_USER_REGISTRATION,
-                            f"استكمال تسجيل المستخدم ({user.get_full_name})")
+                            f"استكمال تسجيل المستخدم ({user.get_full_name()})")
             return redirect(constants.PAGES.INDEX_PAGE)
 
     context: dict[str, Any] = {'form': form}

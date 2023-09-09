@@ -65,6 +65,9 @@
         </label>
         {% getFieldErrors address_form field.name as errors %}
         <div class="{% if errors %}border border-danger{% endif %}">{{ field }}</div>
+        {% if field.name == 'city' %}
+        <span>إذا كانت المدينة التي تعيش فيها غير موجودة ، فيرجى التواصل بالدعم الفني لإضافتها</span>
+        {% endif %}
         {% if errors %}<span class="text-danger">{{ errors }}</span>{% endif %}
     </div>
     {% endfor %}
