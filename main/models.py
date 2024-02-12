@@ -215,7 +215,9 @@ class AuditEntry(Client):
     username: str = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
-        return f'{self.action} - {self.username} - {self.ip}'
+        action = constants.ACTION_STR[int(
+            self.action)] if self.action else None
+        return f'{action} - {self.username} - {self.ip}'
 
     @property
     def action_type(self) -> str:

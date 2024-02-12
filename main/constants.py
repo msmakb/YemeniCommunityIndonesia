@@ -56,6 +56,8 @@ ACTION = _NT('str', [
     'VALIDATE_DONATION',
     'ADD_MEMBERSHIP_PAYMENT',
     'CHECK_PAYMENT',
+    'ADD_BANK_ACCOUNT',
+    'UPDATE_BANK_ACCOUNT',
 ])(
     '0',
     '1',
@@ -82,6 +84,8 @@ ACTION = _NT('str', [
     '22',
     '23',
     '24',
+    '25',
+    '26',
 )
 ACTION_STR: tuple[str, ...] = (
     'FIRST_VISIT',
@@ -109,6 +113,8 @@ ACTION_STR: tuple[str, ...] = (
     'VALIDATE_DONATION',
     'ADD_MEMBERSHIP_PAYMENT',
     'CHECK_PAYMENT',
+    'ADD_BANK_ACCOUNT',
+    'UPDATE_BANK_ACCOUNT',
 )
 ACTION_STR_AR: tuple[str, ...] = (
     'زيارة أولى',
@@ -136,6 +142,8 @@ ACTION_STR_AR: tuple[str, ...] = (
     'تحقق من تبرع',
     'دفع اشتراك',
     'تحقق دفع اشتراك',
+    'إضافة حساب بنكي',
+    'تعديل حساب بنكي',
 )
 BLOCK_TYPES = _NT('str', [
     'UNBLOCKED',
@@ -166,6 +174,28 @@ DATA_TYPE = _NT('str', [
     '4',
     '5',
 )
+ACCOUNT_TYPE = _NT('str', [
+    'SAVING',
+    'CURRENT'
+])(
+    '0',
+    '1'
+)
+ACCOUNT_TYPE_AR: Final[tuple[str, ...]] = (
+    'توفير',
+    'جاري'
+)
+ACCOUNT_STATUS = _NT('str', [
+    'IN_SERVICE',
+    'OUT_SERVICE'
+])(
+    '0',
+    '1'
+)
+ACCOUNT_STATUS_AR: Final[tuple[str, ...]] = (
+    'في الخدمة',
+    'خارج الخدمة'
+)
 ADMIN_SITE = _NT('str', [
     'SITE_HEADER',
     'SITE_TITLE',
@@ -175,22 +205,65 @@ ADMIN_SITE = _NT('str', [
     'الجالية اليمنية في إندونيسيا',
     'لوحة تحكم المسؤول',
 )
+BOND_TYPE = _NT('str', [
+    'INCOMING',
+    'OUTGOING',
+    'MOVING',
+])(
+    '0',
+    '1',
+    '2',
+)
+BOND_TYPE_AR: Final[tuple[str, ...]] = (
+    'قبض',
+    'صرف',
+    'نقل',
+)
+RECEVING_METHOD = _NT('str', [
+    'TRANSFER',
+    'DEPOSIT',
+    'CASH',
+])(
+    '0',
+    '1',
+    '2',
+)
+RECEVING_METHOD_AR: Final[tuple[str, ...]] = (
+    'تحويل',
+    'إيداع',
+    'نقد',
+)
+BOND_STATUS = _NT('str', [
+    'PENDING',
+    'APPROVED',
+    'CANCELLED',
+])(
+    '0',
+    '1',
+    '2',
+)
+BOND_STATUS_AR: Final[tuple[str, ...]] = (
+    'معلق',
+    'معتمد',
+    'ملغي',
+)
 MEDIA_DIR = _NT('str', [
     'PHOTOGRAPHS_DIR',
     'PASSPORTS_DIR',
     'RESIDENCY_IMAGES_DIR',
     'MEMBERSHIP_IMAGES_DIR',
     'MEMBERSHIP_PAYMENT_RECEIPTS_DIR',
+    'BOND_RECEIPTS_DIR',
     'DONATIONS_RECEIPTS_DIR',
     'EMAIL_ATTACHMENTS_DIR',
     'PUBLIC_DIR',
-
 ])(
     'documents/images/photographs',
     'documents/images/passportImages',
     'documents/images/residencyImages',
     'documents/images/membershipImages',
     'documents/images/membershipReceipts',
+    'documents/images/bondReceipts',
     'documents/images/donationsReceipts',
     'broadcast/emailAttachment',
     'public/',
@@ -271,6 +344,7 @@ GROUPS = _NT('str', [
     'COMPANY_USER',
     'PAYMENT',
     'DONATION',
+    'ACCOUNTING',
 ])(
     'Members',
     'Broadcast',
@@ -279,6 +353,7 @@ GROUPS = _NT('str', [
     'Company User',
     'Payment',
     'Donation',
+    'Accounting',
 )
 GROUPS_AR: Final[dict[str, str]] = {
     GROUPS.MEMBERS: 'الأعضاء',
@@ -288,6 +363,7 @@ GROUPS_AR: Final[dict[str, str]] = {
     GROUPS.COMPANY_USER: 'إدارة المستخدم',
     GROUPS.PAYMENT: 'مدفوعات العضوية',
     GROUPS.DONATION: 'التبرعات',
+    GROUPS.ACCOUNTING: 'إدارة الحسابات',
 }
 ACADEMIC_QUALIFICATION = _NT('str', [
     'PHD',
@@ -415,22 +491,35 @@ PAYMENT_STATUS_AR: Final[tuple[str, ...]] = (
 CHOICES = _NT('tuple', [
     'ACADEMIC_QUALIFICATION',
     'ACCESS_TYPE',
+    'ACCOUNT_TYPE',
+    'ACCOUNT_STATUS',
     'ACTION',
     'BLOCK_TYPE',
+    'BOND_TYPE',
+    'BOND_STATUS',
     'CITIES',
     'DATA_TYPE',
     'GENDER',
     'JOB_TITLE',
     'MEMBERSHIP_TYPE',
     'MIME_TYPE',
+    'RECEVING_METHOD',
     'PERIOD_OF_RESIDENCE',
     'PAYMENT_STATUS',
 ])(
     [(aq, ACADEMIC_QUALIFICATION_AR[i])
      for i, aq in enumerate(ACADEMIC_QUALIFICATION)],
     [(access_type, access_type) for access_type in ACCESS_TYPE],
+    [(account_type, ACCOUNT_TYPE_AR[i])
+     for i, account_type in enumerate(ACCOUNT_TYPE)],
+    [(account_status, ACCOUNT_STATUS_AR[i])
+     for i, account_status in enumerate(ACCOUNT_STATUS)],
     [(action, action) for action in ACTION],
     [(block_type, block_type) for block_type in BLOCK_TYPES],
+    [(bond_type, BOND_TYPE_AR[i])
+     for i, bond_type in enumerate(BOND_TYPE)],
+    [(bond_stauts, BOND_STATUS_AR[i])
+     for i, bond_stauts in enumerate(BOND_STATUS)],
     [(k, k) for k in CITIES.keys()],
     [(data_type, data_type) for data_type in DATA_TYPE],
     [(gender, GENDER_AR[i]) for i, gender in enumerate(GENDER)],
@@ -438,6 +527,8 @@ CHOICES = _NT('tuple', [
     [(membership_type, MEMBERSHIP_TYPE_AR[i])
      for i, membership_type in enumerate(MEMBERSHIP_TYPE)],
     [(value, key) for key, value in _MIME_TYPE.items()],
+    [(receving_method, RECEVING_METHOD_AR[i])
+     for i, receving_method in enumerate(RECEVING_METHOD)],
     [(period, PERIOD_OF_RESIDENCE_AR[i])
      for i, period in enumerate(PERIOD_OF_RESIDENCE)],
     [(status, PAYMENT_STATUS_AR[i])
@@ -500,6 +591,15 @@ PAGES = _NT('str', [
     'MEMBERSHIP_PAYMENT_LIST_PAGE',
     'MEMBERSHIP_PAYMENT_PENDING_LIST_PAGE',
     'GET_PAYMENT_PERIOD_API',
+
+    # Accounting pages
+    'ACCOUNTING_PAGE',
+    'BOND_LIST_PAGE',
+    'BOND_DETAILS_PAGE',
+    'ACCOUNT_LIST_PAGE',
+    'ADD_ACCOUNT_PAGE',
+    'UPDATE_ACCOUNT_PAGE',
+    'AUTHORIZE_BOND',
 ])(
     # Main pages
     'Index',
@@ -557,6 +657,15 @@ PAGES = _NT('str', [
     'MembershipPaymentListPage',
     'MembershipPaymentPendingListPage',
     'GetPaymentPeriodApi',
+
+    # Accounting pages
+    'AccountingPage',
+    'BondListPage',
+    'BondDetailsPage',
+    'AccountListPage',
+    'AddAccountPage',
+    'updateAccountPage',
+    'AuthorizeBond',
 )
 TEMPLATES = _NT('str', [
     # Main templates
@@ -605,6 +714,13 @@ TEMPLATES = _NT('str', [
     'MEMBERSHIP_PAYMENT_HISTORY_PAGE_TEMPLATE',
     'MEMBERSHIP_PAYMENT_LIST_PAGE_TEMPLATE',
     'MEMBERSHIP_PAYMENT_PENDING_LIST_PAGE_TEMPLATE',
+
+    # Accounting templates
+    'ACCOUNTING_PAGE_TEMPLATE',
+    'BOND_LIST_PAGE_TEMPLATE',
+    'BOND_DETAILS_PAGE_TEMPLATE',
+    'ACCOUNT_LIST_PAGE_TEMPLATE',
+    'ADD_UPDATE_ACCOUNT_PAGE_TEMPLATE',
 
     # Email template
     'THANK_YOU_EMAIL_TEMPLATE',
@@ -661,6 +777,13 @@ TEMPLATES = _NT('str', [
     f'{_main_app__templates_folder}/membership_payment_history.html',
     f'{_main_app__templates_folder}/membership_payment_list.html',
     f'{_main_app__templates_folder}/membership_payment_pending_list.html',
+
+    # Accounting templates
+    f'{_main_app__templates_folder}/accounting.html',
+    f'{_main_app__templates_folder}/bond_list.html',
+    f'{_main_app__templates_folder}/bond_details.html',
+    f'{_main_app__templates_folder}/account_list.html',
+    f'{_main_app__templates_folder}/add_update_account.html',
 
     # Email templates
     f'{_email__templates_folder}/thank_you_email.html',
@@ -755,6 +878,15 @@ STAFF_PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {
     ),
     GROUPS.DONATION: (
         PAGES.DONATION_LIST_PAGE,
+    ),
+    GROUPS.ACCOUNTING: (
+        PAGES.ACCOUNTING_PAGE,
+        PAGES.BOND_LIST_PAGE,
+        PAGES.BOND_DETAILS_PAGE,
+        PAGES.ACCOUNT_LIST_PAGE,
+        PAGES.ADD_ACCOUNT_PAGE,
+        PAGES.UPDATE_ACCOUNT_PAGE,
+        PAGES.AUTHORIZE_BOND,
     ),
 }
 NON_STAFF_PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {

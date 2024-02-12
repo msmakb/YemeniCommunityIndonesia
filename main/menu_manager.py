@@ -95,6 +95,15 @@ def getUserMenus(request: HttpRequest) -> list[MenuItem]:
             )
             userMenu.append(menu_item)
 
+        if constants.GROUPS.ACCOUNTING in groups:
+            menu_item: MenuItem = MenuItem(
+                name=constants.GROUPS_AR[constants.GROUPS.ACCOUNTING],
+                page=constants.PAGES.ACCOUNTING_PAGE,
+                is_active=True if "/Accounting/" in request.path else False,
+                icon="svg/accounting.svg",
+            )
+            userMenu.append(menu_item)
+
         if constants.GROUPS.PARAMETER in groups:
             menu_item: MenuItem = MenuItem(
                 name=constants.GROUPS_AR[constants.GROUPS.PARAMETER],

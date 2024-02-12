@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="row">
+    <h1 class="col-7 m-3">حسابات الجالية البنكية</h1>
+    <a class="col-2 btn btn-md btn-success my-3 shadow rounded" href="{% url "AddAccountPage" %}"
+        style="float: left; margin-left: 35px;">
+        إضافة حساب جديد
+    </a>
+    <a class="col-2 btn btn-md btn-info my-3 shadow rounded" href="{% url 'AccountingPage' %}"
+        style="float: left; margin-left: 35px;">
+        رجوع</a>
+</div>
+
+{% if queryset %}
+<div class="container-fluid">
+    <table class="table text-center">
+        <thead>
+            <tr>
+                <th scope="col">رقم</th>
+                <th scope="col">رقم الحساب</th>
+                <th scope="col">اسم صاحب الحساب</th>
+                <th scope="col">البنك</th>
+                <th scope="col">نوع الحساب</th>
+                <th scope="col">الحالة</th>
+                <th scope="col">تاريخ الإنشاء</th>
+                <th scope="col">الرصيد</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for account in queryset %}
+            <tr>
+                <td>{{ forloop.counter0|add:1 }}</td>
+                <td>{{ account.account_number }}</td>
+                <td>{{ account.account_holder_name }}</td>
+                <td>{{ account.bank_name }}</td>
+                <td>{{ account.account_type_ar }}</td>
+                <td>
+                    <div class="text-white d-block p-1 rounded" style="background-color: 
+                        {% if account.account_status == "0" %}
+                        rgba(40, 167, 69, 0.75)
+                        {% else %}
+                        rgba(220, 53, 69, 0.75)
+                        {% endif %};">
+                        {{ account.account_status_ar }}
+                    </div>
+                </td>
+                <td>{{ account.created|date:"d M، Y" }}</td>
+                <td class="amount">{{ account.balance }}</td>
+                <td><a href="{% url "updateAccountPage" account.id %}" class="btn btn-md btn-info">تعديل</a></td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td colspan="7">الإجمالي</td>
+                <td class="amount">{{ total }}</td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% else %}
+<h2 class="text-center text-warning">لا يوجد</h2>
+{% endif %}
+
+{% endblock %}
+{% block scripts %}
+<script>
+    const amounts = document.querySelectorAll('.amount');
+
+    for (let amount of amounts) {
+        amount.innerHTML = (Number(amount.textContent.trim().replace(/,/g, '.'))).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+</script>
+{% endblock scripts %}

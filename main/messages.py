@@ -90,3 +90,9 @@ PAYMENT_APPROVED: Final[Callable[[HttpRequest], None]] = lambda request: message
     request, "تم قبول الدفع بنجاح")
 PAYMENT_REJECTED: Final[Callable[[HttpRequest], None]] = lambda request: messages.success(
     request, "تم رفض الدفع بنجاح")
+
+# ==== Accounting App Messages ====
+ADD_ACCOUNT: Final[Callable[[HttpRequest, str], None]] = lambda request: messages.success(
+    request, "تم إضافة الحساب بنجاح")
+UPDATE_ACCOUNT: Final[Callable[[HttpRequest, str], None]] = lambda request: messages.success(
+    request, "تم تعديل الحساب بنجاح")

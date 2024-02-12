@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <h1 class="col m-3">سند رقم - {{ bond.reference_number }}</h1>
+        <a class="col-2 btn btn-lg btn-success my-3 shadow rounded" style="float: left; margin-left: 35px;"
+            onclick="printBond()">
+            طباعة
+        </a>
+        <a class="col-2 btn btn-lg btn-info my-3 shadow rounded" href="{% url 'BondListPage' %}"
+            style="float: left; margin-left: 35px;">
+            رجوع
+        </a>
+    </div>
+    <div id="bond-content">
+        <table class="table table-striped text-left m-auto shadow rounded">
+            <tbody>
+                <tr>
+                    <td class="col-1">رقم المرجع</td>
+                    <td class="col-1">{{ bond.reference_number }}</td>
+                </tr>
+                <tr>
+                    <td class="col-1">نوع السند</td>
+                    <td class="col-1">{{ bond.bond_type_ar }}</td>
+                </tr>
+                <tr>
+                    <td class="col-1">اسم المرسل</td>
+                    <td class="col-1">{{ bond.sender_name }}</td>
+                </tr>
+                <tr>
+                    <td class="col-1">رقم حساب المرسل</td>
+                    <td class="col-1">{{ bond.sender_account_number }}</td>
+                </tr>
+                <tr>
+                    <td class="col-1">اسم المستلم</td>
+                    <td class="col-1">{{ bond.receiver_name }}</td>
+                </tr>
+                <tr>
+                    <td class="col-1">رقم حساب المستلم</td>
+                    <td class="col-1">{{ bond.receiver_account_number }}</td>
+                </tr>
+                <tr>
+                    <td class="col-1">نوع المعاملة</td>
+                    <td class="col-1">{{ bond.receiving_method_ar }}</td>
+                </tr>
+                <tr>
+                    <td class="col-1">الحالة</td>
+                    <td class="col-1">
+                        <div class="col-2 text-white text-center p-1 rounded" style="background-color: 
+                    {% if bond.status == "0" %}
+                    rgba(240, 140, 0, 0.75)
+                    {% elif bond.status == "1" %}
+                    rgba(40, 167, 69, 0.75)
+                    {% else %}
+                    rgba(220, 53, 69, 0.75)
+                    {% endif %};">
+                            {{ bond.status_ar }}
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-1">المبلغ</td>
+                    <td class="col-1 amount">{{ bond.amount }}</td>
+                </tr>
+                <tr>
+                    <td class="col-1">عمولة التحويل</td>
+                    <td class="col-1 amount">{{ bond.transfer_commission }}</td>
+                </tr>
+                <tr>
+                    <td class="col-1">المبلغ الإجمالي</td>
+                    <td class="col-1 amount">{{ bond.total }}</td>
+                </tr>
+                <tr>
+                    <td class="col-1">تاريخ السند</td>
+                    <td class="col-1">{{ bond.bond_date }}</td>
+                </tr>
+                <tr>
+                    <td class="col-1">تاريخ الرفع</td>
+                    <td class="col-1">{{ bond.created|date:"d M، Y" }}</td>
+                </tr>
+                <tr>
+                    <td class="col-1">الفاتورة</td>
+                    <td class="col-1">
+                        <a class="link-success link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"
+                            data-toggle="modal" data-target="#{{ bond.id }}" href="#">عرض</a>
+                        <div class="modal fade" id="{{ bond.id }}" tabindex="-1" role="dialog"
+                            aria-labelledby="{{ bond.id }}Title" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLongTitle">رقم المرجع:
+                                            {{ bond.reference_number }}
+                                        </h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body m-0 p-0">
+                                        <div class="card">
+                                            <img class="card-img-top" src="{{ bond.receipt.url }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-1">الوصف</td>
+                    <td class="col-1">{% if bond.bond_description %}{{ bond.bond_description }}{% else %}-{% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% if bond.status == '0' %}
+    <div class="mt-4">
+        <a href="{% if bond.status == '0' %}{% url 'AuthorizeBond' bond.id bond.reference_number '1' %}?detail={% else %}#{% endif %}"
+            class="btn btn-md btn-success {% if bond.status != '0' %}disabled{% endif %}"
+            onclick="return confirm('هل أنت متأكد من اعتماد السند رقم - {{ bond.reference_number }}')">اعتماد</a>
+        <a href="{% if bond.status == '0' %}{% url 'AuthorizeBond' bond.id bond.reference_number '2' %}?detail={% else %}#{% endif %}"
+            class="btn btn-md btn-danger {% if bond.status != '0' %}disabled{% endif %}"
+            onclick="return confirm('هل أنت متأكد من إلغاء السند رقم - {{ bond.reference_number }}')">إلغاء</a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+    const amounts = document.querySelectorAll('.amount');
+
+    for (let amount of amounts) {
+        amount.innerHTML = (Number(amount.textContent.trim().replace(/,/g, '.'))).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    function printBond() {
+        let divContents = $("#bond-content").html();
+        let printWindow = window.open('', '', 'height=400,width=800');
+        printWindow.document.write('<html dir="rtl" lang="ar"><head><link href="');
+        printWindow.document.write("{% static 'css/bootstrap/bootstrap.min.css' %}");
+        printWindow.document.write('" rel="stylesheet"><title>{{ bond.reference_number }}</title>');
+        printWindow.document.write('</head><body ><div style="margin-top: 80px;" class="container w-75">');
+        printWindow.document.write('<center><h1 class="mb-2">سند رقم - {{ bond.reference_number }}<h1></center>');
+        printWindow.document.write(divContents);
+        printWindow.document.write('</div></body></html>');
+        printWindow.document.close();
+        printWindow.print();
+    }
+</script>
+{% endblock scripts %}

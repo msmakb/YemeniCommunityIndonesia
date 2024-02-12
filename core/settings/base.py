@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     'monitor.apps.MonitorConfig',
     'company_user.apps.CompanyUserConfig',
     'payment.apps.PaymentConfig',
+    'accounting.apps.AccountingConfig',
 
     # Third party apps
     'django_crontab',
