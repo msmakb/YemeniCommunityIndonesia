@@ -250,8 +250,11 @@ class Attachment(BaseModel):
 
     @property
     def file_extension(self) -> str:
-        file: TemporaryUploadedFile = self.content.file
-        return file.name.rsplit('.', maxsplit=1)[-1]
+        try:
+            file: TemporaryUploadedFile = self.content.file
+            return file.name.rsplit('.', maxsplit=1)[-1]
+        except FileNotFoundError:
+            return ""
 
     def clean(self) -> None:
 
