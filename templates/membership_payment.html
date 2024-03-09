@@ -28,6 +28,9 @@
                 {% getFieldErrors form field.name as errors %}
                 <div class="{% if errors %}border border-danger{% endif %}">{{ field }}</div>
                 {% if errors %}<span class="text-danger">{{ errors }}</span>{% endif %}
+                {% if field.name == 'number_of_months' and number_of_overdue_months > 0 %}<span class="text-danger p-1">
+                    *
+                    لديك {{ number_of_overdue_months }} أشهر متأخرة</span>{% endif %}
             </div>
             {% endfor %}
         </div>
@@ -75,6 +78,18 @@
     const periodStatic = document.getElementById('period_static');
 
     function updateAmount() {
+        try {
+            numberOfMonthsInput.value = Math.floor(numberOfMonthsInput.value);
+        } catch {
+            numberOfMonthsInput.value = 0;
+        }
+
+        if (numberOfMonthsInput.value <= 0) {
+            numberOfMonthsInput.value = 1;
+        } else if (numberOfMonthsInput.value > 24) {
+            numberOfMonthsInput.value = 24
+        }
+
         let month = "";
         if (numberOfMonthsInput.value == "" || numberOfMonthsInput.value === "0") {
             month = "0"

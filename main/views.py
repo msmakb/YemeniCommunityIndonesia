@@ -6,6 +6,7 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.contrib import auth
 from django.contrib.auth.models import User
+from django.db import transaction
 from django.db.models.query import QuerySet
 from django.http import HttpResponse, HttpRequest
 from django.shortcuts import render, redirect
@@ -17,6 +18,7 @@ from .models import Donation
 from .utils import Pagination, getClientIp, logUserActivity
 
 from parameter.service import getParameterValue
+from accounting.models import Account, Bond
 
 logger: Logger = logging.getLogger(constants.LOGGERS.MAIN)
 
@@ -125,10 +127,24 @@ def donationListPage(request: HttpRequest) -> HttpResponse:
         for donation in queryset:
             if f"ID-{donation.pk}" in request.POST and approved is not None:
                 donation.is_valid_donation = approved
-                donation.save()
-                logUserActivity(request, constants.ACTION.VALIDATE_DONATION,
-                                f"التحقق من فاتورة التبرع رقم '{donation.pk}'"
-                                f" من قِبل {request.user.get_full_name()}")
+                with transaction.atomic():
+                    donation.save()
+                    try:
+                        Bond.generateDonationBond(donation)
+                        logUserActivity(request, constants.ACTION.VALIDATE_DONATION,
+                                        f"التحقق من فاتورة التبرع رقم '{donation.pk}'"
+                                        f" من قِبل {request.user.get_full_name()}")
+                    except Account.DoesNotExist:
+                        donation.created = donation.updated
+                        transaction.set_rollback(rollback=True)
+                        MSG.INVALID_DEFAULT_ACCOUNT(request, getParameterValue(
+                            constants.PARAMETERS.DEFAULT_PAYMENT_ACCOUNT))
+                    except Exception as error:
+                        donation.created = donation.updated
+                        transaction.set_rollback(rollback=True)
+                        MSG.SOMETHING_WRONG(request)
+                        MSG.ERROR_MESSAGE(request, str(error))
+                        MSG.SCREENSHOT(request)
 
     page: str = request.GET.get('page')
     pagination = Pagination(queryset, int(page) if page is not None else 1)

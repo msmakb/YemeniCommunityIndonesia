@@ -1,5 +1,6 @@
 from django.apps import AppConfig
 from django.db.models.signals import post_migrate
+from django.core.cache import cache
 
 
 class CompanyUserConfig(AppConfig):
@@ -12,4 +13,6 @@ class CompanyUserConfig(AppConfig):
         post_migrate.connect(
             signals.createRoleForSuperuser, sender=self)
 
+        # on restart clear role permissions cache
+        cache.delete_pattern("ROLE_*")
         return super().ready()

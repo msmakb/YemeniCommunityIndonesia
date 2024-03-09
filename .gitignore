@@ -18,6 +18,8 @@ parameter/migrations/__pycache__/
 parameter/__pycache__/
 monitor/migrations/__pycache__/
 monitor/__pycache__/
+accounting/migrations/__pycache__/
+accounting/__pycache__/
 static/static_collection/
 db.sqlite3
 payment/migrations/0*.py
@@ -27,6 +29,7 @@ broadcast/migrations/0*.py
 company_user/migrations/0*.py
 parameter/migrations/0*.py
 monitor/migrations/0*.py
+accounting/migrations/0*.py
 media/*
 *.rdb
 factories.py

@@ -1,7 +1,8 @@
 from typing import Any
+from logging import Logger, getLogger
 
 from django.db.models.query import QuerySet
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse, HttpResponseForbidden, HttpResponseBadRequest
 from django.http.request import QueryDict
 from django.shortcuts import redirect, render, get_object_or_404
 
@@ -13,6 +14,8 @@ from member.models import Person
 
 from .models import Attachment, EmailBroadcast
 from .forms import AttachmentForm, EmailBroadcastForm
+
+logger: Logger = getLogger(constants.LOGGERS.BROADCAST)
 
 
 def emailBroadcastPage(request: HttpRequest) -> HttpResponse:
@@ -166,3 +169,38 @@ def updateSpecialBroadcastEmailAttacheMembershipCard(request: HttpRequest, pk: s
         EmailBroadcast.filter(pk=pk).update(attache_membership_card=True)
 
     return redirect(constants.PAGES.DETAIL_BROADCAST_PAGE, pk)
+
+
+def whatsappWebhook(request: HttpRequest) -> HttpResponse:
+
+    if request.method == constants.GET_METHOD:
+        mode = request.GET.get("hub.mode")
+        token = request.GET.get("hub.verify_token")
+        challenge = request.GET.get("hub.challenge")
+        verify_token = "b070a4fda2834d9c99da2f007aeb2d67"
+
+        if mode and token:
+            if mode == "subscribe" and token == verify_token:
+                logger.info("WHATSAPP WEBHOOK VERIFIED")
+                return challenge
+            else:
+                logger.warning("WHATSAPP WEBHOOK VERIFICATION FAILED")
+                logger.warning(f"Request Get: {request.GET}")
+                logger.warning(f"Request Headers: {request.headers}")
+                return HttpResponseForbidden(
+                    content={"status": "error",
+                             "message": "Verification failed"},
+                    headers={'content_type': 'application/json'})
+        else:
+            logger.warning("WHATSAPP WEBHOOK MISSING PARAMETER")
+            logger.warning(f"Request Get: {request.GET}")
+            logger.warning(f"Request Headers: {request.headers}")
+            return HttpResponseBadRequest(
+                content={"status": "error", "message": "Missing parameters"},
+                headers={'content_type': 'application/json'})
+
+    verify_code = "b070a4fda2834d9c99da2f007aeb2d67"
+    logger.info(f"Request Body: {request.body}")
+    logger.info(f"Request Post: {request.POST}")
+    logger.info(f"Request Headers: {request.headers}")
+    return HttpResponse(status_code=200)

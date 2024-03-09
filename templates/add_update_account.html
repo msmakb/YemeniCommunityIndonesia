@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load main_tags %}
+{% load static %}
+{% block content %}
+<form method="POST" class="col-lg-8 col-xl-8 p-3 mx-auto">
+    {% csrf_token %}
+    <h2>{% if "Add" in request.path %}
+        إضافة حساب بنكي جديد
+        {% else %}
+        تعديل الحساب البنكي
+        {% endif %}
+    </h2>
+    {% for field in accountForm.visible_fields %}
+    <div class="form-group">
+        <label class="mt-3 lead" for="{{ field.auto_id }}">
+            {{ field.label }}
+            {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+        </label>
+        {% getFieldErrors accountForm field.name as errors %}
+        <div class="{% if errors %}border border-danger{% endif %}">{{ field }}</div>
+        {% if errors %}<span class="text-danger">{{ errors }}</span>{% endif %}
+    </div>
+    {% endfor %}
+    <div>
+        <button type="submit" class="btn btn-lg btn-info mt-4 mb-5 shadow rounded">
+            {% if "Add" in request.path %}إضافة{% else %}تعديل{% endif %}
+        </button>
+        <a type="submit" class="btn btn-lg btn-secondary mt-4 mb-5 shadow rounded"
+            href="{% url 'AccountListPage' %}">إلغاء</a>
+    </div>
+</form>
+{% endblock %}
