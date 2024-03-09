@@ -20,14 +20,19 @@ urlpatterns = [
         name=PAGES.MEMBERSHIP_PAYMENT_RECEIPT
     ),
     path(
-        'Payment/List/',
+        'Accounting/Payment/List/',
         views.membershipPaymentListPage,
         name=PAGES.MEMBERSHIP_PAYMENT_LIST_PAGE
     ),
     path(
-        'Payment/Pending/',
+        'Accounting/Payment/Pending/',
         views.membershipPaymentPendingListPage,
         name=PAGES.MEMBERSHIP_PAYMENT_PENDING_LIST_PAGE
+    ),
+    path(
+        'Accounting/Payment/Add/',
+        views.addMembershipPaymentsPage,
+        name=PAGES.ADD_MEMBERSHIP_PAYMENTS_PAGE
     ),
     path(
         'Payment/Api/Period/<str:pk>/<str:number_of_months>/',

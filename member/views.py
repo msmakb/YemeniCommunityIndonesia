@@ -1,3 +1,5 @@
+from django.forms.models import model_to_dict
+import json
 import os
 from typing import Any, Callable
 
@@ -7,6 +9,7 @@ from django.core.cache import cache
 from django.core.exceptions import EmptyResultSet
 from django.core.files.base import ContentFile
 from django.core.mail import EmailMessage
+from django.db.models import Subquery, OuterRef
 from django.db.models.query import QuerySet
 from django.http import HttpRequest, HttpResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
@@ -500,3 +503,24 @@ def thankYou(request: HttpRequest) -> HttpResponse:
 def membershipCardPage(request: HttpRequest) -> HttpResponse:
     context: dict[str, Any] = {}
     return render(request, constants.TEMPLATES.MEMBERSHIP_CARD_PAGE_TEMPLATE, context)
+
+
+def getMembershipData(request: HttpRequest, pk: str) -> HttpResponse:
+    response_data: dict = {}
+    try:
+        membership: dict[str, Any] = Membership.objects.select_related("Person").values(
+            "card_number", "last_month_paid").annotate(
+                member_name=Subquery(
+                    Person.objects.filter(
+                        membership=OuterRef('id')).values('name_ar')[:1]
+                )).get(card_number=pk)
+        response_data["status"] = "200"
+        print(membership)
+        response_data["membership"] = membership
+    except Membership.DoesNotExist:
+        response_data["card_number"] = pk
+        response_data["status"] = "404"
+
+    json_data = json.dumps(response_data, ensure_ascii=False).encode('utf-8')
+    print(json_data)
+    return HttpResponse(json_data, content_type='application/json; charset=utf-8')

@@ -15,6 +15,16 @@ urlpatterns = [
         name=PAGES.BOND_LIST_PAGE
     ),
     path(
+        'Accounting/Bond/Add/',
+        views.addBondPage,
+        name=PAGES.ADD_BOND_PAGE
+    ),
+    path(
+        'Accounting/Bond/Update/<str:pk>/',
+        views.updateBondPage,
+        name=PAGES.UPDATE_BOND_PAGE
+    ),
+    path(
         'Accounting/Bond/<str:pk>/',
         views.bondDetails,
         name=PAGES.BOND_DETAILS_PAGE

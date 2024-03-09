@@ -1,0 +1,63 @@
+{% if question.itemData.questionType == "textQuestion" %}
+<div class="form-group">
+    <label class="mt-3 lead" for="{{ question.itemData.questionId }}">
+        {{ question.title }}
+        {% if question.itemData.required %}<span class="text-danger">*</span>{% endif %}
+    </label>
+    {% if question.itemData.paragraph %}
+    <textarea class="form-control shadow-sm rounded" id="{{ question.itemData.questionId }}"
+        name="{{question.itemData.entryName}}" rows="3"></textarea>
+    {% else %}
+    <input id="{{ question.itemData.questionId }}" name="{{question.itemData.entryName}}"
+        class="form-control shadow-sm rounded" type="text" aria-label="default input example">
+    {% endif %}
+</div>
+{% elif question.itemData.questionType == "choiceQuestion" %}
+{% if question.itemData.type == "DROP_DOWN" %}
+<div class="form-group">
+    <label class="mt-3 lead" for="{{ question.itemData.questionId }}">
+        {{ question.title }}
+        {% if question.itemData.required %}<span class="text-danger">*</span>{% endif %}
+    </label>
+    <select class="form-select shadow-sm rounded" id="{{ question.itemData.questionId }}"
+        name="{{question.itemData.entryName}}">
+        <option selected>أختر</option>
+        {% for choice in question.itemData.options %}
+        <option value="{{ choice }}">{{ choice }}</option>
+        {% endfor %}
+    </select>
+</div>
+{% else %}
+<div class="form-group">
+    <p class="m-0 mt-3 lead">
+        {{ question.title }}
+        {% if question.itemData.required %}<span class=" text-danger">*</span>{% endif %}
+    </p>
+    {% for option in question.itemData.options %}
+    <div class="form-check" style="direction: rtl; display: flex; justify-content: right; align-items: center;">
+        <label class="form-check-label" for="{{ question.itemData.questionId }}{{ forloop.counter0 }}"
+            style="order: 2; margin-right: 35px;">
+            {{ option }}
+        </label>
+        <input class="form-check-input shadow-sm" type="{{question.itemData.type|lower}}"
+            style="order: 1; margin-top: -5px;" id="{{ question.itemData.questionId }}{{ forloop.counter0 }}"
+            name="{{question.itemData.entryName}}" value="{{ option }}">
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% elif question.itemData.questionType == "dateQuestion" or question.itemData.questionType == "timeQuestion" %}
+<div class="form-group">
+    <label class="mt-3 lead" for="{{ question.itemData.questionId }}">
+        {{ question.title }}
+        {% if question.itemData.required %}<span class="text-danger">*</span>{% endif %}
+    </label>
+    <input id="{{ question.itemData.questionId }}" name="{{question.itemData.entryName}}"
+        class="form-control shadow-sm rounded"
+        type="{% if question.itemData.questionType == "dateQuestion" %}date{% else %}time{% endif %}"
+        data-provide="datepicker">
+</div>
+{% elif question.itemData.questionType == "fileUploadQuestion" %}
+{% else %}
+<li>HOOHOH => {{question}}</li>
+{% endif %}

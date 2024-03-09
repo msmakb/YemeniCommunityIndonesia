@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <form method="POST" enctype="multipart/form-data" class="col-lg-8 col-xl-8 p-3 mx-auto">
+        {% csrf_token %}
+        <h2>
+            تسجيل مدفوعات جديدة
+        </h2>
+        <table class="table table-striped border mt-2">
+            <tbody>
+                <tr>
+                    <th class="col-6">رقم البطاقة</th>
+                    <td class="col-6">
+                        <div class="input-group has-validation">
+                            <input type="text" name="membership_card" id="membership_card" class="form-control"
+                                maxlength="100" placeholder="رقم البطاقة YEMXXXXXXX"
+                                aria-describedby="membership_cardFeedback" required>
+                            <div id="membership_cardFeedback" class="invalid-feedback">
+                                رقم البطاقة غير صحيح
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="col-6">أسم العضو</th>
+                    <td id="member_name">-</td>
+                </tr>
+                <tr>
+                    <th class="col-6">عدد الأشهر</th>
+                    <td class="col-6">
+                        <div class="input-group has-validation">
+                            <input type="number" name="number_of_months" id="id_number_of_months" min="1" max="24"
+                                placeholder="عدد الأشهر المدفوعة" class="form-control"
+                                aria-describedby="id_number_of_monthsFeedback" disabled required>
+                            <div id="id_number_of_monthsFeedback" class="invalid-feedback">
+                                أدخل رقم صحيح بين 1-24
+                            </div>
+                        </div>
+                        {{ form.membership }}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="col-6">الفترة</th>
+                    <td class="col-6" id="period">-</td>
+                </tr>
+                <tr>
+                    <th class="col-6">المبلغ</th>
+                    <td id="amount" class="col-6 amount">-</td>
+                </tr>
+                <tr>
+                    <th class="col-6">الملاحظات</th>
+                    <td class="col-6"><input type="text" name="note" id="id_note" class="form-control" maxlength="100"
+                            value="-" placeholder="الملاحظات" required>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="col-6">الفاتورة</th>
+                    <td class="col-6">
+                        {{ form.receipt }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div>
+            <button type="submit" class="btn btn-lg btn-info mt-4 mb-5 shadow rounded">
+                {% if "Add" in request.path %}إضافة{% else %}تعديل{% endif %}
+            </button>
+            <a type="submit" class="btn btn-lg btn-secondary mt-4 mb-5 shadow rounded"
+                href="{% url 'MembershipPaymentListPage' %}">إلغاء</a>
+        </div>
+    </form>
+</div>
+{% endblock content %}
+{% block scripts %}
+<script>
+    function formatAmount(amount) {
+        return (Number(amount)).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    const membershipcardInput = document.getElementById("membership_card");
+    const memberName = document.getElementById("member_name");
+    const numberOfMonths = document.getElementById("id_number_of_months");
+    const receiptInput = document.getElementById("id_receipt");
+    const period = document.getElementById("period");
+    const amount = document.getElementById("amount");
+
+    var lastMembershipcardInputValue = membershipcardInput.value;
+    var lastnumberOfMonthsValue = numberOfMonths.value;
+
+    membershipcardInput.addEventListener('blur', function () {
+        if (membershipcardInput.value == lastMembershipcardInputValue) return;
+        lastMembershipcardInputValue = membershipcardInput.value;
+        if (membershipcardInput.value == null || membershipcardInput.value === "") {
+            numberOfMonths.disabled = true;
+            receiptInput.disabled = true;
+            receiptInput.value = null;
+            memberName.innerHTML = "-";
+            period.innerHTML = "-";
+            amount.innerHTML = "-";
+            numberOfMonths.value = "";
+            lastnumberOfMonthsValue = numberOfMonths.value;
+            if (membershipcardInput.classList.contains("is-invalid")) {
+                membershipcardInput.classList.remove("is-invalid");
+            }
+            return;
+        }
+
+        const apiUrl = "{% url 'GetMembershipDataApi' 0 %}".replace('0', membershipcardInput.value);
+
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "200") {
+                    memberName.innerHTML = data.membership.member_name;
+                    if (membershipcardInput.classList.contains("is-invalid")) {
+                        membershipcardInput.classList.remove("is-invalid");
+                    }
+                    numberOfMonths.disabled = false;
+                    receiptInput.disabled = true;
+                    receiptInput.value = null;
+                    period.innerHTML = "-";
+                    amount.innerHTML = "-";
+                    numberOfMonths.value = "";
+                    lastnumberOfMonthsValue = numberOfMonths.value;
+                } else {
+                    memberName.innerHTML = "-";
+                    membershipcardInput.classList.add("is-invalid");
+                    numberOfMonths.disabled = true;
+                    receiptInput.disabled = true;
+                    receiptInput.value = null;
+                    period.innerHTML = "-";
+                    amount.innerHTML = "-";
+                    numberOfMonths.value = "";
+                }
+            });
+
+    });
+
+    numberOfMonths.addEventListener('blur', function () {
+        if (numberOfMonths.value == lastnumberOfMonthsValue) return;
+        lastnumberOfMonthsValue = numberOfMonths.value;
+        if (numberOfMonths.value == null || numberOfMonths.value === "") {
+            receiptInput.disabled = true;
+            receiptInput.value = null;
+            period.innerHTML = "-";
+            amount.innerHTML = "-";
+            if (numberOfMonths.classList.contains("is-invalid")) {
+                numberOfMonths.classList.remove("is-invalid");
+            }
+            return;
+        }
+        numberOfMonths.value = Math.floor(numberOfMonths.value);
+        if (numberOfMonths.value > 24) numberOfMonths.value = 24;
+        if (numberOfMonths.value < 1) numberOfMonths.value = 1;
+
+        const apiUrl = "{% url 'GetPaymentPeriodApi' 0 1 %}".replace('0', lastMembershipcardInputValue).replace(
+            '1', numberOfMonths.value);
+
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+
+                period.innerHTML = data.period;
+                amount.innerHTML = formatAmount(data.amount);
+                if (numberOfMonths.classList.contains("is-invalid")) {
+                    numberOfMonths.classList.remove("is-invalid");
+                }
+                receiptInput.disabled = false;
+            });
+
+    });
+</script>
+{% endblock scripts %}

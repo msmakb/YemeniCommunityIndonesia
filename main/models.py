@@ -160,6 +160,8 @@ class Client(BaseModel):
             country: str = response.json().get('country_name')
             if country == '-':
                 country = 'unknown'
+            if country.startswith("United Kingdom"):
+                country = 'United Kingdom'
             AuditEntry.objects.filter(pk=audit_pk).update(country=country)
             logger.info("IP: [" + ip + "] | Country: " + country)
         else:

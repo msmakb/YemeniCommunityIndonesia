@@ -19,11 +19,13 @@
 import os
 
 from io import BytesIO
+from logging import Logger
 from pathlib import Path
 from typing import Final
 from tempfile import NamedTemporaryFile as TemporaryFile
 
 import arabic_reshaper
+import logging
 import requests
 import cairo
 import cv2
@@ -41,6 +43,8 @@ from PIL.ImageDraw import ImageDraw
 
 from main.constants import PARAMETERS
 from parameter.service import getParameterValue
+
+logger: Logger = logging.getLogger("YCI.Main")
 
 
 class ImageProcessingError(Exception):
@@ -160,6 +164,8 @@ class ImageProcessor:
         expire_date: str,
         card_number: str
     ) -> bytes:
+        
+        logger.info("***** Generate Membership Card Started *****")
 
         BLACK: Final[tuple[int, ...]] = (0, 0, 0)
         WHITE: Final[tuple[int, ...]] = (255, 255, 255)
@@ -169,35 +175,48 @@ class ImageProcessor:
         FONTS_DIR: Path = STATIC_ROOT / 'fonts'
 
         # init
+        logger.info("== Initializing Image Processing Started ==")
         image: Image = Img.open(fp)
+        logger.info("   - Person Image Initialized")
         template: Image = Img.open(MEMBERSHIP_TEMPLATE)
+        logger.info("   - Template Image Initialized")
         draw_interface: ImageDraw = ImgDraw.Draw(template)
         arabic_font = ImageFont.truetype(
             str(FONTS_DIR / "NotoNaskhArabic-Regular.ttf"), 36)
         english_font = ImageFont.truetype(
             str(FONTS_DIR / "FiraSans-Regular.ttf"), 28)
+        logger.info("   - Fonts Initialized")
+        logger.info("== Initializing Image Processing Done ==")
 
         # Rounded image
+        logger.info("Rounding Personal Image Started")
         mask: Image = Img.new('L', image.size, 0)
         draw: ImageDraw = ImgDraw.Draw(mask)
         draw.ellipse((0, 0) + image.size, fill=255)
         image = ImageOps.fit(
             image, mask.size, centering=(0.5, 0.5))
         image.putalpha(mask)
+        logger.info("Rounding Personal Image Done")
 
         # Request remove background image from 'remove.bg' website
+        logger.info("== Remove Person Image Background Started ==")
+        logger.info("   - Start Request Remove Image Background")
         api_key: str = getParameterValue(PARAMETERS.REMOVE_BG_API_KEY)
+        logger.info(f"   - API Key: {api_key[:5]}***************")
         if api_key != "None":
             image_io: BytesIO = BytesIO()
             image = image.convert('RGBA')
             image.save(image_io, format="PNG", quality=85)
+            logger.info("   - Sending Request")
             response = requests.post(
                 'https://api.remove.bg/v1.0/removebg',
                 files={'image_file': image_io.getvalue()},
                 data={'size': 'auto'},
                 headers={'X-Api-Key': api_key},
             )
+            logger.info(f"   - Response Code: {response.status_code}")
             if response.status_code == requests.codes.ok:
+                logger.info("   - Resize Image After Response")
                 image: Image = Img.open(
                     BytesIO(response.content)
                 ).resize((230, 230))
@@ -206,8 +225,11 @@ class ImageProcessor:
                     f"Response Code: {response.status_code} - Error: {response.text}"
                 )
         else:
+            logger.warning("API KEY IS NONE, SKIP REMOVE IMAGE BACKGROUND")
             image = image.resize((230, 230))
+        logger.info("== Remove Person Image Background Done ==")
 
+        logger.info("== Start Processing Membership Card Data Started ==")
         # Put the rounded cleared bg image to the membership template
         template.paste(
             image,
@@ -215,36 +237,44 @@ class ImageProcessor:
             mask=image.convert('RGBA').split()[-1]
         )
         image.close()
+        logger.info("   - Personal Image Processing Done")
 
         # name english
         draw_interface.text((430, 255), name_en,
                             font=english_font, fill=BLACK)
+        logger.info("   - Name English Done")
 
         # city english
         draw_interface.text((402, 314),
                             city_en, font=english_font, fill=BLACK)
+        logger.info("   - City English Done")
 
         # membership type english
         draw_interface.text((608, 377),
                             membership_type_en, font=english_font, fill=BLACK)
+        logger.info("   - Membership Type English Done")
 
         # issue date
         english_font = ImageFont.truetype(
             str(FONTS_DIR / "FiraSans-Regular.ttf"), 32)
         draw_interface.text((615, 435), issue_date,
                             font=english_font, fill=BLACK)
+        logger.info("   - Issue Date Done")
 
         # card number
         draw_interface.text((505, 518), card_number,
                             font=arabic_font, fill=WHITE)
+        logger.info("   - Card Number Done")
 
         # expire date
         english_font = ImageFont.truetype(
             str(FONTS_DIR / "FiraSans-Regular.ttf"), 26)
         draw_interface.text((472, 586), expire_date,
                             font=english_font, fill=WHITE)
+        logger.info("   - Expire Date Done")
 
         # Convert to JPEG and return image in bytes
+        logger.info("   - Converting Image To Bytes For Arabic Data Processing")
         image_io: BytesIO = BytesIO()
         template = template.convert('RGB')
         template.save(image_io, format="PNG", quality=85)
@@ -259,6 +289,7 @@ class ImageProcessor:
             image_io.truncate(0)
 
             # Initialize cairo settings
+            logger.info("   - Initialize Cairo Settings Bytes For Arabic Data Processing")
             surface = cairo.ImageSurface.create_from_png(temp_file_name)
             context = cairo.Context(surface)
             context.select_font_face("Noto Naskh Arabic")
@@ -272,6 +303,7 @@ class ImageProcessor:
                 name_ar_reshaped, arabic_font)
             context.move_to(950 - text_size, 238)
             context.show_text(name_ar_reshaped)
+            logger.info("   - Name Arabic Done")
 
             # City Arabic
             city_ar_reshaped = get_display(
@@ -280,6 +312,7 @@ class ImageProcessor:
                 city_ar_reshaped, arabic_font)
             context.move_to(940 - text_size, 338)
             context.show_text(city_ar_reshaped)
+            logger.info("   - City Arabic Done")
 
             # Membership Type Arabic
             membership_type_ar_reshaped = get_display(
@@ -288,19 +321,25 @@ class ImageProcessor:
                 membership_type_ar_reshaped, arabic_font)
             context.move_to(856 - text_size, 409)
             context.show_text(membership_type_ar_reshaped)
+            logger.info("   - Membership Type Arabic Done")
 
             # Save the surface to the temp file
+            logger.info("   - Finishing Cairo Process")
             surface.write_to_png(temp_file_name)
             surface.finish()
             surface.flush()
+            logger.info("== Start Processing Membership Card Data Done ==")
 
         # Convert to JPEG
+        logger.info("Converting Image to JPEG Format")
         image: NDArray = cv2.imread(temp_file_name)
         quality: tuple[int, int] = (int(cv2.IMWRITE_JPEG_QUALITY), 85)
         image: NDArray = cv2.imencode(".jpg", image, quality)[1]
 
         # Delete temp file
+        logger.info("Cleanup...")
         if os.path.isfile(temp_file_name):
             os.remove(temp_file_name)
 
+        logger.info("***** Generate Membership Card Done *****")
         return image.tobytes()

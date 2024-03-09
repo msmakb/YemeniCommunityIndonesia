@@ -43,4 +43,9 @@ urlpatterns = [
         views.thankYou,
         name=PAGES.THANK_YOU_PAGE
     ),
+    path(
+        'Members/Api/<str:pk>/get/',
+        views.getMembershipData,
+        name=PAGES.GET_MEMBERSHIP_DATA_API
+    ),
 ]

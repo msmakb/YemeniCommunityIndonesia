@@ -30,7 +30,11 @@
                 </tr>
                 <tr>
                     <td class="col-1">رقم حساب المرسل</td>
-                    <td class="col-1">{{ bond.sender_account_number }}</td>
+                    <td class="col-1">
+                        {% if bond.sender_account_number %}
+                        {{ bond.sender_account_number }}
+                        {% else %}-{% endif %}
+                    </td>
                 </tr>
                 <tr>
                     <td class="col-1">اسم المستلم</td>
@@ -38,7 +42,11 @@
                 </tr>
                 <tr>
                     <td class="col-1">رقم حساب المستلم</td>
-                    <td class="col-1">{{ bond.receiver_account_number }}</td>
+                    <td class="col-1">
+                        {% if bond.receiver_account_number %}
+                        {{ bond.receiver_account_number }}
+                        {% else %}-{% endif %}
+                    </td>
                 </tr>
                 <tr>
                     <td class="col-1">نوع المعاملة</td>
@@ -121,7 +129,7 @@
             onclick="return confirm('هل أنت متأكد من اعتماد السند رقم - {{ bond.reference_number }}')">اعتماد</a>
         <a href="{% if bond.status == '0' %}{% url 'AuthorizeBond' bond.id bond.reference_number '2' %}?detail={% else %}#{% endif %}"
             class="btn btn-md btn-danger {% if bond.status != '0' %}disabled{% endif %}"
-            onclick="return confirm('هل أنت متأكد من إلغاء السند رقم - {{ bond.reference_number }}')">إلغاء</a>
+            onclick="return confirm('هل أنت متأكد من إلغاء وحذف السند رقم - {{ bond.reference_number }}')">إلغاء/حذف</a>
     </div>
     {% endif %}
 </div>
@@ -149,7 +157,9 @@
         printWindow.document.write(divContents);
         printWindow.document.write('</div></body></html>');
         printWindow.document.close();
-        printWindow.print();
+        printWindow.onload = function () {
+            printWindow.print();
+        };
     }
 </script>
 {% endblock scripts %}

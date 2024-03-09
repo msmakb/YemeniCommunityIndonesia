@@ -3,7 +3,8 @@
 {% block content %}
 <div class="row m-0 p-0">
     <h1 class="col-7 m-3">قائمة السندات</h1>
-    <a class="col-2 btn btn-md btn-success my-3 shadow rounded" href="#" style="float: left; margin-left: 35px;">
+    <a class="col-2 btn btn-md btn-success my-3 shadow rounded" href="{% url 'AddBondPage' %}"
+        style="float: left; margin-left: 35px;">
         إنشاء سند جديد
     </a>
     <button type="button" class="col-2 btn btn-md btn-info my-3 shadow rounded" style="float: left; margin-left: 35px;"
@@ -172,7 +173,7 @@
                             <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
                                 <li><a href="{% url "BondDetailsPage" bond.id %}" class="dropdown-item">التفاصيل</a>
                                 </li>
-                                <li><a href="{% if bond.status == '0' %}#{% else %}#{% endif %}"
+                                <li><a href="{% if bond.status == '0' %}{% url 'updateBondPage' bond.id %}{% else %}#{% endif %}"
                                         class="dropdown-item {% if bond.status != '0' %}disabled{% endif %}">تعديل</a>
                                 </li>
                                 <li>
@@ -184,7 +185,7 @@
                                 </li>
                                 <li><a href="{% if bond.status == '0' %}{% url 'AuthorizeBond' bond.id bond.reference_number '2' %}{% else %}#{% endif %}"
                                         class="dropdown-item {% if bond.status != '0' %}disabled{% endif %}"
-                                        onclick="return confirm('هل أنت متأكد من إلغاء السند رقم - {{ bond.reference_number }}')">إلغاء</a>
+                                        onclick="return confirm('هل أنت متأكد من إلغاء وحذف السند رقم - {{ bond.reference_number }}')">إلغاء/حذف</a>
                                 </li>
                             </ul>
                         </div>

@@ -11,12 +11,14 @@
     <div class="row text-center m-auto justify-content-center">
         {% getUserMenus request as userMenus %}
         {% for menuItem in userMenus %}
+        {% if menuItem.submenu is None %}
         <a class="col-1 btn btn-outline-secondary shadow rounded-circle p-5 m-4" style="width: 200px; height: 200px"
             href="{% if menuItem.arg %}{% url menuItem.page menuItem.arg %}{% else %}{% url menuItem.page %}{% endif %}">
             <img src="{% static menuItem.icon %}" alt="{{ menuItem.name }}"
                 style="width: 100px; height: 100px; margin-top: -30px;" />
             <h4 class="mt-2">{{ menuItem.name }}</h4>
         </a>
+        {% endif %}
         {% endfor %}
 
     </div>

@@ -162,6 +162,15 @@ def _getDefaultParam() -> list[_DefaultParameter]:
     )
     default_parameters.append(
         _DefaultParameter(
+            name="DEFAULT_PAYMENT_ACCOUNT",
+            value="0",
+            description="Default payment account number.",
+            access_type=ACCESS_TYPE.ADMIN_ACCESS,
+            parameter_type=DATA_TYPE.STRING
+        )
+    )
+    default_parameters.append(
+        _DefaultParameter(
             name="TEST",
             value="TEST_PARAMETER",
             description="Just for testing propose.",

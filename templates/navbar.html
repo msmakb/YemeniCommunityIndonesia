@@ -17,11 +17,13 @@
       </li>
       {% getUserMenus request as userMenus %}
       {% for menuItem in userMenus %}
+      {% if menuItem.submenu is None %}
       <li class="nav-item">
         <a class="nav-link {% if menuItem.is_active %}active{% endif %}"
           href="{% if menuItem.arg %}{% url menuItem.page menuItem.arg %}{% else %}{% url menuItem.page %}{% endif %}">
           {{ menuItem.name }}</a>
       </li>
+      {% endif %}
       {% endfor %}
       {% if not request.user.is_authenticated %}
       <li class="nav-item">
