@@ -44,7 +44,7 @@ urlpatterns = [
         name=PAGES.THANKS_FOR_DONATION_PAGE
     ),
     path(
-        'Donation-List/',
+        'Accounting/Donation-List/',
         views.donationListPage,
         name=PAGES.DONATION_LIST_PAGE
     ),

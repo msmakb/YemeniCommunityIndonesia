@@ -6,6 +6,81 @@
             <tr>
                 <th colspan="2">
                     <h1 class="text-center shadow rounded p-2 border border-dark">سجل مدفوعات العضوية</h1>
+                    <div class="card shadow rounded p-1 border border-dark">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item p-0">
+                                <table class="table table-borderless" style="margin: 0px; padding:0px;">
+                                    <tbody style="margin: 0px; padding:0px;">
+                                        <tr>
+                                            <td class="col-6" style="padding-right: 20px;">
+                                                آخر شهر مدفوع
+                                            </td>
+                                            <td class="col-6">
+                                                {{ last_paid_month }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </li>
+                            <li class="list-group-item p-0">
+                                <table class="table table-borderless" style="margin: 0px; padding:0px;">
+                                    <tbody style="margin: 0px; padding:0px;">
+                                        <tr>
+                                            <td class="col-6" style="padding-right: 20px;">
+                                                إجمالي المبلغ المدفوع
+                                            </td>
+                                            <td class="col-6 amount">
+                                                {{ total_paid_amount }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </li>
+                            <li class="list-group-item p-0">
+                                <table class="table table-borderless" style="margin: 0px; padding:0px;">
+                                    <tbody style="margin: 0px; padding:0px;">
+                                        <tr>
+                                            <td class="col-6" style="padding-right: 20px;">
+                                                إجمالي المبلغ المتأخر
+                                            </td>
+                                            <td class="col-6 amount">
+                                                {{ total_overdue_amount }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </li>
+                            <li class="list-group-item p-0">
+                                <table class="table table-borderless" style="margin: 0px; padding:0px;">
+                                    <tbody style="margin: 0px; padding:0px;">
+                                        <tr>
+                                            <td class="col-6" style="padding-right: 20px;">
+                                                عدد الأشهر المتأخرة
+                                            </td>
+                                            <td class="col-6 months-words">
+                                                {{ number_of_overdue_months }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </li>
+                            <li class="list-group-item p-0">
+                                <table class="table table-borderless" style="margin: 0px; padding:0px;">
+                                    <tbody style="margin: 0px; padding:0px;">
+                                        <tr>
+                                            <td class="col-6" style="padding-right: 20px;">
+                                                الفترة المتأخرة
+                                            </td>
+                                            <td class="col-6">
+                                                {{ overdue_period }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </li>
+
+                        </ul>
+                    </div>
                 </th>
             </tr>
         </thead>
@@ -171,6 +246,23 @@
 <script src="https://cdn.jsdelivr.net/npm/number-to-arabic-words@latest/dist/index.js"></script>
 
 <script>
+    function formatMonth(numberOfMonths) {
+        let month = "";
+        if (numberOfMonths == "" || numberOfMonths === "0") {
+            month = "0"
+        } else if (numberOfMonths === "1") {
+            month = "شهر"
+        } else if (numberOfMonths === "2") {
+            month = "شهرين"
+        } else if (Number(numberOfMonths) <= 10) {
+            month = numberOfMonths + " أشهر"
+        } else {
+            month = numberOfMonths + " شهر"
+
+        }
+        return month;
+    }
+
     function formatAmount(amount) {
         return (Number(amount)).toLocaleString(undefined, {
             minimumFractionDigits: 2,
@@ -189,10 +281,14 @@
             amount.innerHTML = formatAmount(amount.textContent.trim().replace(/,/g, '.'));
         }
 
+        const months = document.querySelectorAll('.months-words');
+        for (let month of months) {
+            month.innerHTML = formatMonth(month.textContent.trim());
+        }
+
         const amountWordsList = document.querySelectorAll('.amount-in-words');
         for (let amountWords of amountWordsList) {
             number_of_months = amountWords.getAttribute('data-number-of-months');
-            console.log(number_of_months);
             amountWords.innerHTML = toArabicWord(Number(number_of_months) * 50000) + " روبية";
         }
     });
