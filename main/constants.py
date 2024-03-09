@@ -58,6 +58,8 @@ ACTION = _NT('str', [
     'CHECK_PAYMENT',
     'ADD_BANK_ACCOUNT',
     'UPDATE_BANK_ACCOUNT',
+    "ADD_BOND",
+    "UPDATE_BOND",
 ])(
     '0',
     '1',
@@ -86,6 +88,8 @@ ACTION = _NT('str', [
     '24',
     '25',
     '26',
+    "27",
+    "28",
 )
 ACTION_STR: tuple[str, ...] = (
     'FIRST_VISIT',
@@ -115,6 +119,8 @@ ACTION_STR: tuple[str, ...] = (
     'CHECK_PAYMENT',
     'ADD_BANK_ACCOUNT',
     'UPDATE_BANK_ACCOUNT',
+    "ADD_BOND",
+    "UPDATE_BOND",
 )
 ACTION_STR_AR: tuple[str, ...] = (
     'زيارة أولى',
@@ -144,6 +150,8 @@ ACTION_STR_AR: tuple[str, ...] = (
     'تحقق دفع اشتراك',
     'إضافة حساب بنكي',
     'تعديل حساب بنكي',
+    "إضافة سند",
+    "تعديل سند",
 )
 BLOCK_TYPES = _NT('str', [
     'UNBLOCKED',
@@ -555,6 +563,7 @@ PAGES = _NT('str', [
     'DETAIL_MEMBER_PAGE',
     'THANK_YOU_PAGE',
     'MEMBERSHIP_CARD_PAGE',
+    'GET_MEMBERSHIP_DATA_API',
 
     # Broadcast pages
     'BROADCAST_PAGE',
@@ -590,6 +599,7 @@ PAGES = _NT('str', [
     'MEMBERSHIP_PAYMENT_RECEIPT',
     'MEMBERSHIP_PAYMENT_LIST_PAGE',
     'MEMBERSHIP_PAYMENT_PENDING_LIST_PAGE',
+    'ADD_MEMBERSHIP_PAYMENTS_PAGE',
     'GET_PAYMENT_PERIOD_API',
 
     # Accounting pages
@@ -599,6 +609,8 @@ PAGES = _NT('str', [
     'ACCOUNT_LIST_PAGE',
     'ADD_ACCOUNT_PAGE',
     'UPDATE_ACCOUNT_PAGE',
+    "ADD_BOND_PAGE",
+    "UPDATE_BOND_PAGE",
     'AUTHORIZE_BOND',
 ])(
     # Main pages
@@ -621,6 +633,7 @@ PAGES = _NT('str', [
     'DetailMemberPage',
     'ThankYouPage',
     'MembershipCardPage',
+    'GetMembershipDataApi',
 
     # Broadcast pages
     'BroadcastPage',
@@ -656,6 +669,7 @@ PAGES = _NT('str', [
     'MembershipPaymentReceipt',
     'MembershipPaymentListPage',
     'MembershipPaymentPendingListPage',
+    'AddMebershipPaymentsPage',
     'GetPaymentPeriodApi',
 
     # Accounting pages
@@ -665,6 +679,8 @@ PAGES = _NT('str', [
     'AccountListPage',
     'AddAccountPage',
     'updateAccountPage',
+    "AddBondPage",
+    "updateBondPage",
     'AuthorizeBond',
 )
 TEMPLATES = _NT('str', [
@@ -714,6 +730,7 @@ TEMPLATES = _NT('str', [
     'MEMBERSHIP_PAYMENT_HISTORY_PAGE_TEMPLATE',
     'MEMBERSHIP_PAYMENT_LIST_PAGE_TEMPLATE',
     'MEMBERSHIP_PAYMENT_PENDING_LIST_PAGE_TEMPLATE',
+    'ADD_MEMBERSHIP_PAYMENTS_PAGE_TEMPLATE',
 
     # Accounting templates
     'ACCOUNTING_PAGE_TEMPLATE',
@@ -721,6 +738,7 @@ TEMPLATES = _NT('str', [
     'BOND_DETAILS_PAGE_TEMPLATE',
     'ACCOUNT_LIST_PAGE_TEMPLATE',
     'ADD_UPDATE_ACCOUNT_PAGE_TEMPLATE',
+    'ADD_UPDATE_BOND_PAGE_TEMPLATE',
 
     # Email template
     'THANK_YOU_EMAIL_TEMPLATE',
@@ -777,6 +795,7 @@ TEMPLATES = _NT('str', [
     f'{_main_app__templates_folder}/membership_payment_history.html',
     f'{_main_app__templates_folder}/membership_payment_list.html',
     f'{_main_app__templates_folder}/membership_payment_pending_list.html',
+    f'{_main_app__templates_folder}/add_membership_payments.html',
 
     # Accounting templates
     f'{_main_app__templates_folder}/accounting.html',
@@ -784,6 +803,7 @@ TEMPLATES = _NT('str', [
     f'{_main_app__templates_folder}/bond_details.html',
     f'{_main_app__templates_folder}/account_list.html',
     f'{_main_app__templates_folder}/add_update_account.html',
+    f'{_main_app__templates_folder}/add_update_bond.html',
 
     # Email templates
     f'{_email__templates_folder}/thank_you_email.html',
@@ -811,6 +831,7 @@ PARAMETERS = _NT('str', [
     "OPEN_MEMBER_REGISTRATION_FORM",
     "MEMBERSHIP_TRANSFER_INFO_IMAGE",
     "REQUEST_MAX_LIMIT_PER_SECOND",
+    "DEFAULT_PAYMENT_ACCOUNT",
 ])(
     "ALLOWED_LOGGED_IN_ATTEMPTS",
     "ALLOWED_LOGGED_IN_ATTEMPTS_RESET",
@@ -828,6 +849,7 @@ PARAMETERS = _NT('str', [
     "OPEN_MEMBER_REGISTRATION_FORM",
     "MEMBERSHIP_TRANSFER_INFO_IMAGE",
     "REQUEST_MAX_LIMIT_PER_SECOND",
+    "DEFAULT_PAYMENT_ACCOUNT",
 )
 CACHE = _NT('str', [
     "LAST_AUDIT_ENTRY_QUERYSET",
@@ -843,6 +865,7 @@ STAFF_PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {
     GROUPS.MEMBERS: (
         PAGES.MEMBERS_PAGE,
         PAGES.DETAIL_MEMBER_PAGE,
+        PAGES.GET_MEMBERSHIP_DATA_API,
     ),
     GROUPS.BROADCAST: (
         PAGES.BROADCAST_PAGE,
@@ -872,11 +895,15 @@ STAFF_PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {
         PAGES.DELETE_ROLE_PAGE,
     ),
     GROUPS.PAYMENT: (
+        PAGES.ACCOUNTING_PAGE,
         PAGES.MEMBERSHIP_PAYMENT_LIST_PAGE,
         PAGES.MEMBERSHIP_PAYMENT_PENDING_LIST_PAGE,
+        PAGES.ADD_MEMBERSHIP_PAYMENTS_PAGE,
         PAGES.GET_PAYMENT_PERIOD_API,
+        PAGES.GET_MEMBERSHIP_DATA_API,
     ),
     GROUPS.DONATION: (
+        PAGES.ACCOUNTING_PAGE,
         PAGES.DONATION_LIST_PAGE,
     ),
     GROUPS.ACCOUNTING: (
@@ -886,6 +913,8 @@ STAFF_PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {
         PAGES.ACCOUNT_LIST_PAGE,
         PAGES.ADD_ACCOUNT_PAGE,
         PAGES.UPDATE_ACCOUNT_PAGE,
+        PAGES.ADD_BOND_PAGE,
+        PAGES.UPDATE_BOND_PAGE,
         PAGES.AUTHORIZE_BOND,
     ),
 }

@@ -2,10 +2,15 @@
 {% block content %}
 <div class="row">
     <h1 class="col m-3">قائمة مدفوعات العضوية</h1>
+    <a class="col-2 btn btn-lg btn-success my-3 shadow rounded" href="{% url 'AddMebershipPaymentsPage' %}"
+        style="float: left; margin-left: 35px;">
+        تسجيل مدفوعات جديدة
+    </a>
     <a class="col-2 btn btn-lg {% if is_pending_list_empty %}btn-secondary{% else %}btn-success{% endif %} my-3 shadow rounded"
         href="{% url 'MembershipPaymentPendingListPage' %}" style="float: left; margin-left: 35px;">
         المدفوعات المعلقة
     </a>
+
 </div>
 
 <form method="GET">

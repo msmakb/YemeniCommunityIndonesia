@@ -84,15 +84,27 @@ PROTECTED_ROLE: Final[Callable[[HttpRequest], None]] = lambda request: messages.
 # ==== Company User App Messages ====
 HAS_PENDING_PAYMENT: Final[Callable[[HttpRequest], None]] = lambda request: messages.error(
     request, "يوجد لديك دفع معلقة. يرجى الانتظار حتى يتم معالجتها أولاً")
+MEMBERSHIP_HAS_PENDING_PAYMENT: Final[Callable[[HttpRequest], None]] = lambda request: messages.error(
+    request, "هذه العضوية لديه دفع معلق. يرجى معالجتها أولاً")
 PAYMENT_SENT: Final[Callable[[HttpRequest], None]] = lambda request: messages.success(
     request, "شكرا لكم على دفع رسوم العضوية. ستتم معالجة مدفوعات الاشتراك المرسلة وإخطارها لاحقًا")
 PAYMENT_APPROVED: Final[Callable[[HttpRequest], None]] = lambda request: messages.success(
     request, "تم قبول الدفع بنجاح")
+PAYMENT_REGISTERED: Final[Callable[[HttpRequest], None]] = lambda request: messages.success(
+    request, "تم تسجيل الدفع بنجاح")
 PAYMENT_REJECTED: Final[Callable[[HttpRequest], None]] = lambda request: messages.success(
     request, "تم رفض الدفع بنجاح")
 
 # ==== Accounting App Messages ====
-ADD_ACCOUNT: Final[Callable[[HttpRequest, str], None]] = lambda request: messages.success(
+ADD_ACCOUNT: Final[Callable[[HttpRequest], None]] = lambda request: messages.success(
     request, "تم إضافة الحساب بنجاح")
-UPDATE_ACCOUNT: Final[Callable[[HttpRequest, str], None]] = lambda request: messages.success(
+UPDATE_ACCOUNT: Final[Callable[[HttpRequest], None]] = lambda request: messages.success(
     request, "تم تعديل الحساب بنجاح")
+ADD_BOND: Final[Callable[[HttpRequest], None]] = lambda request: messages.success(
+    request, "تم إضافة السند بنجاح")
+UPDATE_BOND: Final[Callable[[HttpRequest], None]] = lambda request: messages.success(
+    request, "تم تعديل السند بنجاح")
+INSUFFICIENT_BALANCE: Final[Callable[[HttpRequest, str], None]] = lambda request, account_number: messages.error(
+    request, f"الحساب رقم \"{account_number}\" ليس لديه رصيد كاف")
+INVALID_DEFAULT_ACCOUNT: Final[Callable[[HttpRequest, str], None]] = lambda request, account_number: messages.error(
+    request, f"الحساب الافتراضي رقم \"{account_number}\" غير صالح")

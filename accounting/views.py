@@ -1,9 +1,10 @@
 from typing import Any, Callable
 
 from django.core.exceptions import EmptyResultSet
+from django.db import transaction
 from django.db.models import Sum
 from django.db.models.query import QuerySet
-from django.http import HttpRequest, HttpResponse, HttpResponsePermanentRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponsePermanentRedirect, Http404
 from django.shortcuts import render, redirect, get_object_or_404
 
 from main import constants
@@ -11,13 +12,14 @@ from main import messages as MSG
 from main.utils import Pagination, logUserActivity, exportAsCsvExcel
 
 from .filters import BondFilter
-from .forms import AccountForm
+from .forms import AccountForm, BondForm
 from .models import Account, Bond
 
 
 def accountingPage(request: HttpRequest) -> HttpResponse:
     context: dict[str, Any] = {}
     return render(request, constants.TEMPLATES.ACCOUNTING_PAGE_TEMPLATE, context)
+
 
 def bondListPage(request: HttpRequest) -> HttpResponse:
     queryset: QuerySet[Bond] = Bond.objects.all().order_by('-created')
@@ -75,12 +77,12 @@ def bondListPage(request: HttpRequest) -> HttpResponse:
             MSG.NO_DATA(request)
 
     page: str = request.GET.get('page')
-    pagination = Pagination(queryset, int(page) if page is not None else 1, 3)
+    pagination = Pagination(queryset, int(page) if page is not None else 1, 10)
     page_obj: QuerySet[Bond] = pagination.getPageObject()
     is_paginated: bool = pagination.isPaginated
 
-    context: dict[str, Any] = {'bondFilter':bondFilter,
-        'page_obj': page_obj, 'is_paginated': is_paginated}
+    context: dict[str, Any] = {'bondFilter': bondFilter,
+                               'page_obj': page_obj, 'is_paginated': is_paginated}
     return render(request, constants.TEMPLATES.BOND_LIST_PAGE_TEMPLATE, context)
 
 
@@ -91,14 +93,110 @@ def bondDetails(request: HttpRequest, pk: str) -> HttpResponse:
 
 
 def authorizeBond(request: HttpRequest, pk: str, reference: str, status: str) -> HttpResponsePermanentRedirect:
-    if status == constants.BOND_STATUS.APPROVED or status == constants.BOND_STATUS.CANCELLED or True:
-        Bond.objects.filter(id=pk, reference_number=reference).update(status=status)
-        # TODO: add activity log and notification message
-         
-    if 'detail' in request.GET:
-        return redirect(constants.PAGES.BOND_DETAILS_PAGE, pk)
-    else:
-        return redirect(constants.PAGES.ACCOUNTING_PAGE)
+    if status == constants.BOND_STATUS.APPROVED or status == constants.BOND_STATUS.CANCELLED:
+        if status == constants.BOND_STATUS.CANCELLED:
+            Bond.objects.filter(id=pk, reference_number=reference).delete()
+
+            # TODO: add activity log and notification message
+
+            return redirect(constants.PAGES.BOND_LIST_PAGE)
+        else:
+            bond: Bond = get_object_or_404(
+                Bond, id=pk, reference_number=reference)
+            bond.status = constants.BOND_STATUS.APPROVED
+            success: bool = False
+
+            if bond.bond_type == constants.BOND_TYPE.INCOMING:
+                receiver_account: Account = Account.get(
+                    account_number=bond.receiver_account_number)
+                receiver_account_balance = receiver_account.balance + bond.amount
+                with transaction.atomic():
+                    Account.objects.select_for_update().filter(
+                        id=receiver_account.id).update(balance=receiver_account_balance)
+                    Bond.objects.filter(
+                        id=pk, reference_number=reference).update(status=status)
+                success = True
+            elif bond.bond_type == constants.BOND_TYPE.OUTGOING:
+                sender_account: Account = Account.get(
+                    account_number=bond.sender_account_number)
+                if sender_account.balance < bond.total:
+                    MSG.INSUFFICIENT_BALANCE(
+                        request, sender_account.account_number)
+                else:
+                    sender_account_balance = sender_account.balance - bond.total
+                    with transaction.atomic():
+                        Account.objects.select_for_update().filter(
+                            id=sender_account.id).update(balance=sender_account_balance)
+                        Bond.objects.filter(
+                            id=pk, reference_number=reference).update(status=status)
+                    success = True
+            elif bond.bond_type == constants.BOND_TYPE.MOVING:
+                sender_account: Account = Account.get(
+                    account_number=bond.sender_account_number)
+                if sender_account.balance < bond.total:
+                    MSG.INSUFFICIENT_BALANCE(
+                        request, sender_account.account_number)
+                else:
+                    receiver_account: Account = Account.get(
+                        account_number=bond.receiver_account_number)
+                    receiver_account_balance = receiver_account.balance + bond.amount
+                    sender_account_balance = sender_account.balance - bond.total
+                    with transaction.atomic():
+                        Account.objects.select_for_update().filter(
+                            id=receiver_account.id).update(balance=receiver_account_balance)
+                        Account.objects.select_for_update().filter(
+                            id=sender_account.id).update(balance=sender_account_balance)
+                        Bond.objects.filter(
+                            id=pk, reference_number=reference).update(status=status)
+                    success = True
+
+            # TODO: add activity log and notification message
+            if success:
+                ...
+            else:
+                ...
+
+            if 'detail' in request.GET:
+                return redirect(constants.PAGES.BOND_DETAILS_PAGE, pk)
+            else:
+                return redirect(constants.PAGES.BOND_LIST_PAGE)
+
+
+def addBondPage(request: HttpRequest) -> HttpResponse:
+    bondForm = BondForm()
+    if request.method == constants.POST_METHOD:
+        bondForm = BondForm(request.POST, files=request.FILES)
+        if bondForm.is_valid():
+            bond: Bond = bondForm.save()
+            MSG.ADD_BOND(request)
+            logUserActivity(request, constants.ACTION.ADD_BOND,
+                            f"إضافة سند جديد رقم ({bond.reference_number}) "
+                            + f"من قِبل {request.user.get_full_name()}")
+            return redirect(constants.PAGES.BOND_LIST_PAGE)
+
+    context: dict[str, Any] = {'bondForm': bondForm}
+    return render(request, constants.TEMPLATES.ADD_UPDATE_BOND_PAGE_TEMPLATE, context)
+
+
+def updateBondPage(request: HttpRequest, pk: str) -> HttpResponse:
+    bond: Bond = get_object_or_404(Bond, pk=pk)
+    if bond.status != constants.BOND_STATUS.PENDING:
+        raise Http404
+
+    bondForm = BondForm(instance=bond)
+    if request.method == constants.POST_METHOD:
+        bondForm = BondForm(request.POST, files=request.FILES, instance=bond)
+        if bondForm.is_valid():
+            bond: Bond = bondForm.save()
+            MSG.UPDATE_BOND(request)
+            logUserActivity(request, constants.ACTION.UPDATE_BOND,
+                            f"تعديل سند رقم ({bond.reference_number}) "
+                            + f"من قِبل {request.user.get_full_name()}")
+            return redirect(constants.PAGES.BOND_LIST_PAGE)
+
+    context: dict[str, Any] = {'bondForm': bondForm,
+                               "bondReferenceNumber": bond.reference_number}
+    return render(request, constants.TEMPLATES.ADD_UPDATE_BOND_PAGE_TEMPLATE, context)
 
 
 def accountListPage(request: HttpRequest) -> HttpResponse:
@@ -108,6 +206,7 @@ def accountListPage(request: HttpRequest) -> HttpResponse:
         total=Sum('balance')).get('total')
     context: dict[str, Any] = {'queryset': queryset, 'total': total}
     return render(request, constants.TEMPLATES.ACCOUNT_LIST_PAGE_TEMPLATE, context)
+
 
 def addAccountPage(request: HttpRequest) -> HttpResponse:
     accountForm = AccountForm()
@@ -120,9 +219,10 @@ def addAccountPage(request: HttpRequest) -> HttpResponse:
                             f"إضافة حساب بنكي جديد ({account.account_number}) "
                             + f"من قِبل {request.user.get_full_name()}")
             return redirect(constants.PAGES.ACCOUNT_LIST_PAGE)
-    
+
     context: dict[str, Any] = {'accountForm': accountForm}
     return render(request, constants.TEMPLATES.ADD_UPDATE_ACCOUNT_PAGE_TEMPLATE, context)
+
 
 def updateAccountPage(request: HttpRequest, pk: str) -> HttpResponse:
     account: Account = get_object_or_404(Account, pk=pk)
@@ -136,6 +236,6 @@ def updateAccountPage(request: HttpRequest, pk: str) -> HttpResponse:
                             f" تعديل الحساب البنكي ({account.account_number}) "
                             + f"من قِبل {request.user.get_full_name()}")
             return redirect(constants.PAGES.ACCOUNT_LIST_PAGE)
-    
+
     context: dict[str, Any] = {'accountForm': accountForm}
     return render(request, constants.TEMPLATES.ADD_UPDATE_ACCOUNT_PAGE_TEMPLATE, context)

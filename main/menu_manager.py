@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import Any, Set, Optional
 
-from django.core.cache import cache
 from django.http import HttpRequest
 
 from main import constants
@@ -13,7 +12,8 @@ from member.models import Person
 class MenuItem:
     name: str
     page: str
-    is_active: str
+    is_active: bool
+    submenu: Optional[int | None] = None
     icon: Optional[str | None] = None
     arg: Optional[str | None] = None
 
@@ -77,10 +77,41 @@ def getUserMenus(request: HttpRequest) -> list[MenuItem]:
             )
             userMenu.append(menu_item)
 
+        if constants.GROUPS.ACCOUNTING in groups \
+            or constants.GROUPS.DONATION in groups \
+                or constants.GROUPS.PAYMENT in groups:
+            menu_item: MenuItem = MenuItem(
+                name=constants.GROUPS_AR[constants.GROUPS.ACCOUNTING],
+                page=constants.PAGES.ACCOUNTING_PAGE,
+                is_active=True if "/Accounting/" in request.path else False,
+                icon="svg/accounting.svg",
+            )
+            userMenu.append(menu_item)
+
+        if constants.GROUPS.ACCOUNTING in groups:
+            menu_item: MenuItem = MenuItem(
+                name="الحسابات البنكية",
+                page=constants.PAGES.ACCOUNT_LIST_PAGE,
+                submenu=constants.GROUPS.ACCOUNTING,
+                is_active=True if "/Accounting/" in request.path else False,
+                icon="svg/bank.svg",
+            )
+            userMenu.append(menu_item)
+
+            menu_item: MenuItem = MenuItem(
+                name="قائمة السندات",
+                page=constants.PAGES.BOND_LIST_PAGE,
+                submenu=constants.GROUPS.ACCOUNTING,
+                is_active=True if "/Accounting/" in request.path else False,
+                icon="svg/bond.svg",
+            )
+            userMenu.append(menu_item)
+
         if constants.GROUPS.PAYMENT in groups:
             menu_item: MenuItem = MenuItem(
                 name=constants.GROUPS_AR[constants.GROUPS.PAYMENT],
                 page=constants.PAGES.MEMBERSHIP_PAYMENT_LIST_PAGE,
+                submenu=constants.GROUPS.ACCOUNTING,
                 is_active=True if "/Payment/" in request.path else False,
                 icon="svg/payment_history.svg",
             )
@@ -90,17 +121,9 @@ def getUserMenus(request: HttpRequest) -> list[MenuItem]:
             menu_item: MenuItem = MenuItem(
                 name=constants.GROUPS_AR[constants.GROUPS.DONATION],
                 page=constants.PAGES.DONATION_LIST_PAGE,
+                submenu=constants.GROUPS.ACCOUNTING,
                 is_active=True if "/Donation-List/" in request.path else False,
                 icon="svg/donation.svg",
-            )
-            userMenu.append(menu_item)
-
-        if constants.GROUPS.ACCOUNTING in groups:
-            menu_item: MenuItem = MenuItem(
-                name=constants.GROUPS_AR[constants.GROUPS.ACCOUNTING],
-                page=constants.PAGES.ACCOUNTING_PAGE,
-                is_active=True if "/Accounting/" in request.path else False,
-                icon="svg/accounting.svg",
             )
             userMenu.append(menu_item)
 
