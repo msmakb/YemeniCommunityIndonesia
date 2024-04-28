@@ -141,5 +141,15 @@ LOGGING = {
             'level': LOGGING_LEVEL,
             'propagate': False,
         },
+        LOGGERS.PARAMETER: {
+            'handlers': HANDLERS,
+            'level': LOGGING_LEVEL,
+            'propagate': False,
+        },
+        LOGGERS.FORMS: {
+            'handlers': HANDLERS,
+            'level': LOGGING_LEVEL,
+            'propagate': False,
+        },
     },
 }

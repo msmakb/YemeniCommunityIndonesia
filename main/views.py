@@ -38,6 +38,9 @@ def loginPage(request: HttpRequest) -> HttpResponse:
 
         if user is not None:
             auth.login(request, user)
+            next_page = request.GET.get('nextPage')
+            if next_page:
+                return redirect(next_page)
             return redirect(constants.PAGES.INDEX_PAGE)
         else:
             MSG.INCORRECT_INFO(request)
