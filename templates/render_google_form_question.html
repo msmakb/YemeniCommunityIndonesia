@@ -4,12 +4,14 @@
         {{ question.title }}
         {% if question.itemData.required %}<span class="text-danger">*</span>{% endif %}
     </label>
+    {% if question.description %}<h6 class="fw-light lh-base">{{ question.description|safe }}</h6>{% endif %}
     {% if question.itemData.paragraph %}
     <textarea class="form-control shadow-sm rounded" id="{{ question.itemData.questionId }}"
-        name="{{question.itemData.entryName}}" rows="3"></textarea>
+        name="{{question.itemData.entryName}}" rows="3"
+        {% if question.itemData.required %}Required{% endif %}></textarea>
     {% else %}
     <input id="{{ question.itemData.questionId }}" name="{{question.itemData.entryName}}"
-        class="form-control shadow-sm rounded" type="text" aria-label="default input example">
+        class="form-control shadow-sm rounded" type="text" {% if question.itemData.required %}Required{% endif %}>
     {% endif %}
 </div>
 {% elif question.itemData.questionType == "choiceQuestion" %}
@@ -19,9 +21,10 @@
         {{ question.title }}
         {% if question.itemData.required %}<span class="text-danger">*</span>{% endif %}
     </label>
+    {% if question.description %}<h6 class="fw-light lh-base">{{ question.description|safe }}</h6>{% endif %}
     <select class="form-select shadow-sm rounded" id="{{ question.itemData.questionId }}"
-        name="{{question.itemData.entryName}}">
-        <option selected>أختر</option>
+        name="{{question.itemData.entryName}}" {% if question.itemData.required %}Required{% endif %}>
+        <option value selected>أختر</option>
         {% for choice in question.itemData.options %}
         <option value="{{ choice }}">{{ choice }}</option>
         {% endfor %}
@@ -39,9 +42,10 @@
             style="order: 2; margin-right: 35px;">
             {{ option }}
         </label>
-        <input class="form-check-input shadow-sm" type="{{question.itemData.type|lower}}"
+        {% if question.description %}<h6 class="fw-light lh-base">{{ question.description|safe }}</h6>{% endif %}
+        <input class="form-check-input shadow-sm" type="{{question.itemData.type|lower}}" value="{{ option }}"
             style="order: 1; margin-top: -5px;" id="{{ question.itemData.questionId }}{{ forloop.counter0 }}"
-            name="{{question.itemData.entryName}}" value="{{ option }}">
+            name="{{question.itemData.entryName}}" {% if question.itemData.required %}Required{% endif %}>
     </div>
     {% endfor %}
 </div>
@@ -52,12 +56,137 @@
         {{ question.title }}
         {% if question.itemData.required %}<span class="text-danger">*</span>{% endif %}
     </label>
+    {% if question.description %}<h6 class="fw-light lh-base">{{ question.description|safe }}</h6>{% endif %}
     <input id="{{ question.itemData.questionId }}" name="{{question.itemData.entryName}}"
         class="form-control shadow-sm rounded"
         type="{% if question.itemData.questionType == "dateQuestion" %}date{% else %}time{% endif %}"
-        data-provide="datepicker">
+        data-provide="datepicker" {% if question.itemData.required %}Required{% endif %}>
 </div>
-{% elif question.itemData.questionType == "fileUploadQuestion" %}
+{% elif question.itemData.questionType == "scaleQuestion" %}
+<div class="form-group">
+    <label class="mt-3 lead" for="{{ question.itemData.questionId }}">
+        {{ question.title }}
+        {% if question.itemData.required %}<span class="text-danger">*</span>{% endif %}
+    </label>
+    {% if question.description %}<h6 class="fw-light lh-base">{{ question.description|safe }}</h6>{% endif %}
+    <div class="row mb-1">
+        <div class="col text-end text-body-secondary mt-2" style="margin-bottom: -1rem;">
+            {{ question.itemData.lowLabel }}
+        </div>
+        <div class="col text-center mt-2 fw-bold" id="range-value-{{ question.itemData.questionId }}"
+            style="margin-bottom: -1rem;">
+            {% if question.itemData.low %}{{ question.itemData.low }}{% else %}0{% endif %}
+        </div>
+        <div class="col text-start text-body-secondary mt-2" style="margin-bottom: -1rem;">
+            {{ question.itemData.highLabel }}
+        </div>
+    </div>
+    <input type="range" id="{{ question.itemData.questionId }}" name="{{question.itemData.entryName}}"
+        class="form-range shadow-sm rounded" step="1" min="{{ question.itemData.low }}"
+        max="{{ question.itemData.high }}"
+        value="{% if question.itemData.low %}{{ question.itemData.low }}{% else %}0{% endif %}"
+        oninput="document.querySelector('#range-value-{{ question.itemData.questionId }}').textContent = this.value;"
+        {% if question.itemData.required %}Required{% endif %}>
+</div>
+{% elif question.itemType == "questionGroupItem" %}
+<div class="form-group">
+    <label class="mt-3 lead" for="{{ question.itemId }}">
+        {{ question.title }}
+        {% if question.itemData.required %}<span class="text-danger">*</span>{% endif %}
+    </label>
+    {% if question.description %}<h6 class="fw-light lh-base">{{ question.description|safe }}</h6>{% endif %}
+    <div class="table-responsive m-0 p-0">
+        <table class="table text-center m-0 p-0">
+            <thead>
+                <tr>
+                    <th scope="col"></th>
+                    {% for col in question.itemData.columns.options  %}
+                    <th scope="col">{{ col.value }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for q in question.questions %}
+                <tr>
+                    <td>{{ q.title }}</td>
+                    {% for row in question.itemData.columns.options  %}
+                    <td><input class="form-check-input shadow-sm" type="{{q.itemData.type|lower}}"
+                            value="{{ row.value }}" id="{{ q.itemData.questionId }}{{ forloop.counter0 }}"
+                            name="{{q.itemData.entryName}}" {% if q.itemData.required %}Required{% endif %}>
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% elif question.itemType == "fileUpload" %}
+<div class="form-group">
+    <label class="mt-3 lead" for="{{ question.itemId }}">
+        {{ question.title }}
+        {% if question.itemData.required %}<span class="text-danger">*</span>{% endif %}
+    </label>
+    {% if question.description %}<h6 class="fw-light lh-base">{{ question.description|safe }}</h6>{% endif %}
+    <input id="{{ question.itemId }}" name="{{ question.itemId }}" class="form-control shadow-sm rounded" type="file"
+        accept="{{ question.itemData.accept }}" {% if question.itemData.required %}Required{% endif %}>
+</div>
+{% elif question.itemType == "emailAddress" %}
+<div class="form-group {% if question.itemData.isHidden %}d-none{% endif %}">
+    <label class="mt-3 lead" for="{{ question.itemId }}">
+        {{ question.title }}
+        {% if question.itemData.required %}<span class="text-danger">*</span>{% endif %}
+    </label>
+    {% if question.description %}<h6 class="fw-light lh-base">{{ question.description|safe }}</h6>{% endif %}
+    <input id="{{ question.itemId }}" name="{{ question.itemId }}" class="form-control shadow-sm rounded"
+        type="{% if question.itemData.isHidden %}hidden{% else %}email{% endif %}"
+        {% if question.itemData.required %}Required{% endif %}
+        {% if question.itemData.autoFillUserEmail %}disabled{% endif %}
+        {% if request.user.is_authenticated %}value="{{ question.itemData.userEmail }}" {% endif %}>
+    {% if question.itemData.autoFillUserEmail %}
+    <input type="hidden" id="{{ question.itemId }}" name="{{ question.itemId }}"
+        value="{{ question.itemData.userEmail }}">
+    {% endif %}
+</div>
+{% elif question.itemType == "membershipCard" %}
+<div class="form-group {% if question.itemData.isHidden %}d-none{% endif %}">
+    <label class="mt-3 lead" for="{{ question.itemId }}">
+        {{ question.title }}
+        {% if question.itemData.required %}<span class="text-danger">*</span>{% endif %}
+    </label>
+    {% if question.description %}<h6 class="fw-light lh-base">{{ question.description|safe }}</h6>{% endif %}
+    <input id="{{ question.itemId }}" name="{{ question.itemId }}" class="form-control shadow-sm rounded"
+        type="{% if question.itemData.isHidden %}hidden{% else %}text{% endif %}"
+        {% if question.itemData.required %}Required{% endif %}
+        {% if question.itemData.autoFillUserMembership %}disabled{% endif %}
+        {% if request.user.is_authenticated %}value="{{ question.itemData.userMembership }}" {% endif %}>
+    {% if question.itemData.autoFillUserMembership %}
+    <input type="hidden" id="{{ question.itemId }}" name="{{ question.itemId }}"
+        value="{{ question.itemData.userMembership }}">
+    {% endif %}
+</div>
+{% comment %} Non question Item {% endcomment %}
+{% elif question.itemType == "videoItem" %}
+<div>
+    <h5 class="mt-3 lead">{{ question.title }}</h5>
+    <div class="text-center mx-auto mb-0">
+        <iframe width="100%" height="480" src="https://www.youtube.com/embed/{{ question.itemData.videoId }}">
+        </iframe>
+        {% if question.itemData.caption %}
+        <small class="form-text text-muted fw-lighter fst-italic mt-0">{{ question.itemData.caption }}</small>
+        {% endif %}
+    </div>
+</div>
+{% elif question.itemType == "imageItem" %}
+<div>
+    <h5 class="mt-3 lead">{{ question.title }}</h5>
+    <div
+        class="text-{% if question.itemData.properties.alignment == 'LEFT' %}start{% elif question.itemData.properties.alignment == 'RIGHT' %}end{% else %}center{% endif %}">
+        <img src="{{ question.itemData.contentUri }}" class="img-fluid m-0 p-0 mx-auto"
+            alt="{{ question.itemData.altText }}" title="{{ question.itemData.altText }}"
+            width="{{ question.itemData.properties.width }}">
+    </div>
+</div>
 {% else %}
 <li>HOOHOH => {{question}}</li>
 {% endif %}
