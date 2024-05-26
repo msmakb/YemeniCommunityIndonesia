@@ -646,6 +646,7 @@ PAGES = _NT('str', [
     'FORMS_LIST_PAGE',
     'FORM_RESPONSES_PAGE',
     'FORM_PAGE',
+    'DOWNLOAD_FORM_FILE',
 ])(
     # Main pages
     'Index',
@@ -721,6 +722,7 @@ PAGES = _NT('str', [
     'FormsListPage',
     'FormResponsesPage',
     'FormPage',
+    'downloadFormFile',
 )
 TEMPLATES = _NT('str', [
     # Main templates
@@ -971,6 +973,7 @@ STAFF_PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {
     GROUPS.FORMS: (
         PAGES.FORMS_LIST_PAGE,
         PAGES.FORM_RESPONSES_PAGE,
+        PAGES.DOWNLOAD_FORM_FILE,
     ),
 }
 NON_STAFF_PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {

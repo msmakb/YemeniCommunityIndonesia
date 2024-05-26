@@ -29,7 +29,7 @@ DEBUG = False if environ.get('PRODUCTION') == "TRUE" else True
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 100
 
-DATA_UPLOAD_MAX_NUMBER_FILES = 5
+DATA_UPLOAD_MAX_NUMBER_FILES = 10
 
 IGNORABLE_404_URLS = [
     re.compile(r'^/apple-touch-icon.*\.png$'),

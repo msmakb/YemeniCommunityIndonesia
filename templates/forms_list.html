@@ -196,7 +196,7 @@
                                                             <option selected>---------</option>
                                                             <option value="0">عنوان النموذج</option>
                                                             {% for item in form.items %}
-                                                            <option value="{{ forloop.counter0|add:1 }}">{{ item.title }}</option>
+                                                            <option value="{{ item.index|add:1 }}">{{ item.title }}</option>
                                                             {% endfor %}
                                                             <option value="-1">دائما الأخير</option>
                                                           </select>
@@ -386,7 +386,7 @@
             } else if ("headerImage" === selectedValue) {
                 fieldsToShow = ['headerImg']
             } else if ("fileUpload" === selectedValue) {
-                fieldsToShow = ['title', 'description', 'required', 'fieldIndex']
+                fieldsToShow = ['title', 'description', 'fileType', 'required', 'fieldIndex']
             }
 
             for (let fieldName of fieldsToShow) {
@@ -419,6 +419,12 @@
                 $('#addField_{{ form.formId }} .form-group input[name="headerImg"]').prop('required', true);
             } else {
                 $('#addField_{{ form.formId }} .form-group input[name="headerImg"]').prop('required', false);
+            }
+
+            if (fieldsToShow.includes("fileType")) {
+                $('#addField_{{ form.formId }} .form-group input[name="fileType"]').prop('required', true);
+            } else {
+                $('#addField_{{ form.formId }} .form-group input[name="fileType"]').prop('required', false);
             }
 
             $('#addField_{{ form.formId }} select[name="itemType"] option').each(function() {

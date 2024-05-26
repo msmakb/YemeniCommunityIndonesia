@@ -15,6 +15,11 @@ urlpatterns = [
         name=PAGES.FORM_RESPONSES_PAGE
     ),
     path(
+        'Forms/<str:responseId>/<str:questionId>/',
+        views.downloadFormFile,
+        name=PAGES.DOWNLOAD_FORM_FILE
+    ),
+    path(
         'Form/<str:formId>/',
         views.formPage,
         name=PAGES.FORM_PAGE

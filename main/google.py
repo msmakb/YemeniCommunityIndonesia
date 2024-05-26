@@ -169,6 +169,8 @@ class GoogleFormItem:
     description: str = ""
     questions: list['GoogleFormItem'] = None
     itemData: dict[str, Any] = None
+    isCustom: bool = False
+    index: int = 0
 
     def __init__(self, **kwargs):
         valid_fields = set(f.name for f in fields(GoogleFormItem))
