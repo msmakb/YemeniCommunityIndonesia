@@ -9,7 +9,7 @@ from core.settings.mail import *
 from core.settings.urls import *
 
 # Version
-PROJECT_VERSION = '1.3.3'
+PROJECT_VERSION = '2.0.0'
 
 # Site Under Maintenance
 UNDER_MAINTENANCE = False
