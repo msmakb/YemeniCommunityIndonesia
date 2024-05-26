@@ -1,6 +1,8 @@
 import json
 import logging
 from logging import Logger
+import mimetypes
+import os
 from pathlib import Path
 from typing import Any
 import requests
@@ -8,8 +10,9 @@ import requests
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import UploadedFile
-from django.db.models.query import QuerySet, Q
-from django.http import HttpResponse, HttpRequest
+from django.forms.models import model_to_dict
+from django.db.models.query import QuerySet, F, Q
+from django.http import Http404, HttpResponse, HttpRequest
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils.datastructures import MultiValueDict
@@ -18,7 +21,7 @@ from google.auth.exceptions import TransportError
 
 from main import constants
 from main import messages as MSG
-from main.google import (FormResponse, GoogleForm, GoogleFormItem,
+from main.google import (FormAnswer, FormResponse, GoogleForm, GoogleFormItem,
                          GoogleFormsService, GOOGLE_FORM_ITEM_TYPE,
                          GoogleAuthenticationError, HttpError)
 
@@ -65,8 +68,6 @@ def formsListPage(request: HttpRequest) -> HttpResponse:
                     elif "deleteForm" in request.POST:
                         formsService.deleteForm(formId)
                     elif "addCustomItem" in request.POST:
-                        print(request.POST)
-                        print(request.FILES)
                         itemType: str = request.POST.get('itemType')
                         title: str = request.POST.get('title')
                         description: str = request.POST.get('description')
@@ -74,6 +75,7 @@ def formsListPage(request: HttpRequest) -> HttpResponse:
                         autofill: bool = bool(request.POST.get('autofill'))
                         isHidden: bool = bool(request.POST.get('isHidden'))
                         index: int = int(request.POST.get('fieldIndex'))
+                        fileType: str = request.POST.get('fileType')
                         headerImg: UploadedFile | None = request.FILES.get(
                             'headerImg')
 
@@ -91,9 +93,9 @@ def formsListPage(request: HttpRequest) -> HttpResponse:
                                 "required": required, "autoFillUserMembership": autofill,
                                 "isHidden": isHidden}
                         elif itemType == constants.CUSTOM_FORM_ITEM_TYPE.FILE_UPLOAD:
-                            itemId = generateRandomString()  # TODO
+                            itemId = generateRandomString()[:10]  # TODO
                             itemData = {
-                                "required": required, "accept": ".png, .jpeg, .jpg"}
+                                "required": required, "accept": fileType}
                         elif itemType == constants.CUSTOM_FORM_ITEM_TYPE.HEADER_IMAGE:
                             form_headers_dir: Path = settings.MEDIA_ROOT / \
                                 constants.MEDIA_DIR.FORMS_HEADERS_DIR
@@ -106,10 +108,15 @@ def formsListPage(request: HttpRequest) -> HttpResponse:
                             file_url = default_storage.url(file_path)
 
                             index = -1
-                            itemId = constants.CUSTOM_FORM_ITEM_TYPE
+                            itemId = "headImg"
                             title = constants.CUSTOM_FORM_ITEM_TYPE_AR[itemType]
                             itemData = {"src": file_url, "alt": "header"}
 
+                        if index != -1:
+                            CustomFormItem.filter(
+                                formId=formId,
+                                index__gte=index).update(
+                                    index=F('index') + 1)
                         CustomFormItem.create(
                             formId=formId,
                             index=index,
@@ -122,7 +129,14 @@ def formsListPage(request: HttpRequest) -> HttpResponse:
 
                     elif "deleteCustomItem" in request.POST:
                         itemId = request.POST.get("deleteFieldId")
-                        CustomFormItem.get(id=itemId).delete()
+                        customFormItem: CustomFormItem = CustomFormItem.get(
+                            id=itemId)
+                        if customFormItem.index != -1:
+                            CustomFormItem.filter(
+                                formId=customFormItem.formId,
+                                index__gt=customFormItem.index).update(
+                                    index=F('index') - 1)
+                        customFormItem.delete()
                 except HttpError as error:
                     logger.exception(error)
                     try:
@@ -148,22 +162,31 @@ def formsListPage(request: HttpRequest) -> HttpResponse:
                                reverse=True)
 
             for i, form in enumerate(form_list):
-                from django.forms.models import model_to_dict
                 custom_form_items: list[CustomFormItem] = CustomFormItem.objects.filter(
-                    formId=form.formId)
+                    formId=form.formId).order_by('index', 'created')
+
+                for loop_index, item in enumerate(form.items):
+                    form.items[loop_index].index = loop_index
 
                 for item in custom_form_items:
                     if item.itemType == constants.CUSTOM_FORM_ITEM_TYPE.HEADER_IMAGE:
                         continue
 
                     index: int = item.index
-                    membership_field = GoogleFormItem(
+                    custom_field = GoogleFormItem(
                         **model_to_dict(item))
+                    custom_field.isCustom = True
                     if index == -1:
-                        form.items.append(membership_field)
+                        form.items.append(custom_field)
                     else:
-                        form.items.insert(index, membership_field)
+                        form.items.insert(index, custom_field)
+                        for loop_index, _ in enumerate(form.items):
+                            if form.items[loop_index].index >= index \
+                                    and not form.items[loop_index].isCustom:
+                                form.items[loop_index].index += 1
 
+                form.items = list(
+                    sorted(form.items, key=lambda item: (item.index == -1, item.index)))
                 object.__setattr__(form, 'customItems', [
                     {
                         "id": item.id,
@@ -186,6 +209,7 @@ def formsListPage(request: HttpRequest) -> HttpResponse:
 
 
 def formResponsesPage(request: HttpRequest, formId: str) -> HttpResponse:
+    form: GoogleForm | None = None
     with GoogleFormsService() as googleFormsService:
         try:
             token: str = str(settings.BASE_DIR / 'data/google_client.json')
@@ -197,7 +221,7 @@ def formResponsesPage(request: HttpRequest, formId: str) -> HttpResponse:
                     "فشلت المصادقة على Google Drive.")
 
             formsService = googleFormsService.formService()
-            form: GoogleForm = formsService.getForm(formId)
+            form = formsService.getForm(formId)
             i: int = 0  # enumerate will not work here
             for item in form.items:
                 if item.itemType == GOOGLE_FORM_ITEM_TYPE.QUESTION_GROUP_ITEM:
@@ -213,6 +237,64 @@ def formResponsesPage(request: HttpRequest, formId: str) -> HttpResponse:
             form_responses = list(filter(
                 lambda response: response.answers, form_responses))
 
+            custom_form_items: list[CustomFormItem] = CustomFormItem.objects.filter(
+                formId=form.formId)
+            if custom_form_items:
+                has_custom_fields: bool = False
+                has_email_field: bool = False
+                has_membership_field: bool = False
+                custom_fields_questions_order = []
+                for item in custom_form_items:
+                    if item.itemType == constants.CUSTOM_FORM_ITEM_TYPE.HEADER_IMAGE:
+                        continue
+
+                    has_custom_field = True
+                    custom_field: GoogleFormItem = GoogleFormItem(
+                        **model_to_dict(item))
+
+                    if item.itemType == constants.CUSTOM_FORM_ITEM_TYPE.MEMBERSHIP:
+                        has_membership_field = True
+                        custom_field.itemType = GOOGLE_FORM_ITEM_TYPE.QUESTION_ITEM
+                        form.items.insert(0, custom_field)
+                    elif item.itemType == constants.CUSTOM_FORM_ITEM_TYPE.EMAIL_ADDRESS:
+                        has_email_field = True
+                        if has_membership_field:
+                            custom_field.itemType = GOOGLE_FORM_ITEM_TYPE.QUESTION_ITEM
+                            form.items.insert(1, custom_field)
+                        else:
+                            custom_field.itemType = GOOGLE_FORM_ITEM_TYPE.QUESTION_ITEM
+                            form.items.insert(0, custom_field)
+                    else:
+                        custom_field.itemType = GOOGLE_FORM_ITEM_TYPE.QUESTION_ITEM
+                        form.items.append(custom_field)
+                        custom_fields_questions_order.append(
+                            custom_field.itemId)
+
+                if has_custom_field:
+                    for response in form_responses:
+                        try:
+                            custom_form_response: CustomFormResponse = CustomFormResponse.get(
+                                responseId=response.responseId)
+                            if has_email_field:
+                                response.answers.insert(0, FormAnswer(
+                                    "email", custom_form_response.answers.get("email", "")))
+                            if has_membership_field:
+                                response.answers.insert(0, FormAnswer(
+                                    "membership", custom_form_response.answers.get("membership", "")))
+                            for questionId in custom_fields_questions_order:
+                                response.answers.append(FormAnswer(
+                                    questionId, custom_form_response.answers.get(questionId, "")))
+                        except CustomFormResponse.DoesNotExist:
+                            if has_email_field:
+                                response.answers.insert(
+                                    0, FormAnswer("email", ""))
+                            if has_membership_field:
+                                response.answers.insert(
+                                    0, FormAnswer("membership", ""))
+                            for questionId in custom_fields_questions_order:
+                                response.answers.append(
+                                    FormAnswer(questionId, ""))
+
         except (GoogleAuthenticationError, HttpError,
                 ServerNotFoundError, TransportError) as e:
             logger.exception(e)
@@ -221,6 +303,33 @@ def formResponsesPage(request: HttpRequest, formId: str) -> HttpResponse:
     context: dict[str, Any] = {"form": form, "form_responses": form_responses,
                                "numberOfResponses": len(form_responses)}
     return render(request, constants.TEMPLATES.FORM_RESPONSES_PAGE_TEMPLATE, context=context)
+
+
+def downloadFormFile(request: HttpRequest, responseId: str, questionId: str) -> HttpResponse:
+    if not request.user.is_authenticated:
+        return redirect(constants.PAGES.UNAUTHORIZED_PAGE)
+
+    try:
+        custom_form_response: CustomFormResponse = CustomFormResponse.get(
+            responseId=responseId)
+    except CustomFormResponse.DoesNotExist:
+        raise Http404
+
+    form_answer: str = custom_form_response.answers.get(questionId)
+    file_path: str = form_answer
+
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as file:
+            file_name = responseId + "-" + \
+                questionId + "." + file.name.split('.')[-1]
+            content_type, _ = mimetypes.guess_type(file_path)
+            if not content_type:
+                # Default to binary stream if type is unknown
+                content_type = 'application/octet-stream'
+            response = HttpResponse(file.read(), content_type=content_type)
+            response['Content-Disposition'] = f'inline; filename={file_name}'
+            return response
+    raise Http404
 
 
 def formPage(request: HttpRequest, formId: str, messageType: str | None = None) -> HttpResponse:
@@ -233,7 +342,8 @@ def formPage(request: HttpRequest, formId: str, messageType: str | None = None) 
     customFormItems: QuerySet = CustomFormItem.filter(
         formId=formId).values(
         'index', 'itemId', 'itemType',
-        'title', 'description', 'itemData')
+        'title', 'description', 'itemData'
+    ).order_by('index', 'created')
 
     if not messageType and customFormItems:
         for item in customFormItems:
@@ -244,9 +354,9 @@ def formPage(request: HttpRequest, formId: str, messageType: str | None = None) 
                     "distinctResponsePerEmail", False)
                 require_login = auto_fill_user_email
             if item["itemType"] == constants.CUSTOM_FORM_ITEM_TYPE.MEMBERSHIP:
-                auto_fill_user_email: bool = item["itemData"].get(
+                auto_fill_user_membership: bool = item["itemData"].get(
                     "autoFillUserMembership", False)
-                require_membership = auto_fill_user_email
+                require_membership = auto_fill_user_membership
                 if require_membership:
                     require_login = True
 
@@ -297,6 +407,9 @@ def formPage(request: HttpRequest, formId: str, messageType: str | None = None) 
                 logger.info("Form Closed!")
                 return redirect(constants.PAGES.FORM_PAGE, formId, "close")
 
+            for loop_index, item in enumerate(form.items):
+                form.items[loop_index].index = loop_index
+
             header_image: GoogleFormItem | None = None
             membership_field: GoogleFormItem | None = None
             if customFormItems:
@@ -313,12 +426,18 @@ def formPage(request: HttpRequest, formId: str, messageType: str | None = None) 
                                     request.user).get('email')
 
                     index: int = item['index']
-                    membership_field = GoogleFormItem(**item)
+                    custom_field = GoogleFormItem(**item)
+                    custom_field.isCustom = True
                     if index == -1:
-                        form.items.append(membership_field)
+                        form.items.append(custom_field)
                     else:
-                        form.items.insert(index, membership_field)
+                        form.items.insert(index, custom_field)
+                        for loop_index, item2 in enumerate(form.items):
+                            if item2.index >= index and not item2.isCustom:
+                                form.items[loop_index].index += 1
 
+            form.items = list(
+                sorted(form.items, key=lambda item: (item.index == -1, item.index)))
             if request.method == constants.POST_METHOD:
                 if request.user.is_staff and require_login:
                     MSG.ERROR_MESSAGE(request, "هذا النموذج مقيد للأعضاء فقط."
@@ -383,9 +502,11 @@ def formPage(request: HttpRequest, formId: str, messageType: str | None = None) 
                     for key, file in files.items():
                         file_path: str = str(form_files_dir /
                                              (key + "." + file.name.split('.')[-1]))
-                        default_storage.save(file_path, file)
+                        file_name = default_storage.save(file_path, file)
                         file_url = default_storage.url(file_path)
-                        custom_form_response_answers[key] = file_url
+                        # custom_form_response_answers[key] = file_url
+                        custom_form_response_answers[key] = default_storage.path(
+                            file_name)
 
                     CustomFormResponse.create(
                         responseId=responseId,

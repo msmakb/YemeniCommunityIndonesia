@@ -27,7 +27,14 @@
                 <tr>
                     <td>{{ forloop.counter0|add:1 }}</td>
                     {% for answer in response.answers %}
+                    {% if answer.textAnswers and form.formId in answer.textAnswers and response.responseId in answer.textAnswers %}
+                    <td>{% if answer.textAnswers %}
+                        <a href="{% url 'downloadFormFile' response.responseId answer.questionId %}" target="_blank"
+                            download>تحميل الملف</a>
+                        {% else %}-{% endif %}</td>
+                    {% else %}
                     <td>{% if answer.textAnswers %}{{ answer.textAnswers }}{% else %}-{% endif %}</td>
+                    {% endif %}
                     {% endfor %}
                     <td>{{ response.lastSubmittedTime }}</td>
                 </tr>
