@@ -263,8 +263,10 @@ MEDIA_DIR = _NT('str', [
     'MEMBERSHIP_PAYMENT_RECEIPTS_DIR',
     'BOND_RECEIPTS_DIR',
     'DONATIONS_RECEIPTS_DIR',
+    'FORMS_FILES_DIR',
     'EMAIL_ATTACHMENTS_DIR',
     'PUBLIC_DIR',
+    'FORMS_HEADERS_DIR',
 ])(
     'documents/images/photographs',
     'documents/images/passportImages',
@@ -273,8 +275,10 @@ MEDIA_DIR = _NT('str', [
     'documents/images/membershipReceipts',
     'documents/images/bondReceipts',
     'documents/images/donationsReceipts',
+    'documents/forms',
     'broadcast/emailAttachment',
     'public/',
+    'public/forms',
 )
 _MIME_TYPE: dict[str, str] = {
     'AVI': 'video/x-msvideo',
@@ -326,12 +330,14 @@ LOGGERS = _NT('str', [
     'MODELS',
     'BROADCAST',
     'PARAMETER',
+    'FORMS',
 ])(
     'YCI.Main',
     'YCI.Middleware',
     'YCI.Models',
     'YCI.Broadcast',
     'YCI.Parameter',
+    'YCI.Forms',
 )
 GENDER = _NT('str', [
     'MALE',
@@ -353,6 +359,7 @@ GROUPS = _NT('str', [
     'PAYMENT',
     'DONATION',
     'ACCOUNTING',
+    'FORMS',
 ])(
     'Members',
     'Broadcast',
@@ -362,6 +369,7 @@ GROUPS = _NT('str', [
     'Payment',
     'Donation',
     'Accounting',
+    'Forms',
 )
 GROUPS_AR: Final[dict[str, str]] = {
     GROUPS.MEMBERS: 'الأعضاء',
@@ -372,6 +380,7 @@ GROUPS_AR: Final[dict[str, str]] = {
     GROUPS.PAYMENT: 'مدفوعات العضوية',
     GROUPS.DONATION: 'التبرعات',
     GROUPS.ACCOUNTING: 'إدارة الحسابات',
+    GROUPS.FORMS: 'إدارة النماذج',
 }
 ACADEMIC_QUALIFICATION = _NT('str', [
     'PHD',
@@ -399,6 +408,23 @@ ACADEMIC_QUALIFICATION_AR: Final[tuple[str, ...]] = (
     'أساسي',
     'لايوجد',
 )
+CUSTOM_FORM_ITEM_TYPE = _NT('str', [
+    'MEMBERSHIP',
+    'EMAIL_ADDRESS',
+    'HEADER_IMAGE',
+    'FILE_UPLOAD',
+])(
+    'membershipCard',
+    'emailAddress',
+    'headerImage',
+    'fileUpload',
+)
+CUSTOM_FORM_ITEM_TYPE_AR: Final[dict[str, str]] = {
+    "membershipCard": "بطاقة العضوية",
+    "emailAddress": "بريد إلكتروني",
+    "headerImage": "صورة العنوان",
+    "fileUpload": "رفع الملف",
+}
 JOB_TITLE = _NT('str', [
     'STUDENT',
     'EMPLOYER',
@@ -502,6 +528,7 @@ CHOICES = _NT('tuple', [
     'ACCOUNT_TYPE',
     'ACCOUNT_STATUS',
     'ACTION',
+    'CUSTOM_FORM_ITEM_TYPE',
     'BLOCK_TYPE',
     'BOND_TYPE',
     'BOND_STATUS',
@@ -523,6 +550,8 @@ CHOICES = _NT('tuple', [
     [(account_status, ACCOUNT_STATUS_AR[i])
      for i, account_status in enumerate(ACCOUNT_STATUS)],
     [(action, action) for action in ACTION],
+    [(custom_item, CUSTOM_FORM_ITEM_TYPE_AR.get(custom_item))
+     for custom_item in CUSTOM_FORM_ITEM_TYPE],
     [(block_type, block_type) for block_type in BLOCK_TYPES],
     [(bond_type, BOND_TYPE_AR[i])
      for i, bond_type in enumerate(BOND_TYPE)],
@@ -612,6 +641,12 @@ PAGES = _NT('str', [
     "ADD_BOND_PAGE",
     "UPDATE_BOND_PAGE",
     'AUTHORIZE_BOND',
+
+    # Forms Pages
+    'FORMS_LIST_PAGE',
+    'FORM_RESPONSES_PAGE',
+    'FORM_PAGE',
+    'DOWNLOAD_FORM_FILE',
 ])(
     # Main pages
     'Index',
@@ -682,6 +717,12 @@ PAGES = _NT('str', [
     "AddBondPage",
     "updateBondPage",
     'AuthorizeBond',
+
+    # Forms Pages
+    'FormsListPage',
+    'FormResponsesPage',
+    'FormPage',
+    'downloadFormFile',
 )
 TEMPLATES = _NT('str', [
     # Main templates
@@ -739,6 +780,12 @@ TEMPLATES = _NT('str', [
     'ACCOUNT_LIST_PAGE_TEMPLATE',
     'ADD_UPDATE_ACCOUNT_PAGE_TEMPLATE',
     'ADD_UPDATE_BOND_PAGE_TEMPLATE',
+
+    # Forms templates
+    'FORMS_LIST_PAGE_TEMPLATE',
+    'FORM_RESPONSES_PAGE_TEMPLATE',
+    'FORM_PAGE_TEMPLATE',
+    'FORM_MESSAGE_PAGE_TEMPLATE',
 
     # Email template
     'THANK_YOU_EMAIL_TEMPLATE',
@@ -804,6 +851,12 @@ TEMPLATES = _NT('str', [
     f'{_main_app__templates_folder}/account_list.html',
     f'{_main_app__templates_folder}/add_update_account.html',
     f'{_main_app__templates_folder}/add_update_bond.html',
+
+    # Forms templates
+    f'{_main_app__templates_folder}/forms_list.html',
+    f'{_main_app__templates_folder}/form_responses.html',
+    f'{_main_app__templates_folder}/form.html',
+    f'{_main_app__templates_folder}/form_message.html',
 
     # Email templates
     f'{_email__templates_folder}/thank_you_email.html',
@@ -916,6 +969,11 @@ STAFF_PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {
         PAGES.ADD_BOND_PAGE,
         PAGES.UPDATE_BOND_PAGE,
         PAGES.AUTHORIZE_BOND,
+    ),
+    GROUPS.FORMS: (
+        PAGES.FORMS_LIST_PAGE,
+        PAGES.FORM_RESPONSES_PAGE,
+        PAGES.DOWNLOAD_FORM_FILE,
     ),
 }
 NON_STAFF_PERMISSIONS: Final[dict[str, tuple[str, ...]]] = {

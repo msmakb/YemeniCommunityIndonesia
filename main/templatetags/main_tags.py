@@ -64,3 +64,12 @@ def setPage(path: str, page_number: int) -> str:
         path += f'?page={page_number}'
 
     return path
+
+
+@register.filter(name="requireTopNav")
+def requireTopNav(url) -> bool:
+    if "/Form/" in url \
+            or "/MembershipTerms/" in url \
+            or "/About/" in url:
+        return True
+    return False

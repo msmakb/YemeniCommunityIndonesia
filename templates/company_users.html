@@ -1,95 +1,104 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-<div class="row">
-    <h1 class="col m-3">إدارة المستخدمين</h1>
-    <a class="col-2 btn btn-lg btn-success my-3 shadow rounded" href="{% url 'AddCompanyUserPage' %}"
-        style="float: left; margin-left: 35px;">
-        إضافة مستخدم جديد
-    </a>
-    <a class="col-2 btn btn-lg btn-info my-3 shadow rounded" href="{% url 'RolesPage' %}"
-        style="float: left; margin-left: 35px;">
-        قائمة وظائف المستخدم
-    </a>
-</div>
-
-{% if page_obj %}
 <div class="container-fluid">
-    <table class="table text-center">
-        <thead>
-            <tr>
-                <th scope="col">رقم</th>
-                <th scope="col">الأسم</th>
-                <th scope="col">أسم المستخدم</th>
-                <th scope="col">عنوان بريد إلكتروني</th>
-                <th scope="col">الوظيفة</th>
-                <th scope="col">نشط</th>
-                <th scope="col">آخر دخول</th>
-                <th scope="col">تاريخ الانضمام</th>
-                <th scope="col"></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for companyUser in page_obj %}
-            <tr>
-                <td>{{ page_obj.start_index|add:forloop.counter0 }}</td>
-                <td>
-                    {% if companyUser.user.get_full_name %}
-                    {{ companyUser.user.get_full_name }}
-                    {% else %}
-                    {{ companyUser.user.username }}
-                    {% endif %}
-                </td>
-                <td>{% if companyUser.user.is_active %}{{ companyUser.user.username }}{% else %}-{% endif %}</td>
-                <td>{{ companyUser.user.email }}</td>
-                <td>
-                    {% if companyUser.user.is_superuser %}
-                    مستخدم متميز
-                    {% else %}
-                    {{ companyUser.role.name }}
-                    {% endif %}
-                </td>
-                <td>
-                    {% if companyUser.user.is_active %}
-                    <img style="width: 20px; height:auto;" src="{% static 'admin/img/icon-yes.svg' %}" alt="Treu">
-                    {% else %}
-                    <img style="width: 20px; height:auto;" src="{% static 'admin/img/icon-no.svg' %}" alt="Treu">
-                    {% endif %}
-                </td>
-                <td>
-                    {% if companyUser.user.last_login %}
-                    {{ companyUser.user.last_login }}
-                    {% else %}-{% endif %}
-                </td>
-                <td>{{ companyUser.user.date_joined }}</td>
-                <td>
-                    {% if companyUser.user.username != 'admin' or request.user.username == 'admin' %}
-                    {% if request.user.is_superuser or not companyUser.user.is_superuser %}
-                    <a class="btn btn-warning" href="{% url 'UpdateCompanyUserPage' companyUser.user.id %}">تعديل</a>
-                    {% else %}
-                    <a class="btn btn-secondary" style="pointer-events: none;">تعديل</a>
-                    {% endif %}
-                    {% else %}
-                    <a class="btn btn-secondary" style="pointer-events: none;">تعديل</a>
-                    {% endif %}
+    <div class="row">
+        <h1 class="col m-3">إدارة المستخدمين</h1>
+        <a class="col-2 btn btn-lg btn-success my-3 shadow rounded" href="{% url 'AddCompanyUserPage' %}"
+            style="float: left; margin-left: 35px;">
+            إضافة مستخدم جديد
+        </a>
+        <a class="col-2 btn btn-lg btn-info my-3 shadow rounded" href="{% url 'RolesPage' %}"
+            style="float: left; margin-left: 35px;">
+            قائمة وظائف المستخدم
+        </a>
+    </div>
 
-                    {% if companyUser.user.username != 'admin' and companyUser.user != request.user %}
-                    {% if request.user.is_superuser or not companyUser.user.is_superuser %}
-                    <a class="btn btn-danger" href="{% url 'DeleteCompanyUserPage' companyUser.user.id %}"
-                        onclick="return confirm('هل أنت متأكد من إزالة هذا المستخدم تمامًا؟\nاسم المستخدم: {{ companyUser.user.get_full_name }}')">حذف</a>
-                    {% else %}
-                    <a class="btn btn-secondary" style="pointer-events: none;">حذف</a>
-                    {% endif %}
-                    {% else %}
-                    <a class="btn btn-secondary" style="pointer-events: none;">حذف</a>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    {% if page_obj %}
+    <div class="container-fluid shadow p-3 px-0 pt-0 mb-4 bg-white rounded col-11">
+        <div class="rounded-top header-bar"></div>
+        <div class="table-responsive pt-3">
+            <table class="table text-center">
+                <thead>
+                    <tr>
+                        <th scope="col">رقم</th>
+                        <th scope="col">الأسم</th>
+                        <th scope="col">أسم المستخدم</th>
+                        <th scope="col">عنوان بريد إلكتروني</th>
+                        <th scope="col">الوظيفة</th>
+                        <th scope="col">نشط</th>
+                        <th scope="col">آخر دخول</th>
+                        <th scope="col">تاريخ الانضمام</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for companyUser in page_obj %}
+                    <tr>
+                        <td>{{ page_obj.start_index|add:forloop.counter0 }}</td>
+                        <td>
+                            {% if companyUser.user.get_full_name %}
+                            {{ companyUser.user.get_full_name }}
+                            {% else %}
+                            {{ companyUser.user.username }}
+                            {% endif %}
+                        </td>
+                        <td>{% if companyUser.user.is_active %}{{ companyUser.user.username }}{% else %}-{% endif %}
+                        </td>
+                        <td>{{ companyUser.user.email }}</td>
+                        <td>
+                            {% if companyUser.user.is_superuser %}
+                            مستخدم متميز
+                            {% else %}
+                            {{ companyUser.role.name }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if companyUser.user.is_active %}
+                            <img style="width: 20px; height:auto;" src="{% static 'admin/img/icon-yes.svg' %}"
+                                alt="Treu">
+                            {% else %}
+                            <img style="width: 20px; height:auto;" src="{% static 'admin/img/icon-no.svg' %}"
+                                alt="Treu">
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if companyUser.user.last_login %}
+                            {{ companyUser.user.last_login }}
+                            {% else %}-{% endif %}
+                        </td>
+                        <td>{{ companyUser.user.date_joined }}</td>
+                        <td>
+                            {% if companyUser.user.username != 'admin' or request.user.username == 'admin' %}
+                            {% if request.user.is_superuser or not companyUser.user.is_superuser %}
+                            <a class="btn btn-warning"
+                                href="{% url 'UpdateCompanyUserPage' companyUser.user.id %}">تعديل</a>
+                            {% else %}
+                            <a class="btn btn-secondary" style="pointer-events: none;">تعديل</a>
+                            {% endif %}
+                            {% else %}
+                            <a class="btn btn-secondary" style="pointer-events: none;">تعديل</a>
+                            {% endif %}
+
+                            {% if companyUser.user.username != 'admin' and companyUser.user != request.user %}
+                            {% if request.user.is_superuser or not companyUser.user.is_superuser %}
+                            <a class="btn btn-danger" href="{% url 'DeleteCompanyUserPage' companyUser.user.id %}"
+                                onclick="return confirm('هل أنت متأكد من إزالة هذا المستخدم تمامًا؟\nاسم المستخدم: {{ companyUser.user.get_full_name }}')">حذف</a>
+                            {% else %}
+                            <a class="btn btn-secondary" style="pointer-events: none;">حذف</a>
+                            {% endif %}
+                            {% else %}
+                            <a class="btn btn-secondary" style="pointer-events: none;">حذف</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <h2 class="text-center text-warning">لم يتم إضافة أي مستخدم</h2>
+    {% endif %}
 </div>
-{% else %}
-<h2 class="text-center text-warning">لم يتم إضافة أي مستخدم</h2>
-{% endif %}
 {% endblock content %}

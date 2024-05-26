@@ -61,6 +61,8 @@ DELETE_ATTACHMENT: Final[Callable[[HttpRequest, str], None]] = lambda request: m
 # ==== Parameter App Messages ====
 PAGE_REQUIRE_RE_LOGIN: Final[Callable[[HttpRequest], None]] = lambda request: messages.info(
     request, "الرجاء إعادة تسجيل الدخول لعرض محتوى هذه الصفحة")
+PAGE_REQUIRE_LOGIN: Final[Callable[[HttpRequest], None]] = lambda request: messages.info(
+    request, "الرجاء تسجيل الدخول لعرض محتوى هذه الصفحة")
 
 # ==== Company User App Messages ====
 ADD_ROLE: Final[Callable[[HttpRequest], None]] = lambda request: messages.success(
@@ -108,3 +110,10 @@ INSUFFICIENT_BALANCE: Final[Callable[[HttpRequest, str], None]] = lambda request
     request, f"الحساب رقم \"{account_number}\" ليس لديه رصيد كاف")
 INVALID_DEFAULT_ACCOUNT: Final[Callable[[HttpRequest, str], None]] = lambda request, account_number: messages.error(
     request, f"الحساب الافتراضي رقم \"{account_number}\" غير صالح")
+
+# ==== Forms App Messages ====
+INVALID_FORMS: Final[Callable[[HttpRequest], None]] = lambda request: messages.warning(
+    request, "تنبه: توجد خصائص غير صالحة لبعض النماذج وتم استبعادها من هذه القائمة.",
+    extra_tags="dismissible")
+FORM_REQUIRE_LOGIN: Final[Callable[[HttpRequest], None]] = lambda request: messages.warning(
+    request, "يجب عليك تسجيل الدخول للوصول إلى هذا النموذج")

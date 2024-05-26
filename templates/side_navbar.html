@@ -1,0 +1,43 @@
+{% load main_tags %}
+{% load static %}
+<button class="toggle-btn rounded-pill" id="toggle-btn" onclick="toggleSideNav()">
+    <img src="{% static 'img/list.png' %}" alt="Menu List" style="width: 25px; height: inherit;">
+</button>
+<div class="sidenav" id="sidenav">
+    <div class="list-group" id="list-tab" style="position: relative; height: 100%; width: 100%;">
+        <h4 class="sidenav-item-header list-group-item text-center lalezar-regular border-0" style="display: inline;">
+            الجالية اليمنية في إندونيسيا</h4>
+        <a class="sidenav-item list-group-item list-group-item-action {% if request.path == index or "Dashboard" in request.path %}active{% endif %}"
+            id="list-home-list" href="{% url 'Index' %}">
+            <div class="m-0 p-0">
+                {% if menuItem.submenu is not None %}<span class="px-2"></span>{% endif %}
+                <img class="mx-1" src="{% static 'svg/home.svg' %}" alt="{{ menuItem.name }}"
+                    style="width: 25px; height: auto;">
+                <h5 class="d-inline">الصفحة الرئيسية</h5>
+            </div>
+        </a>
+        {% getUserMenus request as userMenus %}
+        {% for menuItem in userMenus %}
+        <a class="sidenav-item list-group-item list-group-item-action {% if menuItem.is_active %}active{% endif %}"
+            id="list-{{ menuItem.page }}-list"
+            href="{% if menuItem.arg %}{% url menuItem.page menuItem.arg %}{% else %}{% url menuItem.page %}{% endif %}">
+            <div class="m-0 p-0">
+                {% if menuItem.submenu is not None %}<span class="px-2"></span>{% endif %}
+                <img class="mx-1" src="{% static menuItem.icon %}" alt="{{ menuItem.name }}"
+                    style="width: 25px; height: auto;">
+                <h5 class="d-inline">{{ menuItem.name }}</h5>
+            </div>
+        </a>
+        {% endfor %}
+
+        <a class="sidenav-item list-group-item list-group-item-action mb-3 text-danger border-top"
+            id="list-messages-list" href="{% url 'Logout' %}" style="position: absolute; bottom: 0;">
+            <div class="m-0 p-0">
+                {% if menuItem.submenu is not None %}<span class="px-2"></span>{% endif %}
+                <img class="mx-1" src="{% static 'svg/logout.svg' %}" alt="{{ menuItem.name }}"
+                    style="width: 25px; height: auto;">
+                <h5 class="d-inline">تسجيل الخروج</h5>
+            </div>
+        </a>
+    </div>
+</div>

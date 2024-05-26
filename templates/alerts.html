@@ -8,10 +8,17 @@
     <div class="alert alert-success" role="alert">
         <p class="my-auto text-center">{{ message|safe }}</p>
     </div>
-    {% elif message.tags == "warning" %}
+    {% elif "warning" in message.tags %}
+    {% if "dismissible" in message.extra_tags %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message|safe }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% else %}
     <div class="alert alert-warning" role="alert">
         <p class="my-auto text-center">{{ message|safe }}</p>
     </div>
+    {% endif %}
     {% elif message.tags == "error" %}
     <div class="alert alert-danger" role="alert">
         <p class="my-auto text-center">{{ message|safe }}</p>
