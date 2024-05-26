@@ -195,7 +195,8 @@ class Person(BaseModel):
         person: Person | None = None
 
         if not user_data:
-            person = Person.get(account=user)
+            person = Person.objects.select_related(
+                "membership").get(account=user)
             user_data = {}
             changed = True
 
@@ -211,11 +212,14 @@ class Person(BaseModel):
 
         if user_data.get('has_membership') and not user_data.get('membership_id'):
             changed = True
-            if person:
+            if person and person.membership:
                 user_data['membership_id'] = person.membership.id
+                user_data['membership_card_number'] = person.membership.card_number
             else:
                 user_data['membership_id'] = Person.filter(
                     account=user).values_list('membership', flat=True).get()
+                user_data['membership_card_number'] = Person.filter(
+                    account=user).values('membership__card_number', flat=True).get()
 
         if not user_data.get('name_ar'):
             changed = True

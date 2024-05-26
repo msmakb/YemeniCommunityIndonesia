@@ -515,12 +515,10 @@ def getMembershipData(request: HttpRequest, pk: str) -> HttpResponse:
                         membership=OuterRef('id')).values('name_ar')[:1]
                 )).get(card_number=pk)
         response_data["status"] = "200"
-        print(membership)
         response_data["membership"] = membership
     except Membership.DoesNotExist:
         response_data["card_number"] = pk
         response_data["status"] = "404"
 
     json_data = json.dumps(response_data, ensure_ascii=False).encode('utf-8')
-    print(json_data)
     return HttpResponse(json_data, content_type='application/json; charset=utf-8')

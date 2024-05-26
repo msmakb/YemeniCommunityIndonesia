@@ -15,6 +15,7 @@ urlpatterns = [
     path('', include('company_user.urls')),
     path('', include('payment.urls')),
     path('', include('accounting.urls')),
+    path('', include('forms.urls')),
 ]
 
 # Static and Media URL Patterns

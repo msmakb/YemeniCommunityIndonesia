@@ -1,50 +1,55 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-<div class="row">
-    <h1 class="col m-3">إدارة وظائف المستخدم</h1>
-    <a class="col-2 btn btn-lg btn-success my-3 shadow rounded" href="{% url 'AddRolePage' %}"
-        style="float: left; margin-left: 35px;">
-        إضافة وظيفة جديد
-    </a>
-    <a class="col-2 btn btn-lg btn-info my-3 shadow rounded" href="{% url 'CompanyUsersPage' %}"
-        style="float: left; margin-left: 35px;">
-        رجوع
-    </a>
-</div>
-
-{% if page_obj %}
 <div class="container-fluid">
-    <table class="table text-center">
-        <thead>
-            <tr>
-                <th scope="col">رقم</th>
-                <th scope="col">أسم الوظيفة</th>
-                <th scope="col">الوصف</th>
-                <th scope="col">الصلاحيات</th>
-                <th scope="col">تاريخ الإنشاء</th>
-                <th scope="col"></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for role in page_obj %}
-            <tr>
-                <td>{{ page_obj.start_index|add:forloop.counter0 }}</td>
-                <td>{{ role.name }}</td>
-                <td>{{ role.description }}</td>
-                <td>{{ role.getArStrPermissions }}</td>
-                <td>{{ role.created }}</td>
-                <td>
-                    <a class="btn btn-outline-info" href="{% url 'UpdateRolePage' role.id %}">تعديل</a>
-                    <a class="btn btn-danger" href="{% url 'DeleteRolePage' role.id %}"
-                        onclick="return confirm('هل أنت متأكد من حذف هذه الوظيفة تمامًا؟\nاسم الوظيفة: {{ role.name}}')">حذف</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="row">
+        <h1 class="col m-3">إدارة وظائف المستخدم</h1>
+        <a class="col-2 btn btn-lg btn-success my-3 shadow rounded" href="{% url 'AddRolePage' %}"
+            style="float: left; margin-left: 35px;">
+            إضافة وظيفة جديد
+        </a>
+        <a class="col-2 btn btn-lg btn-info my-3 shadow rounded" href="{% url 'CompanyUsersPage' %}"
+            style="float: left; margin-left: 35px;">
+            رجوع
+        </a>
+    </div>
+
+    {% if page_obj %}
+    <div class="container-fluid shadow p-3 px-0 pt-0 mb-4 bg-white rounded col-11">
+        <div class="rounded-top header-bar"></div>
+        <div class="table-responsive pt-3">
+            <table class="table text-center">
+                <thead>
+                    <tr>
+                        <th scope="col">رقم</th>
+                        <th scope="col">أسم الوظيفة</th>
+                        <th scope="col">الوصف</th>
+                        <th scope="col">الصلاحيات</th>
+                        <th scope="col">تاريخ الإنشاء</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for role in page_obj %}
+                    <tr>
+                        <td>{{ page_obj.start_index|add:forloop.counter0 }}</td>
+                        <td>{{ role.name }}</td>
+                        <td>{{ role.description }}</td>
+                        <td>{{ role.getArStrPermissions }}</td>
+                        <td>{{ role.created }}</td>
+                        <td>
+                            <a class="btn btn-outline-info" href="{% url 'UpdateRolePage' role.id %}">تعديل</a>
+                            <a class="btn btn-danger" href="{% url 'DeleteRolePage' role.id %}"
+                                onclick="return confirm('هل أنت متأكد من حذف هذه الوظيفة تمامًا؟\nاسم الوظيفة: {{ role.name}}')">حذف</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <h2 class="text-center text-warning">لم يتم إضافة أي وظيفة</h2>
+    {% endif %}
 </div>
-{% else %}
-<h2 class="text-center text-warning">لم يتم إضافة أي وظيفة</h2>
-{% endif %}
 {% endblock content %}

@@ -41,54 +41,57 @@
 </form>
 
 <form method="GET">
-    <div class="container shadow p-3 mb-4 bg-white rounded w-50">
-        <div class="row">
-            <div class="col-3">
-                <div class="col form-group">
-                    <label class="" for="{{ bondFilter.form.bond_date.auto_id }}">
-                        {{ bondFilter.form.bond_date.label }}
-                    </label>
-                    {{ bondFilter.form.bond_date }}
-                </div>
-            </div>
-            <div class="col-9">
-                <div class="row">
+    <div class="container shadow bg-white rounded w-50 p-0">
+        <div class="rounded-top header-bar"></div>
+        <div class="p-3 mb-4">
+            <div class="row">
+                <div class="col-3">
                     <div class="col form-group">
-                        <label class="" for="{{ bondFilter.form.status.auto_id }}">
-                            {{ bondFilter.form.status.label }}
+                        <label class="" for="{{ bondFilter.form.bond_date.auto_id }}">
+                            {{ bondFilter.form.bond_date.label }}
                         </label>
-                        {{ bondFilter.form.status }}
-                    </div>
-                    <div class="col form-group">
-                        <label class="" for="{{ bondFilter.form.sender_account_number.auto_id }}">
-                            {{ bondFilter.form.sender_account_number.label }}
-                        </label>
-                        {{ bondFilter.form.sender_account_number }}
-                    </div>
-                    <div class="col form-group">
-                        <label class="" for="{{ bondFilter.form.reference_number.auto_id }}">
-                            {{ bondFilter.form.reference_number.label }}
-                        </label>
-                        {{ bondFilter.form.reference_number }}
+                        {{ bondFilter.form.bond_date }}
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col form-group">
-                        <label class="" for="{{ bondFilter.form.bond_type.auto_id }}">
-                            {{ bondFilter.form.bond_type.label }}
-                        </label>
-                        {{ bondFilter.form.bond_type }}
+                <div class="col-9">
+                    <div class="row">
+                        <div class="col form-group">
+                            <label class="" for="{{ bondFilter.form.status.auto_id }}">
+                                {{ bondFilter.form.status.label }}
+                            </label>
+                            {{ bondFilter.form.status }}
+                        </div>
+                        <div class="col form-group">
+                            <label class="" for="{{ bondFilter.form.sender_account_number.auto_id }}">
+                                {{ bondFilter.form.sender_account_number.label }}
+                            </label>
+                            {{ bondFilter.form.sender_account_number }}
+                        </div>
+                        <div class="col form-group">
+                            <label class="" for="{{ bondFilter.form.reference_number.auto_id }}">
+                                {{ bondFilter.form.reference_number.label }}
+                            </label>
+                            {{ bondFilter.form.reference_number }}
+                        </div>
                     </div>
-                    <div class="col form-group">
-                        <label class="" for="{{ bondFilter.form.receiver_account_number.auto_id }}">
-                            {{ bondFilter.form.receiver_account_number.label }}
-                        </label>
-                        {{ bondFilter.form.receiver_account_number }}
-                    </div>
-                    <div class="col text-center mt-1">
-                        <div class="row px-3">
-                            <button class="btn btn-md btn-outline-dark mt-3 mx-auto px-5 shadow rounded"
-                                type="submit">تصفية</button>
+                    <div class="row">
+                        <div class="col form-group">
+                            <label class="" for="{{ bondFilter.form.bond_type.auto_id }}">
+                                {{ bondFilter.form.bond_type.label }}
+                            </label>
+                            {{ bondFilter.form.bond_type }}
+                        </div>
+                        <div class="col form-group">
+                            <label class="" for="{{ bondFilter.form.receiver_account_number.auto_id }}">
+                                {{ bondFilter.form.receiver_account_number.label }}
+                            </label>
+                            {{ bondFilter.form.receiver_account_number }}
+                        </div>
+                        <div class="col text-center mt-1">
+                            <div class="row px-3">
+                                <button class="btn btn-md btn-outline-dark mt-3 mx-auto px-5 shadow rounded"
+                                    type="submit">تصفية</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -98,8 +101,9 @@
 </form>
 
 {% if page_obj %}
-<div class="container-fluid">
-    <div class="table-responsive">
+<div class="container-fluid shadow p-3 px-0 pt-0 mb-4 bg-white rounded col-11">
+    <div class="rounded-top header-bar"></div>
+    <div class="table-responsive pt-3">
         <table class="table text-center">
             <thead>
                 <tr>

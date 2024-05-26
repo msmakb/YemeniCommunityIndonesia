@@ -4,168 +4,200 @@
 {% block content %}
 <form method="POST" enctype="multipart/form-data" class="col-lg-8 col-xl-8 p-3 mx-auto">
     {% csrf_token %}
-    <h2>البيانات الشخصية</h2>
-    {% for field in person_form.visible_fields %}
-    <div class="form-group {% if field.name == 'call_number' or field.name == 'whatsapp_number' %}row{% endif %}">
-        {% if 'country_code' not in field.name %}
-        <div class="form-group col">
-            <label class="mt-3 lead" for="{{ field.auto_id }}">
-                {{ field.label }}
-                {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
-            </label>
-            {% getFieldErrors person_form field.name as errors %}
-            <div class="{% if errors %}border border-danger shake{% endif %}">{{ field }}</div>
-            {% if errors %}<span class="text-danger">{{ errors }}</span>{% endif %}
-            {% if field.name == "photograph" %}<a class="btn btn-sm btn-outline-info mt-2" data-toggle="modal"
-                data-target="#photoModel">شروط الصورة الشخصية</a>{% endif %}
-        </div>
-        {% endif %}
-        {% if field.name == 'call_number' %}
-        <div class="form-group col-4">
-            <label class="mt-3 lead" for="{{ person_form.country_code1.auto_id }}">
-                {{ person_form.country_code1.label }}
-                <span class="text-danger">*</span>
-            </label>
-            {% getFieldErrors person_form person_form.country_code1.name as errors %}
-            <div class="{% if errors %}border border-danger{% endif %}">{{ person_form.country_code1 }}</div>
-            {% if errors %}<span class="text-danger">{{ errors }}</span>{% endif %}
-        </div>
-        {% endif %}
-        {% if field.name == 'whatsapp_number' %}
-        <div class="form-group col-4">
-            <label class="mt-3 lead" for="{{ person_form.country_code2.auto_id }}">
-                {{ person_form.country_code2.label }}
-                <span class="text-danger">*</span>
-            </label>
-            {% getFieldErrors person_form person_form.country_code2.name as errors %}
-            <div class="{% if errors %}border border-danger{% endif %}">{{ person_form.country_code2 }}</div>
-            {% if errors %}<span class="text-danger">{{ errors }}</span>{% endif %}
-        </div>
-        {% endif %}
-    </div>
-    {% endfor %}
-    <h2 class="mt-5 mb-0">البيانات الأكاديمية</h2>
-    {% for field in academic_form %}
-    <div class="form-group">
-        <label class="mt-3 lead" for="{{ field.auto_id }}">
-            {{ field.label }}
-            {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
-        </label>
-        {% getFieldErrors academic_form field.name as errors %}
-        <div class="{% if errors %}border border-danger{% endif %}">{{ field }}</div>
-        {% if errors %}<span class="text-danger">{{ errors }}</span>{% endif %}
-    </div>
-    {% endfor %}
-    <h2 class="mt-5 mb-0">مكان الإقامة الحالية</h2>
-    {% for field in address_form %}
-    <div class="form-group">
-        <label class="mt-3 lead" for="{{ field.auto_id }}">
-            {{ field.label }}
-            {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
-        </label>
-        {% getFieldErrors address_form field.name as errors %}
-        <div class="{% if errors %}border border-danger{% endif %}">{{ field }}</div>
-        {% if field.name == 'city' %}
-        <span>إذا كانت المدينة التي تعيش فيها غير موجودة ، فيرجى التواصل بالدعم الفني لإضافتها</span>
-        {% endif %}
-        {% if errors %}<span class="text-danger">{{ errors }}</span>{% endif %}
-    </div>
-    {% endfor %}
-    <h2 class="mt-5 mb-0">المعلومات العائلية</h2>
-    {% for field in family_members_form %}
-    <div class="form-group">
-        <label class="mt-3 lead" for="{{ field.auto_id }}">
-            {{ field.label }}
-            {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
-        </label>
-        {% getFieldErrors family_members_form field.name as errors %}
-        <div class="{% if errors %}border border-danger{% endif %}">{{ field }}</div>
-        {% if errors %}<span class="text-danger">{{ errors }}</span>{% endif %}
-    </div>
-    {% endfor %}
-    <h6 class="mt-3 mb-0 lead">معلومات أفراد العائلة المتواجدين في إندونيسيا (إختياري)</h6>
-
-    <li class="mt-3 mb-0 lead">الزوج / الزوجة / الزوجات (إختياري)</li>
-    {% for i in 4|rng %}
-    <div id="partner{{i}}" class="" {% if i != 0 %} style="display: none;" {% endif %}>
-        <div class="row p-1">
-            <div class="col-md-2">
-                <span class="lead">{% if i == 0 %}الزوج / الزوجة {% else %} الزوجة {{i|add:1}}
-                    {% endif %}</span>
+    <div class="card shadow rounded mt-4 p-0">
+        <div class="rounded-top header-bar"></div>
+        <div class="p-3">
+            <h2>البيانات الشخصية</h2>
+            {% for field in person_form.visible_fields %}
+            <div
+                class="form-group {% if field.name == 'call_number' or field.name == 'whatsapp_number' %}row{% endif %}">
+                {% if 'country_code' not in field.name %}
+                <div class="form-group col">
+                    <label class="mt-3 lead" for="{{ field.auto_id }}">
+                        {{ field.label }}
+                        {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                    </label>
+                    {% getFieldErrors person_form field.name as errors %}
+                    <div class="{% if errors %}border border-danger shake{% endif %}">{{ field }}</div>
+                    {% if errors %}<span class="text-danger">{{ errors }}</span>{% endif %}
+                    {% if field.name == "photograph" %}<a class="btn btn-sm btn-outline-info mt-2" data-toggle="modal"
+                        data-target="#photoModel">شروط الصورة الشخصية</a>{% endif %}
+                </div>
+                {% endif %}
+                {% if field.name == 'call_number' %}
+                <div class="form-group col-4">
+                    <label class="mt-3 lead" for="{{ person_form.country_code1.auto_id }}">
+                        {{ person_form.country_code1.label }}
+                        <span class="text-danger">*</span>
+                    </label>
+                    {% getFieldErrors person_form person_form.country_code1.name as errors %}
+                    <div class="{% if errors %}border border-danger{% endif %}">{{ person_form.country_code1 }}</div>
+                    {% if errors %}<span class="text-danger">{{ errors }}</span>{% endif %}
+                </div>
+                {% endif %}
+                {% if field.name == 'whatsapp_number' %}
+                <div class="form-group col-4">
+                    <label class="mt-3 lead" for="{{ person_form.country_code2.auto_id }}">
+                        {{ person_form.country_code2.label }}
+                        <span class="text-danger">*</span>
+                    </label>
+                    {% getFieldErrors person_form person_form.country_code2.name as errors %}
+                    <div class="{% if errors %}border border-danger{% endif %}">{{ person_form.country_code2 }}</div>
+                    {% if errors %}<span class="text-danger">{{ errors }}</span>{% endif %}
+                </div>
+                {% endif %}
             </div>
-            <div class="col-md-8 col-sm-9">
-                <input name="partner_name{{i}}" type="text" class="form-control shadow-sm rounded"
-                    placeholder='الأسم بالعربي'>
-            </div>
-            <div class="col-md-2 col-sm-3">
-                <input name="partner_age{{i}}" type="number" class="form-control shadow-sm rounded" placeholder='العمر'>
-            </div>
-        </div>
-    </div>
-    {% endfor %}
-    <div class="container">
-        <div class="row p-3">
-            <a id="add-prt-btn" style="width: 35px; height: 35px;" class="btn btn-outline-success shadow-sm rounded"
-                onclick="addPrt()">+</a>
-            <a id="remove-prt-btn" style="margin-right:10px; width: 35px; height: 35px;"
-                class=" btn btn-outline-danger shadow-sm rounded" onclick="removePrt()">-</a>
+            {% endfor %}
         </div>
     </div>
 
-    <li class="mt-3 mb-0 lead">الأبناء (إختياري)</li>
-    {% for i in 10|rng %}
-    <div id="child{{i}}" {% if i != 0 %} style="display: none;" {% endif %}>
-        <div class="row p-1">
-            <div class="col-md-2">
-                <span class="lead">الإبن / الإبنة {{i|add:1}}</span>
+    <div class="card shadow rounded mt-4 p-0">
+        <div class="rounded-top header-bar"></div>
+        <div class="p-3">
+            <h2>البيانات الأكاديمية</h2>
+            {% for field in academic_form %}
+            <div class="form-group">
+                <label class="mt-3 lead" for="{{ field.auto_id }}">
+                    {{ field.label }}
+                    {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                </label>
+                {% getFieldErrors academic_form field.name as errors %}
+                <div class="{% if errors %}border border-danger{% endif %}">{{ field }}</div>
+                {% if errors %}<span class="text-danger">{{ errors }}</span>{% endif %}
             </div>
-            <div class="col-md-8 col-sm-9">
-                <input name="child_name{{i}}" type="text" class="form-control shadow-sm rounded"
-                    placeholder='الأسم بالعربي'>
-            </div>
-            <div class="col-md-2 col-sm-3">
-                <input name="child_age{{i}}" type="number" class="form-control shadow-sm rounded" placeholder='العمر'>
-            </div>
+            {% endfor %}
         </div>
     </div>
-    {% endfor %}
-    <div class="container">
-        <div class="row p-3">
-            <a id="add-chd-btn" style="width: 35px; height: 35px;" class="btn btn-outline-success  shadow-sm rounded"
-                onclick="addChd()">+</a>
-            <a id="remove-chd-btn" style="margin-right:10px; width: 35px; height: 35px;"
-                class=" btn btn-outline-danger  shadow-sm rounded" onclick="removeChd()">-</a>
+    <div class="card shadow rounded mt-4 p-0">
+        <div class="rounded-top header-bar"></div>
+        <div class="p-3">
+            <h2>مكان الإقامة الحالية</h2>
+            {% for field in address_form %}
+            <div class="form-group">
+                <label class="mt-3 lead" for="{{ field.auto_id }}">
+                    {{ field.label }}
+                    {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                </label>
+                {% getFieldErrors address_form field.name as errors %}
+                <div class="{% if errors %}border border-danger{% endif %}">{{ field }}</div>
+                {% if field.name == 'city' %}
+                <span>إذا كانت المدينة التي تعيش فيها غير موجودة ، فيرجى التواصل بالدعم الفني لإضافتها</span>
+                {% endif %}
+                {% if errors %}<span class="text-danger">{{ errors }}</span>{% endif %}
+            </div>
+            {% endfor %}
         </div>
     </div>
 
-    <label for="membership" class="mt-3 lead">هل ترغب بالحصول على عضوية في الجالية اليمنية؟</label>
-    <select id="membership" name="membership" class="form-select mt-1 mb-3 w-25 shadow-sm rounded" onchange="isAgree()">
-        <option value="0">لا</option>
-        <option value="1">نعم</option>
-    </select>
-    <h6>إذا كنت ترغب بالحصول على العضوية لابد أن توافق على جميع شروط العضوية</h6>
-    <h6 class="lead mt-3">شروط العضوية</h6>
-    <ol type="1" class="">
-        <li>ان يكون يمني يقيم في جمهورية إ ندونيسيا إقامة نظامية.</li>
-        <li> ألا يقل عمره عن 18 سنة.</li>
-        <li>أن يقوم بتسجيل كافة بياناته في الفورم.</li>
-        <li>أن يكون انتسابه للجالية بناء على رغبته الذاتية. </li>
-        <li>أن يلتزم بكل أنظمة ولوائح الجالية. </li>
-        <li>أن يدفع رسوم الانتساب عند التسجيل، وكذلك رسوم الاشتراكات الشهرية (50.000) روبية.</li>
-    </ol>
-    <div class="form-check form-check-inline">
-        <input class="form-check-input" type="checkbox" value="agreed" id="agree" name="agree" disabled>
-        <label class="form-check-label h5 mt-md-3 mt-sm-3" for="agree">أوافق على جميع شروط
-            العضوية المذكورة أعلاه </label>
+    <div class="card shadow rounded mt-4 p-0">
+        <div class="rounded-top header-bar"></div>
+        <div class="p-3">
+            <h2>المعلومات العائلية</h2>
+            {% for field in family_members_form %}
+            <div class="form-group">
+                <label class="mt-3 lead" for="{{ field.auto_id }}">
+                    {{ field.label }}
+                    {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                </label>
+                {% getFieldErrors family_members_form field.name as errors %}
+                <div class="{% if errors %}border border-danger{% endif %}">{{ field }}</div>
+                {% if errors %}<span class="text-danger">{{ errors }}</span>{% endif %}
+            </div>
+            {% endfor %}
+            <h6 class="mt-3 mb-0 lead">معلومات أفراد العائلة المتواجدين في إندونيسيا (إختياري)</h6>
+
+            <li class="mt-3 mb-0 lead">الزوج / الزوجة / الزوجات (إختياري)</li>
+            {% for i in 4|rng %}
+            <div id="partner{{i}}" class="" {% if i != 0 %} style="display: none;" {% endif %}>
+                <div class="row p-1">
+                    <div class="col-md-2">
+                        <span class="lead">{% if i == 0 %}الزوج / الزوجة {% else %} الزوجة {{i|add:1}}
+                            {% endif %}</span>
+                    </div>
+                    <div class="col-md-8 col-sm-9">
+                        <input name="partner_name{{i}}" type="text" class="form-control shadow-sm rounded"
+                            placeholder='الأسم بالعربي'>
+                    </div>
+                    <div class="col-md-2 col-sm-3">
+                        <input name="partner_age{{i}}" type="number" class="form-control shadow-sm rounded"
+                            placeholder='العمر'>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            <div class="container">
+                <div class="row p-3">
+                    <a id="add-prt-btn" style="width: 35px; height: 35px;"
+                        class="btn btn-outline-success shadow-sm rounded" onclick="addPrt()">+</a>
+                    <a id="remove-prt-btn" style="margin-right:10px; width: 35px; height: 35px;"
+                        class=" btn btn-outline-danger shadow-sm rounded" onclick="removePrt()">-</a>
+                </div>
+            </div>
+
+            <li class="mt-3 mb-0 lead">الأبناء (إختياري)</li>
+            {% for i in 10|rng %}
+            <div id="child{{i}}" {% if i != 0 %} style="display: none;" {% endif %}>
+                <div class="row p-1">
+                    <div class="col-md-2">
+                        <span class="lead">الإبن / الإبنة {{i|add:1}}</span>
+                    </div>
+                    <div class="col-md-8 col-sm-9">
+                        <input name="child_name{{i}}" type="text" class="form-control shadow-sm rounded"
+                            placeholder='الأسم بالعربي'>
+                    </div>
+                    <div class="col-md-2 col-sm-3">
+                        <input name="child_age{{i}}" type="number" class="form-control shadow-sm rounded"
+                            placeholder='العمر'>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            <div class="container">
+                <div class="row p-3">
+                    <a id="add-chd-btn" style="width: 35px; height: 35px;"
+                        class="btn btn-outline-success  shadow-sm rounded" onclick="addChd()">+</a>
+                    <a id="remove-chd-btn" style="margin-right:10px; width: 35px; height: 35px;"
+                        class=" btn btn-outline-danger  shadow-sm rounded" onclick="removeChd()">-</a>
+                </div>
+            </div>
+        </div>
     </div>
-    <p class="lead">
-        ملاحظة: جميع العضويات الممنوحة من خارج الموقع الرسمي سيتم إلغاؤها.
-        إذا كانت لديك عضوية سابقة الرجاء طلب
-        عضوية جديدة. الدفعات السابقة سيتم إحتسابها مع العضوية الجديدة.
-    </p>
-    <div>
-        <button type="submit" class="btn btn-lg btn-info mt-4 mb-5 shadow rounded"
-            onclick="validateForm()">إرسال</button>
+    <div class="card shadow rounded my-4 p-0">
+        <div class="rounded-top header-bar"></div>
+        <div class="p-3">
+            <h2>العضوية</h2>
+            <label for="membership" class="mt-3 lead">هل ترغب بالحصول على عضوية في الجالية اليمنية؟</label>
+            <select id="membership" name="membership" class="form-select mt-1 mb-3 w-25 shadow-sm rounded"
+                onchange="isAgree()">
+                <option value="0">لا</option>
+                <option value="1">نعم</option>
+            </select>
+            <h6>إذا كنت ترغب بالحصول على العضوية لابد أن توافق على جميع شروط العضوية</h6>
+            <h6 class="lead mt-3">شروط العضوية</h6>
+            <ol type="1" class="">
+                <li>ان يكون يمني يقيم في جمهورية إ ندونيسيا إقامة نظامية.</li>
+                <li> ألا يقل عمره عن 18 سنة.</li>
+                <li>أن يقوم بتسجيل كافة بياناته في الفورم.</li>
+                <li>أن يكون انتسابه للجالية بناء على رغبته الذاتية. </li>
+                <li>أن يلتزم بكل أنظمة ولوائح الجالية. </li>
+                <li>أن يدفع رسوم الانتساب عند التسجيل، وكذلك رسوم الاشتراكات الشهرية (50.000) روبية.</li>
+            </ol>
+            <div class="form-check check-box-ar">
+                <input class="form-check-input check-box-ar-input" type="checkbox" value="agreed" id="agree"
+                    name="agree" disabled>
+                <label class="form-check-label check-box-ar-label h5 mt-md-3 mt-sm-3" for="agree">أوافق على جميع شروط
+                    العضوية المذكورة أعلاه </label>
+            </div>
+            <p class="lead">
+                ملاحظة: جميع العضويات الممنوحة من خارج الموقع الرسمي سيتم إلغاؤها.
+                إذا كانت لديك عضوية سابقة الرجاء طلب
+                عضوية جديدة. المدفوعات السابقة سيتم إحتسابها مع العضوية الجديدة.
+            </p>
+            <div>
+                <button type="submit" class="btn btn-lg btn-warning shadow rounded"
+                    onclick="validateForm()">إرسال</button>
+            </div>
+        </div>
     </div>
 </form>
 

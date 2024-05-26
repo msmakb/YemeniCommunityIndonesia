@@ -12,6 +12,9 @@
         <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/logo.ico' %}">
         <!-- Fonts -->
         <link rel="stylesheet" type='text/css' href="{% static 'fonts/NotoNaskhArabic-Regular.ttf' %}">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Lalezar&display=swap" rel="stylesheet">
         <!-- CSS Styles -->
         <link href="{% static 'css/bootstrap/bootstrap.min.css' %}?{% cache_bust %}" rel="stylesheet">
         <link rel="stylesheet" type='text/css' href="{% static 'css/styles.css' %}?{% cache_bust %}">
@@ -20,11 +23,22 @@
     </head>
 
     <body class="bg-light">
-        <div id="screen">
-            {% include 'navbar.html' %}
-            {% if "Login" not in request.path %}{% include 'alerts.html' %}{% endif %}
-            {% block content %}{% endblock content %}
-            {% include 'pagination.html' %}
+        <nav class="navbar sticky-top header-bar"></nav>
+        <div class="row m-0 p-0">
+            {% if request.user.is_authenticated and request.user.is_staff and not request.get_full_path|requireTopNav %}
+            <div class="col-0 col-md-2 m-0 p-0">
+                {% include 'side_navbar.html' %}
+            </div>
+            {% endif %}
+            <div
+                class="{% if request.user.is_authenticated and request.user.is_staff and not request.get_full_path|requireTopNav %}col-12 col-md-10{% endif %} m-0 p-0">
+                {% include 'navbar.html' %}
+                <div class="m-0 p-0">
+                    {% if "Login" not in request.path %}{% include 'alerts.html' %}{% endif %}
+                    {% block content %}{% endblock content %}
+                    {% include 'pagination.html' %}
+                </div>
+            </div>
         </div>
         {% include 'loading_screen.html' %}
     </body>
