@@ -38,8 +38,8 @@ def membershipPaymentPage(request: HttpRequest) -> HttpResponse:
     from_month: datetime = datetime.strptime(
         membership.getNextPaymentStartMonth(), '%m/%Y')
 
-    number_of_overdue_months: int = relativedelta(
-        datetime.now(), from_month).months
+    difference = relativedelta(datetime.now(), from_month)
+    number_of_overdue_months: int = (difference.years * 12) + difference.months
     number_of_overdue_months = number_of_overdue_months if number_of_overdue_months > 0 else 0
 
     if request.method == constants.POST_METHOD:
@@ -124,8 +124,8 @@ def membershipPaymentHistoryPage(request: HttpRequest) -> HttpResponse:
     from_month: datetime = datetime.strptime(
         membership.getNextPaymentStartMonth(), '%m/%Y')
 
-    number_of_overdue_months: int = relativedelta(
-        datetime.now(), from_month).months
+    difference = relativedelta(datetime.now(), from_month)
+    number_of_overdue_months: int = (difference.years * 12) + difference.months
     number_of_overdue_months = number_of_overdue_months if number_of_overdue_months > 0 else 0
 
     MEMBERSHIP_COST_PER_MONTH: Final[float] = 50_000.00
