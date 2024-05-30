@@ -74,7 +74,10 @@ def formsListPage(request: HttpRequest) -> HttpResponse:
                         required: bool = bool(request.POST.get('required'))
                         autofill: bool = bool(request.POST.get('autofill'))
                         isHidden: bool = bool(request.POST.get('isHidden'))
-                        index: int = int(request.POST.get('fieldIndex'))
+                        try:
+                            index: int = int(request.POST.get('fieldIndex'))
+                        except ValueError:
+                            index: int = -1
                         fileType: str = request.POST.get('fileType')
                         headerImg: UploadedFile | None = request.FILES.get(
                             'headerImg')
@@ -104,8 +107,11 @@ def formsListPage(request: HttpRequest) -> HttpResponse:
                                         str(form_headers_dir))
                             file_path: str = str(form_headers_dir /
                                                  (f"{formId}." + headerImg.name.split('.')[-1]))
-                            default_storage.save(file_path, headerImg)
-                            file_url = default_storage.url(file_path)
+                            file_name = default_storage.save(
+                                file_path, headerImg)
+                            file_url: str = default_storage.url(file_name)
+                            logger.info(
+                                "Uploaded file url => " + str(file_url))
 
                             index = -1
                             itemId = "headImg"

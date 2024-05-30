@@ -151,5 +151,10 @@ LOGGING = {
             'level': LOGGING_LEVEL,
             'propagate': False,
         },
+        "google": {
+            'handlers': HANDLERS,
+            'level': LOGGING_LEVEL,
+            'propagate': False,
+        },
     },
 }
