@@ -11,6 +11,8 @@
 * Version: 1.1.0
 """
 import json
+import logging
+from logging import Logger
 from pathlib import Path
 from dataclasses import dataclass, field, fields
 from datetime import datetime
@@ -24,6 +26,9 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.discovery import Resource
 from googleapiclient.http import MediaFileUpload
+
+
+logger: Logger = logging.getLogger("google")
 
 
 FILE_TYPE = namedtuple('str', [
@@ -123,6 +128,10 @@ class FileResources:
 
     def __post_init__(self) -> None:
         self.isOwned = False
+        if not self.owners:
+            self.owners = []
+        if not self.permissions:
+            self.permissions = []
         for owner in self.owners:
             if owner.get("me") == True:
                 self.isOwned = True
@@ -533,6 +542,9 @@ class GoogleFormsService(GoogleService):
             try:
                 response: dict[str, Any] = self.formsService.get(
                     **metaData).execute()
+                logger.info("========Form======")
+                logger.info(response)
+                logger.info("==================")
                 return self._mapForm(response)
             except HttpError as error:
                 error_content = json.loads(error.content)

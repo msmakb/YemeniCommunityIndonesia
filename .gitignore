@@ -33,6 +33,7 @@ company_user/migrations/0*.py
 parameter/migrations/0*.py
 monitor/migrations/0*.py
 accounting/migrations/0*.py
+data/google_client.json
 media/*
 *.rdb
 factories.py
