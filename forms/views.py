@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 from typing import Any
 import requests
+import urllib.parse
 
 from django.conf import settings
 from django.core.files.storage import default_storage
@@ -478,6 +479,7 @@ def formPage(request: HttpRequest, formId: str, messageType: str | None = None) 
                 data: bytes = b''
                 for field_name, value in request.POST.items():
                     if field_name.startswith("entry."):
+                        value = urllib.parse.quote(value)
                         data += f"{field_name}={value}&".encode("utf-8")
                 data += b"pageHistory="
                 for i in range(form.numberOfPages):
