@@ -255,7 +255,7 @@ def formResponsesPage(request: HttpRequest, formId: str) -> HttpResponse:
                     if item.itemType == constants.CUSTOM_FORM_ITEM_TYPE.HEADER_IMAGE:
                         continue
 
-                    has_custom_field = True
+                    has_custom_fields = True
                     custom_field: GoogleFormItem = GoogleFormItem(
                         **model_to_dict(item))
 
@@ -277,7 +277,7 @@ def formResponsesPage(request: HttpRequest, formId: str) -> HttpResponse:
                         custom_fields_questions_order.append(
                             custom_field.itemId)
 
-                if has_custom_field:
+                if has_custom_fields:
                     for response in form_responses:
                         try:
                             custom_form_response: CustomFormResponse = CustomFormResponse.get(
@@ -307,6 +307,12 @@ def formResponsesPage(request: HttpRequest, formId: str) -> HttpResponse:
             logger.exception(e)
 
             MSG.ERROR_MESSAGE(request, repr(e))
+
+    if form_responses:
+        form_responses = sorted(
+            form_responses,
+            reverse=True,
+            key=lambda response: response.createTime)
     context: dict[str, Any] = {"form": form, "form_responses": form_responses,
                                "numberOfResponses": len(form_responses)}
     return render(request, constants.TEMPLATES.FORM_RESPONSES_PAGE_TEMPLATE, context=context)
