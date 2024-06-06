@@ -315,6 +315,11 @@ def addMembershipPaymentsPage(request: HttpRequest) -> HttpResponse:
     form: MembershipPaymentForm = MembershipPaymentForm()
 
     if request.method == constants.POST_METHOD:
+        if not request.POST.get('number_of_months'):
+            MSG.ERROR_MESSAGE(request, "خطأ في الإدخال")
+            context: dict[str, Any] = {'form': form}
+            return render(request, constants.TEMPLATES.ADD_MEMBERSHIP_PAYMENTS_PAGE_TEMPLATE, context)
+
         membership: Membership = Membership.get(
             card_number=request.POST.get("membership_card"))
 
