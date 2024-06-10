@@ -22,6 +22,8 @@ monitor/migrations/__pycache__/
 monitor/__pycache__/
 accounting/migrations/__pycache__/
 accounting/__pycache__/
+whatsapp/migrations/__pycache__/
+whatsapp/__pycache__/
 static/static_collection/
 db.sqlite3
 payment/migrations/0*.py
@@ -33,6 +35,7 @@ company_user/migrations/0*.py
 parameter/migrations/0*.py
 monitor/migrations/0*.py
 accounting/migrations/0*.py
+whatsapp/migrations/0*.py
 data/google_client.json
 media/*
 *.rdb
