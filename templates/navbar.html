@@ -1,50 +1,57 @@
 {% load main_tags %}
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <a class="navbar-brand" href="{% url 'Index' %}">الجالية اليمنية في إندونيسيا</a>
-  <div style="float: left;">
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText"
-      aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+{% if not request.user.is_authenticated or not request.user.is_staff or request.get_full_path|requireTopNav %}
+<nav class="navbar navbar-expand-lg navbar-light lead fw-bold bg-nav">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{% url 'Index' %}"><span class="h3 lalezar-regular">الجالية اليمنية في
+        إندونيسيا</span></a>
+    <div style="float: left;">
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText"
+        aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </div>
+    <div class="collapse navbar-collapse" id="navbarText">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          {% url 'Index' as index %}
+          <a class="nav-link {% if request.path == index or "Dashboard" in request.path %}active{% endif %}"
+            href="{% url 'Index' %}">الصفحة
+            الرئيسية</a>
+        </li>
+        {% if request.user.is_authenticated and not request.user.is_staff %}
+        {% getUserMenus request as userMenus %}
+        {% for menuItem in userMenus %}
+        {% if menuItem.submenu is None %}
+        <li class="nav-item">
+          <a class="nav-link {% if menuItem.is_active %}active{% endif %}"
+            href="{% if menuItem.arg %}{% url menuItem.page menuItem.arg %}{% else %}{% url menuItem.page %}{% endif %}">
+            {{ menuItem.name }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        {% if not request.user.is_authenticated %}
+        <li class="nav-item">
+          {% url 'Donation' as donation %}
+          <a class="nav-link {% if request.path == donation %}active{% endif %}" href="{% url 'Donation' %}">ادعمنا</a>
+        </li>
+        {% endif %}
+        <li class="nav-item">
+          {% url 'MembershipTerms' as membershipTerms %}
+          <a class="nav-link {% if request.path == membershipTerms %}active{% endif %}"
+            href="{% url 'MembershipTerms' %}">شروط العضوية</a>
+        </li>
+        <li class="nav-item">
+          {% url 'About' as about %}
+          <a class="nav-link {% if request.path == about %}active{% endif %}" href="{% url 'About' %}">حول</a>
+        </li>
+      </ul>
+    </div>
+    {% if request.user.is_authenticated %}
+    <span class="navbar-text">مرحبًا,
+      {% if request.user.get_full_name %}{{ request.user.get_full_name }}{% else %}{{ request.user }}{% endif %}</span>
+    <span><a class="text-danger nav-item nav-link" href="{% url 'Logout' %}">تسجيل الخروج</a></span>
+    {% endif %}
   </div>
-  <div class="collapse navbar-collapse" id="navbarText">
-    <ul class="navbar-nav mr-auto">
-      <li class="nav-item">
-        {% url 'Index' as index %}
-        <a class="nav-link {% if request.path == index or "Dashboard" in request.path %}active{% endif %}"
-          href="{% url 'Index' %}">الصفحة
-          الرئيسية</a>
-      </li>
-      {% getUserMenus request as userMenus %}
-      {% for menuItem in userMenus %}
-      {% if menuItem.submenu is None %}
-      <li class="nav-item">
-        <a class="nav-link {% if menuItem.is_active %}active{% endif %}"
-          href="{% if menuItem.arg %}{% url menuItem.page menuItem.arg %}{% else %}{% url menuItem.page %}{% endif %}">
-          {{ menuItem.name }}</a>
-      </li>
-      {% endif %}
-      {% endfor %}
-      {% if not request.user.is_authenticated %}
-      <li class="nav-item">
-        {% url 'Donation' as donation %}
-        <a class="nav-link {% if request.path == donation %}active{% endif %}" href="{% url 'Donation' %}">ادعمنا</a>
-      </li>
-      {% endif %}
-      <li class="nav-item">
-        {% url 'MembershipTerms' as membershipTerms %}
-        <a class="nav-link {% if request.path == membershipTerms %}active{% endif %}"
-          href="{% url 'MembershipTerms' %}">شروط العضوية</a>
-      </li>
-      <li class="nav-item">
-        {% url 'About' as about %}
-        <a class="nav-link {% if request.path == about %}active{% endif %}" href="{% url 'About' %}">حول</a>
-      </li>
-    </ul>
-  </div>
-  {% if request.user.is_authenticated %}
-  <span class="navbar-text text-white">مرحبًا,
-    {% if request.user.get_full_name %}{{ request.user.get_full_name }}{% else %}{{ request.user }}{% endif %}</span>
-  <span><a class="text-warning nav-item nav-link" href="{% url 'Logout' %}">تسجيل الخروج</a></span>
-  {% endif %}
 </nav>
+{% endif %}

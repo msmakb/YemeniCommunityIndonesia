@@ -5,6 +5,8 @@ from django import forms
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.forms import UserCreationForm, SetPasswordForm, UserChangeForm
 from django.contrib.auth.validators import ASCIIUsernameValidator
+from django.db.utils import OperationalError
+from django.forms.fields import Field
 
 from main import constants
 
@@ -84,15 +86,9 @@ class RoleForm(forms.ModelForm):
 
 
 class CreateUserForm(UserCreationForm):
-
     role = forms.ChoiceField(
         label='الوظيفة',
-        choices=[
-            ('', '---------'),
-            *[(role.pk, role)
-              for role in Role.getAll().exclude(name='superuser')],
-            (0, 'مستخدم متميز'),
-        ],
+        choices=[('', '---------')],
         widget=forms.Select(
             attrs={
                 'required': True,
@@ -110,8 +106,17 @@ class CreateUserForm(UserCreationForm):
             self.fields['role'].choices = role_choices
             self.fields['role'].widget.choices = role_choices
 
-        self.fields['password1'].widget = forms.HiddenInput()
-        self.fields['password2'].widget = forms.HiddenInput()
+        role_choices = [
+            ('', '---------'),
+            *[(role.pk, role)
+              for role in Role.getAll().exclude(name='superuser')],
+            (0, 'مستخدم متميز'),
+        ]
+        form_fields: dict[str, type[Field]] = self.fields
+        form_fields["role"].choices = role_choices
+        form_fields["role"].widget.choices = role_choices
+        form_fields['password1'].widget = forms.HiddenInput()
+        form_fields['password2'].widget = forms.HiddenInput()
 
     class Meta:
         model = User
@@ -236,15 +241,9 @@ class SetUsernameAndPasswordForm(SetPasswordForm):
 
 
 class ChangeUserDataForm(UserChangeForm):
-
     role = forms.ChoiceField(
         label='الوظيفة',
-        choices=[
-            ('', '---------'),
-            *[(role.pk, role)
-              for role in Role.getAll().exclude(name='superuser')],
-            (0, 'مستخدم متميز'),
-        ],
+        choices=[('', '---------')],
         widget=forms.Select(
             attrs={
                 'required': True,
@@ -265,12 +264,24 @@ class ChangeUserDataForm(UserChangeForm):
             role_id = 0
         else:
             role_id = CompanyUser.get(user=self.instance).role.pk
-        self.fields['role'].initial = role_id
+
+        form_fields: dict[str, type[Field]] = self.fields
+        form_fields['role'].initial = role_id
 
         if self.instance.username == 'admin':
-            self.fields['role'].choices = self.fields['role'].choices[-1:]
-            self.fields['role'].widget.choices = self.fields['role'].choices[-1:]
-            del self.fields['is_active'].widget.choices[-1]
+            form_fields['role'].choices = form_fields['role'].choices[-1:]
+            form_fields['role'].widget.choices = form_fields['role'].choices[-1:]
+            del form_fields['is_active'].widget.choices[-1]
+
+        role_choices = [
+            ('', '---------'),
+            *[(role.pk, role)
+              for role in Role.getAll().exclude(name='superuser')],
+            (0, 'مستخدم متميز'),
+        ]
+
+        form_fields["role"].choices = role_choices
+        form_fields["role"].widget.choices = role_choices
 
     class Meta:
         model = User

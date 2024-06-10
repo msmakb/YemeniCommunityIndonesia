@@ -6,7 +6,8 @@
     <div class="row">
         <div class="col-6 p-3 m-4 m-auto">
             <div class="row shadow rounded my-4">
-                <div class="card bg-light border-0">
+                <div class="card bg-light border-0 p-0">
+                    <div class="rounded-top header-bar"></div>
                     <div class="card-body">
                         <h1 class="card-title">لوحة الرقابة</h1>
                         <div class="row">
@@ -45,13 +46,15 @@
                     </div>
                 </div>
             </div>
-            <div class="row shadow rounded my-4 m-auto">
+            <div class="row shadow rounded my-4 p-0 m-auto">
+                <div class="rounded-top header-bar"></div>
                 <canvas class="shadow rounded" id="first-visit-chart" data-labels="{{ months_labels|join:', '|safe }}"
                     data-data="{{ first_visits_data|join:', '|safe }}">
                 </canvas>
             </div>
         </div>
-        <div class="col p-3 m-4 text-center shadow rounded">
+        <div class="col p-0 m-4 text-center shadow rounded">
+            <div class="rounded-top header-bar"></div>
             <span style="font-size: 16px;">عدد النماذج المقدمة</span>
             <canvas id="member-forms-chart" data-labels="{{ months_labels|join:', '|safe }}"
                 data-data="{{  submit_form_data|join:', '|safe }}">

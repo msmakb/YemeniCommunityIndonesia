@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid mb-4 px-4">
+    <div class="row m-0 p-0">
+        <h1 class="col m-3">الردود المقدمة للنموذج - {{ form.info.title }}
+            <span class="badge rounded-pill bg-success align-top" style="font-size:.40em;">
+                {{ numberOfResponses }}
+            </span>
+        </h1>
+    </div>
+    {% if numberOfResponses > 0 %}
+    <div class="table-responsive m-0 p-0">
+        <table class="table table-bordered text-center m-0 p-0" style="table-layout: fixed;word-wrap: break-word;">
+            <thead>
+                <tr>
+                    <th scope="col">رقم</th>
+                    {% for item in form.items %}
+                    {% if item.itemType == "questionItem" %}
+                    <th scope="col">{{ item.title }}</th>
+                    {% endif %}
+                    {% endfor %}
+                    <th scope="col">وقت الإرسال</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for response in form_responses %}
+                <tr>
+                    <td>{{ forloop.counter0|add:1 }}</td>
+                    {% for answer in response.answers %}
+                    {% if answer.textAnswers and form.formId in answer.textAnswers and response.responseId in answer.textAnswers %}
+                    <td>{% if answer.textAnswers %}
+                        <a href="{% url 'downloadFormFile' response.responseId answer.questionId %}" target="_blank"
+                            download>تحميل الملف</a>
+                        {% else %}-{% endif %}</td>
+                    {% else %}
+                    <td>{% if answer.textAnswers %}{{ answer.textAnswers }}{% else %}-{% endif %}</td>
+                    {% endif %}
+                    {% endfor %}
+                    <td>{{ response.lastSubmittedTime }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <h2 class="text-center text-warning">لا يوجد ردود مقدمة</h2>
+    {% endif %}
+</div>
+{% endblock content %}

@@ -2,63 +2,70 @@
 {% load humanize %}
 {% load static %}
 {% block content %}
-<div class="row">
-    <h1 class="col m-3">برودكاست البريد الإلكتروني</h1>
-    <a class="col-2 btn btn-lg btn-success my-3 shadow rounded" href="{% url 'AddBroadcastPage' %}"
-        style="float: left; margin-left: 35px;">
-        إضافة برودكاست
-    </a>
-</div>
-
-{% if page_obj %}
 <div class="container-fluid">
-    <table class="table text-center">
-        <thead>
-            <tr>
-                <th scope="col">رقم</th>
-                <th scope="col">الموضوع</th>
-                <th scope="col">عدد المستلمين</th>
-                <th scope="col">تم الإرسال</th>
-                <th scope="col">تاريخ آخر برودكاست</th>
-                <th scope="col">التفاصيل</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for broadcast in page_obj %}
-            <tr>
-                <td>{{ page_obj.start_index|add:forloop.counter0 }}</td>
-                <td>{{ broadcast.subject }}</td>
-                <td>{{ broadcast.recipientsCount|apnumber }}</td>
-                <td>
-                    {% if broadcast.is_broadcasted %}
-                    <img style="width: 20px; height:auto;" src="{% static 'admin/img/icon-yes.svg' %}" alt="Treu">
-                    {% else %}
-                    <img style="width: 20px; height:auto;" src="{% static 'admin/img/icon-no.svg' %}" alt="Treu">
-                    {% endif %}
-                </td>
-                <td>
-                    {% if broadcast.is_broadcasting %}
-                    قيد المعالجة
-                    {% else %}
-                    {% if broadcast.broadcast_date %}
-                    {{ broadcast.broadcast_date|naturaltime }}
-                    {% else %}-{% endif %}
-                    {% endif %}
-                </td>
-                <td>
-                    <a class="btn btn-md btn-outline-info" href="{% url 'DetailBroadcastPage' broadcast.id %}">
-                        عرض
-                    </a>
-                </td>
-            </tr>
+    <div class="row">
+        <h1 class="col m-3">برودكاست البريد الإلكتروني</h1>
+        <a class="col-2 btn btn-lg btn-success my-3 shadow rounded" href="{% url 'AddBroadcastPage' %}"
+            style="float: left; margin-left: 35px;">
+            إضافة برودكاست
+        </a>
+    </div>
 
-            {% endfor %}
-        </tbody>
-    </table>
+    {% if page_obj %}
+    <div class="container-fluid shadow p-3 px-0 pt-0 mb-4 bg-white rounded col-11">
+        <div class="rounded-top header-bar"></div>
+        <div class="table-responsive pt-3">
+            <table class="table text-center">
+                <thead>
+                    <tr>
+                        <th scope="col">رقم</th>
+                        <th scope="col">الموضوع</th>
+                        <th scope="col">عدد المستلمين</th>
+                        <th scope="col">تم الإرسال</th>
+                        <th scope="col">تاريخ آخر برودكاست</th>
+                        <th scope="col">التفاصيل</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for broadcast in page_obj %}
+                    <tr>
+                        <td>{{ page_obj.start_index|add:forloop.counter0 }}</td>
+                        <td>{{ broadcast.subject }}</td>
+                        <td>{{ broadcast.recipientsCount|apnumber }}</td>
+                        <td>
+                            {% if broadcast.is_broadcasted %}
+                            <img style="width: 20px; height:auto;" src="{% static 'admin/img/icon-yes.svg' %}"
+                                alt="Treu">
+                            {% else %}
+                            <img style="width: 20px; height:auto;" src="{% static 'admin/img/icon-no.svg' %}"
+                                alt="Treu">
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if broadcast.is_broadcasting %}
+                            قيد المعالجة
+                            {% else %}
+                            {% if broadcast.broadcast_date %}
+                            {{ broadcast.broadcast_date|naturaltime }}
+                            {% else %}-{% endif %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a class="btn btn-md btn-outline-info" href="{% url 'DetailBroadcastPage' broadcast.id %}">
+                                عرض
+                            </a>
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <h2 class="text-center text-warning">لا يوجد برودكاست تمت إضافته في القائمة</h2>
+    {% endif %}
 </div>
-{% else %}
-<h2 class="text-center text-warning">لا يوجد برودكاست تمت إضافته في القائمة</h2>
-{% endif %}
 
 
 

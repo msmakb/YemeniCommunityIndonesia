@@ -238,22 +238,34 @@ class BondForm(forms.ModelForm):
         bond_type: str = cleaned_data.get("bond_type", "")
         if bond_type == constants.BOND_TYPE.INCOMING:
             receiver_account_id: str = cleaned_data["receiver_account"]
-            receiver_account: Account = Account.get(id=receiver_account_id)
-            cleaned_data["receiver_name"] = receiver_account.account_holder_name
+            try:
+                receiver_account: Account = Account.get(id=receiver_account_id)
+            except:
+                self.add_error("receiver_account", "حساب غير صالح")
+                cleaned_data["receiver_name"] = receiver_account.account_holder_name
             cleaned_data["receiver_account_number"] = receiver_account.account_number
         elif bond_type == constants.BOND_TYPE.OUTGOING:
             sender_account_id: str = cleaned_data["sender_account"]
-            sender_account: Account = Account.get(id=sender_account_id)
+            try:
+                sender_account: Account = Account.get(id=sender_account_id)
+            except:
+                self.add_error("sender_account", "حساب غير صالح")
             cleaned_data["sender_name"] = sender_account.account_holder_name
             cleaned_data["sender_account_number"] = sender_account.account_number
         elif bond_type == constants.BOND_TYPE.MOVING:
             receiver_account_id: str = cleaned_data["receiver_account"]
-            receiver_account: Account = Account.get(id=receiver_account_id)
+            try:
+                receiver_account: Account = Account.get(id=receiver_account_id)
+            except:
+                self.add_error("receiver_account", "حساب غير صالح")
             cleaned_data["receiver_name"] = receiver_account.account_holder_name
             cleaned_data["receiver_account_number"] = receiver_account.account_number
 
             sender_account_id: str = cleaned_data["sender_account"]
-            sender_account: Account = Account.get(id=sender_account_id)
+            try:
+                sender_account: Account = Account.get(id=sender_account_id)
+            except:
+                self.add_error("sender_account", "حساب غير صالح")
             cleaned_data["sender_name"] = sender_account.account_holder_name
             cleaned_data["sender_account_number"] = sender_account.account_number
         else:

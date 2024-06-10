@@ -93,7 +93,7 @@ def getUserMenus(request: HttpRequest) -> list[MenuItem]:
                 name="الحسابات البنكية",
                 page=constants.PAGES.ACCOUNT_LIST_PAGE,
                 submenu=constants.GROUPS.ACCOUNTING,
-                is_active=True if "/Accounting/" in request.path else False,
+                is_active=True if "/Accounts/" in request.path else False,
                 icon="svg/bank.svg",
             )
             userMenu.append(menu_item)
@@ -102,7 +102,7 @@ def getUserMenus(request: HttpRequest) -> list[MenuItem]:
                 name="قائمة السندات",
                 page=constants.PAGES.BOND_LIST_PAGE,
                 submenu=constants.GROUPS.ACCOUNTING,
-                is_active=True if "/Accounting/" in request.path else False,
+                is_active=True if "/Bond/" in request.path else False,
                 icon="svg/bond.svg",
             )
             userMenu.append(menu_item)
@@ -124,6 +124,15 @@ def getUserMenus(request: HttpRequest) -> list[MenuItem]:
                 submenu=constants.GROUPS.ACCOUNTING,
                 is_active=True if "/Donation-List/" in request.path else False,
                 icon="svg/donation.svg",
+            )
+            userMenu.append(menu_item)
+
+        if constants.GROUPS.FORMS in groups:
+            menu_item: MenuItem = MenuItem(
+                name=constants.GROUPS_AR[constants.GROUPS.FORMS],
+                page=constants.PAGES.FORMS_LIST_PAGE,
+                is_active=True if "Forms" in request.path else False,
+                icon="svg/forms.svg",
             )
             userMenu.append(menu_item)
 
